@@ -36,7 +36,7 @@
     var f=(filter||'').toLowerCase().trim();
     var list=P.subjects.filter(function(s){
       if(!f)return true;
-      return (s.name+' '+s.code+' '+s.blurb+' '+s.topics.map(function(t){return t.title+' '+t.type}).join(' ')).toLowerCase().indexOf(f)>=0;
+      return (s.name+' '+s.code+' '+s.blurb+' '+s.topics.map(function(tm){return tm.title+' '+tm.items.map(function(t){return t.title+' '+t.type}).join(' ')}).join(' ')).toLowerCase().indexOf(f)>=0;
     });
     box.innerHTML=list.length?list.map(function(s){
       var n=s.topics.length;

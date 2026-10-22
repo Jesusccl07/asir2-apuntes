@@ -57,7 +57,7 @@
   nameIn.addEventListener('input',function(){user.name=nameIn.value.trim();localStorage.setItem('asir.user',JSON.stringify(user));setAv()});
 
   var subj={};P.subjects.forEach(function(s){subj[s.slug]=s});
-  function topicOf(h){var s=subj[h.subject];var t=s&&s.topics.filter(function(t){return t.id===h.topic})[0];return{s:s,t:t,label:t?(s.code+' · '+t.title):(h.subject+'/'+h.topic)}}
+  function topicOf(h){var s=subj[h.subject];var t=null;if(s)s.topics.forEach(function(tm){tm.items.forEach(function(it){if(it.id===h.topic)t=it})});return{s:s,t:t,label:t?(s.code+' · '+t.title):(h.subject+'/'+h.topic)}}
   /* normaliza cada registro a una nota sobre 10 */
   function grade(d){
     if(typeof d.score==='number'&&d.total>0)return d.score/d.total*10; /* Oracle en Docker */
