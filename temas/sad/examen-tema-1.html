@@ -1,0 +1,1090 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body><script src="../../assets/config.js"></script><script src="../../assets/claude-shim.js"></script>
+<title>Examen Tema 1 SAD</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Caveat:wght@500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: cuaderno oscuro con cuadrícula de puntos. Cabecera fija con pestañas; en Apuntes, índice lateral + apartados con post-its pegados como anotaciones. */
+:root{
+  --bg:#0e1117; --bg-glass:rgba(14,17,23,.86); --panel:#161a23; --panel-2:#1d2230; --code:#0a0d13; --line:#2a3142;
+  --text:#e7e9ef; --muted:#9ba3b5; --accent:#f3bd4f; --accent-ink:#1b1608;
+  --ok:#5ccf93; --ok-t:rgba(92,207,147,.12); --bad:#ef7676; --bad-t:rgba(239,118,118,.12);
+  --pi-y:#f1d06b; --pi-p:#f2a9be; --pi-g:#a0d9ba; --pi-b:#a2c9f1; --pi-ink:#1f1c17;
+  --t-y:rgba(241,208,107,.13); --t-b:rgba(162,201,241,.13); --t-g:rgba(160,217,186,.13); --t-p:rgba(242,169,190,.13);
+  --tape:rgba(255,255,255,.3); --shadow:rgba(0,0,0,.7); --dot:rgba(255,255,255,.04);
+  --f-display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --f-body:"Atkinson Hyperlegible","Segoe UI",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+  --f-hand:"Caveat","Segoe Print","Comic Sans MS",cursive;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--f-body);font-size:16px;line-height:1.6;
+  background-image:radial-gradient(circle at 1px 1px,var(--dot) 1px,transparent 0);background-size:22px 22px}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before{transition:none!important;animation:none!important}}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+a{color:var(--accent)}
+code{font-family:var(--f-mono);font-size:.86em;background:var(--panel-2);color:var(--pi-g);padding:1px 6px;border-radius:4px;word-break:break-word}
+p{margin:0 0 .8rem}
+button{font-family:inherit}
+
+/* Cabecera */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:var(--bg-glass);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.top-in{display:flex;align-items:center;gap:14px;padding-block:10px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--f-display);font-weight:700}
+.brand-mark{background:var(--accent);color:var(--accent-ink);font-weight:800;padding:2px 8px;border-radius:5px;letter-spacing:.04em}
+.brand-t{color:var(--muted);font-weight:500}
+.tabs{display:flex;gap:4px;margin-left:auto;overflow-x:auto;scrollbar-width:none;max-width:100%}
+.tabs::-webkit-scrollbar{display:none}
+.tab{font-weight:700;font-size:.92rem;color:var(--muted);background:none;border:1px solid transparent;padding:7px 14px;border-radius:999px;cursor:pointer;white-space:nowrap;transition:color .15s,background .15s}
+.tab:hover{color:var(--text);border-color:var(--line)}
+.tab[aria-selected="true"]{color:var(--accent-ink);background:var(--accent)}
+@media (max-width:760px){.tabs{margin-left:0;width:100%}}
+
+/* Hero */
+.hero{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:32px;padding-block:44px 30px;align-items:start}
+@media (max-width:900px){.hero{grid-template-columns:1fr;padding-block:28px 20px}}
+.eyebrow{font-size:.74rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+h1{font-family:var(--f-display);font-weight:800;font-size:clamp(2.3rem,5.4vw,3.9rem);line-height:.98;letter-spacing:-.025em;margin:0 0 14px;text-wrap:balance}
+h1 .hl{background:linear-gradient(transparent 62%,rgba(243,189,79,.38) 62%);padding:0 .08em}
+.lead{color:var(--muted);font-size:1.08rem;max-width:56ch;margin-bottom:22px}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:520px){.stats{grid-template-columns:1fr}}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.stat-l{font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.stat-v{font-family:var(--f-display);font-weight:700;font-size:1.45rem;font-variant-numeric:tabular-nums;line-height:1.2;margin-top:2px}
+.bar{height:6px;background:var(--panel-2);border-radius:99px;overflow:hidden;margin-top:8px}
+.bar>i{display:block;height:100%;width:0;background:var(--accent);border-radius:99px;transition:width .4s}
+.hero-side{display:flex;flex-direction:column;gap:26px}
+.plan{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+.plan h2{font-size:1.15rem;margin:0 0 10px}
+.plan ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.plan label{display:grid;grid-template-columns:20px 62px minmax(0,1fr);gap:10px;align-items:baseline;padding:6px 4px;border-radius:6px;cursor:pointer}
+.plan label:hover{background:var(--panel-2)}
+.plan input{accent-color:var(--accent);transform:translateY(2px)}
+.plan .t{font-family:var(--f-mono);font-size:.8rem;color:var(--accent);font-variant-numeric:tabular-nums}
+.plan input:checked~span:last-child{color:var(--muted);text-decoration:line-through}
+
+/* Post-its */
+.postits{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:24px 18px;margin-top:26px;padding-top:6px}
+.postit{position:relative;background:var(--pi-y);color:var(--pi-ink);padding:18px 16px 16px;font-family:var(--f-hand);font-size:1.38rem;font-weight:500;line-height:1.14;
+  box-shadow:0 14px 22px -12px var(--shadow);transform:rotate(var(--r,-1.4deg));transition:transform .2s}
+.postit:nth-child(2n){--r:1.3deg}.postit:nth-child(3n){--r:-.5deg}
+.postit:hover{transform:rotate(0) scale(1.03)}
+.postit::before{content:"";position:absolute;top:-9px;left:50%;width:68px;height:18px;transform:translateX(-50%) rotate(-3deg);background:var(--tape)}
+.postit b{font-weight:700}
+.postit .lab{display:block;font-family:var(--f-body);font-size:.64rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;opacity:.62;margin-bottom:5px}
+.postit code{background:rgba(0,0,0,.1);color:var(--pi-ink);font-size:.62em}
+.postit.p{background:var(--pi-p)}.postit.g{background:var(--pi-g)}.postit.b{background:var(--pi-b)}
+.postit.big{font-size:1.5rem}
+.noentra ul{margin:6px 0 0;padding-left:1.1em;font-size:1.25rem}
+.noentra li{margin:1px 0}
+
+/* Apuntes */
+.notes{display:grid;grid-template-columns:230px minmax(0,1fr);gap:32px;padding-block:8px 70px}
+.index{position:sticky;top:calc(env(safe-area-inset-top,0px) + 74px);align-self:start}
+.index h2{font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 10px;font-family:var(--f-body)}
+.index ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.index a{display:flex;gap:10px;align-items:center;color:var(--text);text-decoration:none;font-size:.92rem;padding:6px 10px;border-radius:8px;line-height:1.3}
+.index a:hover{background:var(--panel)}
+.index .dot{flex:none;width:9px;height:9px;border-radius:50%;border:2px solid var(--line)}
+.index a.is-done .dot{background:var(--ok);border-color:var(--ok)}
+.index a.is-done{color:var(--muted)}
+@media (max-width:900px){
+  .notes{grid-template-columns:1fr;gap:18px}
+  .index{position:static}
+  .index ol{flex-direction:row;flex-wrap:wrap;gap:6px}
+  .index a{background:var(--panel);border:1px solid var(--line);font-size:.84rem;padding:5px 10px}
+}
+.topics{display:flex;flex-direction:column;gap:28px;min-width:0}
+.topic{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:28px clamp(18px,3vw,34px) 32px;scroll-margin-top:92px;min-width:0}
+.topic-h{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;flex-wrap:wrap;margin-bottom:18px}
+h2{font-family:var(--f-display);font-weight:700;font-size:clamp(1.3rem,2.4vw,1.6rem);line-height:1.15;margin:.4rem 0 0;text-wrap:balance}
+h3{font-family:var(--f-display);font-weight:700;font-size:1.04rem;margin:0 0 .5rem}
+.kind{display:inline-block;font-size:.66rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:3px 8px;border-radius:4px}
+.k-teo{color:var(--pi-b);background:var(--t-b)}.k-calc{color:var(--pi-y);background:var(--t-y)}.k-prac{color:var(--pi-g);background:var(--t-g)}
+.done-btn{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);background:var(--panel-2);color:var(--muted);border-radius:999px;padding:7px 14px;font-weight:700;font-size:.86rem;cursor:pointer;white-space:nowrap}
+.done-btn::before{content:"";width:14px;height:14px;border-radius:50%;border:2px solid currentColor}
+.done-btn[aria-pressed="true"]{background:var(--ok-t);color:var(--ok);border-color:var(--ok)}
+.done-btn[aria-pressed="true"]::before{background:currentColor;box-shadow:inset 0 0 0 2px var(--panel)}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;margin-top:14px}
+.box{background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:16px 18px;min-width:0}
+.box h3{display:flex;align-items:center;gap:8px}
+ul.clean{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:4px}
+ul.clean li{position:relative;padding-left:16px}
+ul.clean li::before{content:"";position:absolute;left:2px;top:.68em;width:6px;height:6px;border-radius:2px;background:var(--accent);opacity:.8}
+.defs{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:0}
+.defs div{background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.defs dt{font-family:var(--f-display);font-weight:700;color:var(--accent);font-size:1.05rem}
+.defs dd{margin:4px 0 0;color:var(--text)}
+.quote{border-left:3px solid var(--accent);padding:4px 0 4px 14px;margin:0 0 14px;font-size:1.05rem}
+.muted{color:var(--muted)}
+.tbl{overflow-x:auto;margin-top:14px;border:1px solid var(--line);border-radius:10px}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;font-size:.95rem}
+th,td{padding:10px 14px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+tr:last-child td{border-bottom:0}
+th{font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);background:var(--panel-2);font-weight:700}
+td strong{color:var(--accent)}
+.formulas{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;margin-top:12px}
+.formula{font-family:var(--f-mono);font-size:.92rem;background:var(--code);border:1px dashed var(--line);border-radius:8px;padding:11px 14px;color:var(--accent)}
+.formula small{display:block;font-family:var(--f-body);color:var(--muted);font-size:.78rem;margin-bottom:2px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.chip{background:var(--panel-2);border:1px solid var(--line);border-radius:999px;padding:5px 12px;font-size:.9rem}
+.steps{counter-reset:s;list-style:none;margin:12px 0 0;padding:0;display:flex;flex-direction:column;gap:12px}
+.steps>li{counter-increment:s;display:grid;grid-template-columns:30px minmax(0,1fr);gap:12px;align-items:start}
+.steps>li::before{content:counter(s);width:28px;height:28px;border-radius:50%;background:var(--t-y);color:var(--accent);font-weight:700;display:grid;place-items:center;font-size:.85rem}
+.steps p{margin:0 0 6px}
+.cmd{position:relative;margin:0;background:var(--code);border:1px solid var(--line);border-radius:8px;padding:10px 70px 10px 14px;font-family:var(--f-mono);font-size:.86rem;color:var(--text);overflow-x:auto;white-space:pre;line-height:1.55}
+.cmd .c{color:var(--muted)}
+.copy{position:absolute;top:6px;right:6px;background:var(--panel-2);color:var(--muted);border:1px solid var(--line);border-radius:6px;font-size:.72rem;font-weight:700;padding:3px 8px;cursor:pointer}
+.copy:hover{color:var(--text)}
+.cmd-list{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.anat{font-family:var(--f-mono);font-size:clamp(1rem,2.6vw,1.35rem);background:var(--code);border:1px solid var(--line);border-radius:10px;padding:16px 18px;overflow-x:auto;white-space:nowrap}
+.anat span{padding:2px 3px;border-radius:4px}
+.a-t{background:var(--panel-2);color:var(--text)}.a-u{background:var(--t-y);color:var(--pi-y)}.a-g{background:var(--t-b);color:var(--pi-b)}.a-o{background:var(--t-p);color:var(--pi-p)}
+.legend{display:flex;flex-wrap:wrap;gap:8px 16px;margin-top:10px;font-size:.88rem;color:var(--muted)}
+.legend b{font-weight:700}
+.legend .lu{color:var(--pi-y)}.legend .lg{color:var(--pi-b)}.legend .lo{color:var(--pi-p)}
+.warn{background:var(--bad-t);border:1px solid rgba(239,118,118,.35);border-radius:10px;padding:12px 16px;margin-top:14px}
+.warn b{color:var(--bad)}
+.good{background:var(--ok-t);border:1px solid rgba(92,207,147,.35);border-radius:10px;padding:12px 16px;margin-top:14px}
+.good b{color:var(--ok)}
+.sec-title{font-family:var(--f-display);font-weight:800;font-size:clamp(1.6rem,3.4vw,2.2rem);margin:0 0 6px;letter-spacing:-.015em}
+.sec-lead{color:var(--muted);margin:0 0 24px;max-width:64ch}
+.panel-pad{padding-block:36px 70px}
+
+/* Laboratorio */
+.lab-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:20px}
+.tool{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:22px 22px 24px;min-width:0}
+.tool h3{font-size:1.15rem}
+.tool .desc{color:var(--muted);font-size:.92rem}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin:12px 0}
+.field label{display:block;font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.field input,.perm-in{width:100%;background:var(--code);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:9px 11px;font-family:var(--f-mono);font-size:1rem}
+.field input:focus,.perm-in:focus{border-color:var(--accent);outline:none}
+.result{background:var(--t-y);border-radius:10px;padding:12px 14px;font-variant-numeric:tabular-nums}
+.result .big{font-family:var(--f-display);font-weight:800;font-size:1.7rem;color:var(--accent);line-height:1.1}
+.result .sub{color:var(--muted);font-size:.88rem;margin-top:4px}
+.tool.wide{grid-column:1/-1}
+.presets{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.preset{font-family:var(--f-mono);font-size:.82rem;background:var(--panel-2);border:1px solid var(--line);color:var(--text);border-radius:6px;padding:4px 9px;cursor:pointer}
+.preset:hover{border-color:var(--accent)}
+.perm-out{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:12px}
+.perm-col{border-radius:10px;padding:12px 14px;border:1px solid var(--line);background:var(--panel-2)}
+.perm-col h4{margin:0 0 8px;font-size:.78rem;letter-spacing:.1em;text-transform:uppercase}
+.perm-col.u h4{color:var(--pi-y)}.perm-col.g h4{color:var(--pi-b)}.perm-col.o h4{color:var(--pi-p)}
+.perm-col ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:5px;font-size:.92rem}
+.yes::before{content:"✓ ";color:var(--ok);font-weight:700}
+.no{color:var(--muted)}.no::before{content:"✕ ";color:var(--bad);font-weight:700}
+.perm-meta{margin-top:10px;color:var(--muted);font-size:.92rem}
+.perm-meta b{color:var(--text)}
+
+/* Flashcards */
+.fc-wrap{max-width:680px;margin:0 auto}
+.fc-top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap;color:var(--muted);font-variant-numeric:tabular-nums}
+.fc{perspective:1400px;cursor:pointer;border:0;background:none;padding:0;width:100%;text-align:left;color:inherit}
+.fc-inner{display:grid;transform-style:preserve-3d;transition:transform .55s cubic-bezier(.3,.7,.3,1)}
+.fc.flip .fc-inner{transform:rotateY(180deg)}
+.fc-face{grid-area:1/1;backface-visibility:hidden;-webkit-backface-visibility:hidden;min-height:250px;border-radius:16px;padding:30px 30px 26px;display:flex;flex-direction:column;justify-content:center}
+.fc-front{background:var(--panel);border:1px solid var(--line)}
+.fc-front .q{font-family:var(--f-display);font-weight:700;font-size:clamp(1.3rem,3vw,1.75rem);line-height:1.2;text-wrap:balance}
+.fc-back{background:var(--pi-y);color:var(--pi-ink);transform:rotateY(180deg);font-family:var(--f-hand);font-size:clamp(1.5rem,3.4vw,1.95rem);line-height:1.18;box-shadow:0 18px 30px -16px var(--shadow)}
+.fc-back code{background:rgba(0,0,0,.1);color:var(--pi-ink);font-size:.6em}
+.fc-hint{font-family:var(--f-body);font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;opacity:.6;margin-top:16px}
+.fc-front .fc-hint{color:var(--muted);opacity:1}
+.fc-ctrl{display:flex;gap:10px;justify-content:center;margin-top:18px;flex-wrap:wrap}
+.btn{border:1px solid var(--line);background:var(--panel-2);color:var(--text);border-radius:10px;padding:10px 16px;font-weight:700;font-size:.92rem;cursor:pointer}
+.btn:hover{border-color:var(--muted)}
+.btn.pri{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.okb{color:var(--ok);border-color:rgba(92,207,147,.4)}
+.btn.badb{color:var(--bad);border-color:rgba(239,118,118,.4)}
+.kbd{font-family:var(--f-mono);font-size:.78rem;color:var(--muted);text-align:center;margin-top:12px}
+
+/* Test */
+.quiz{max-width:760px;margin:0 auto;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:26px clamp(18px,3vw,32px) 28px}
+.q-meta{display:flex;justify-content:space-between;color:var(--muted);font-size:.86rem;font-variant-numeric:tabular-nums;gap:10px}
+.q-text{font-family:var(--f-display);font-weight:700;font-size:clamp(1.2rem,2.6vw,1.45rem);line-height:1.25;margin:16px 0 18px;text-wrap:balance}
+.opts{display:flex;flex-direction:column;gap:10px}
+.opt{display:grid;grid-template-columns:30px minmax(0,1fr);gap:10px;align-items:center;text-align:left;background:var(--panel-2);border:1px solid var(--line);color:var(--text);border-radius:10px;padding:12px 14px;font-size:1rem;cursor:pointer;line-height:1.35}
+.opt:hover:not(:disabled){border-color:var(--accent)}
+.opt .l{width:26px;height:26px;border-radius:7px;background:var(--code);display:grid;place-items:center;font-weight:700;font-size:.82rem;color:var(--muted)}
+.opt:disabled{cursor:default}
+.opt.right{border-color:var(--ok);background:var(--ok-t)}.opt.right .l{background:var(--ok);color:var(--bg)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-t)}.opt.wrong .l{background:var(--bad);color:var(--bg)}
+.expl{margin-top:16px;padding:12px 16px;border-radius:10px;background:var(--t-y);font-size:.96rem}
+.expl b{color:var(--accent)}
+.q-foot{display:flex;justify-content:flex-end;margin-top:18px;gap:10px;flex-wrap:wrap}
+.score{text-align:center;padding:10px 0}
+.score .n{font-family:var(--f-display);font-weight:800;font-size:4rem;line-height:1;color:var(--accent);font-variant-numeric:tabular-nums}
+.score p{color:var(--muted);margin-top:10px}
+.review{margin-top:18px;text-align:left;display:flex;flex-direction:column;gap:10px}
+.review div{background:var(--panel-2);border:1px solid var(--line);border-left:3px solid var(--bad);border-radius:8px;padding:10px 14px;font-size:.94rem}
+.review b{display:block}
+
+/* Ejercicios */
+.ex-list{display:flex;flex-direction:column;gap:20px;max-width:880px}
+.ex{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:22px clamp(18px,3vw,28px)}
+.ex-h{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
+.ex-h h3{margin:0;font-size:1.1rem}
+.ex textarea{width:100%;min-height:90px;background:var(--code);border:1px solid var(--line);border-radius:10px;color:var(--text);padding:10px 12px;font-family:var(--f-mono);font-size:.9rem;resize:vertical;margin-top:8px}
+.ex textarea:focus{border-color:var(--accent);outline:none}
+.ex details{margin-top:12px}
+.ex summary{cursor:pointer;font-weight:700;color:var(--accent);list-style:none;display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border:1px solid var(--line);border-radius:8px;background:var(--panel-2)}
+.ex summary::-webkit-details-marker{display:none}
+.ex summary::before{content:"▸";transition:transform .2s}
+.ex details[open] summary::before{transform:rotate(90deg)}
+.sol{margin-top:12px;padding:14px 16px;background:var(--panel-2);border:1px solid var(--line);border-radius:10px}
+.sol .cmd{margin:8px 0}
+footer{border-top:1px solid var(--line);color:var(--muted);font-size:.86rem;padding-block:22px}
+</style>
+
+<header class="top">
+  <div class="wrap top-in">
+    <div class="brand"><span class="brand-mark">SAD</span><span class="brand-t">Tema 1 · Pautas de seguridad</span></div>
+    <nav class="tabs" role="tablist" aria-label="Secciones">
+      <button class="tab" role="tab" data-tab="apuntes" aria-selected="true">Apuntes</button>
+      <button class="tab" role="tab" data-tab="lab" aria-selected="false">Laboratorio</button>
+      <button class="tab" role="tab" data-tab="flash" aria-selected="false">Flashcards</button>
+      <button class="tab" role="tab" data-tab="test" aria-selected="false">Test</button>
+      <button class="tab" role="tab" data-tab="ejercicios" aria-selected="false">Ejercicios</button>
+    </nav>
+  </div>
+</header>
+
+<main>
+<!-- ============ APUNTES ============ -->
+<div class="panel" id="panel-apuntes">
+  <section class="wrap hero">
+    <div>
+      <div class="eyebrow">Seguridad y Alta Disponibilidad · 2º ASIR</div>
+      <h1>Examen <span class="hl">Tema 1</span> SAD</h1>
+      <p class="lead">Solo lo que entra en el examen, ordenado por apartados. Lee cada uno, mira los post-its, marca <b>Lo domino</b> y ponte a prueba en el Test y los Ejercicios.</p>
+      <div class="stats">
+        <div class="stat"><div class="stat-l">Examen</div><div class="stat-v" id="countdown">Lunes 19 oct</div></div>
+        <div class="stat"><div class="stat-l">Apartados dominados</div><div class="stat-v"><span id="prog-n">0</span><span class="muted"> / <span id="prog-t">10</span></span></div><div class="bar"><i id="prog-bar"></i></div></div>
+        <div class="stat"><div class="stat-l">Mejor nota en el test</div><div class="stat-v" id="best">—</div></div>
+      </div>
+    </div>
+    <div class="hero-side">
+      <div class="plan">
+        <h2>Plan de hoy</h2>
+        <ul id="plan">
+          <li><label><input type="checkbox" id="plan-0"><span class="t">60 min</span><span>Permisos y ACLs (mejor en la VM)</span></label></li>
+          <li><label><input type="checkbox" id="plan-1"><span class="t">40 min</span><span>SAI: teoría, cálculos y los nueves</span></label></li>
+          <li><label><input type="checkbox" id="plan-2"><span class="t">40 min</span><span>CIA, vulnerabilidades, amenazas, seguridad física y lógica</span></label></li>
+          <li><label><input type="checkbox" id="plan-3"><span class="t">25 min</span><span>Criptografía asimétrica y gpg</span></label></li>
+          <li><label><input type="checkbox" id="plan-4"><span class="t">15 min</span><span>Test completo y repasar las falladas</span></label></li>
+          <li><label><input type="checkbox" id="plan-5"><span class="t">8 h</span><span>Dormir. Rinde más que una hora extra.</span></label></li>
+        </ul>
+      </div>
+      <div class="postit p noentra" style="--r:1.2deg">
+        <span class="lab">Esto NO entra</span>
+        César y transposición · Autenticación (CA) · Privacidad · Contraseñas · Almacenamiento · Copias de seguridad · Medios · Biometría · UNIX · Guest additions
+      </div>
+    </div>
+  </section>
+
+  <div class="wrap notes">
+    <nav class="index" aria-label="Índice de apartados">
+      <h2>Apartados</h2>
+      <ol id="index"></ol>
+    </nav>
+
+    <div class="topics">
+
+      <!-- 1 CIA -->
+      <article class="topic" id="t-cia" data-topic="cia" data-name="Fiabilidad, CID y nueves">
+        <div class="topic-h">
+          <div><span class="kind k-teo">Teoría</span> <span class="kind k-calc">Cálculo</span><h2>Fiabilidad, confidencialidad, integridad y disponibilidad</h2></div>
+          <button class="done-btn" data-done="cia" aria-pressed="false">Lo domino</button>
+        </div>
+        <dl class="defs">
+          <div><dt>Fiabilidad</dt><dd>Que el sistema de información (SI) ofrezca la información sin pausas entre peticiones.</dd></div>
+          <div><dt>Confidencialidad</dt><dd>Que la información solo se muestre a las personas autorizadas.</dd></div>
+          <div><dt>Integridad</dt><dd>Que la información no se altere por causas involuntarias.</dd></div>
+          <div><dt>Disponibilidad</dt><dd>Capacidad de responder a las peticiones con las mínimas pausas por causas involuntarias.</dd></div>
+        </dl>
+        <h3 style="margin-top:22px">La disponibilidad se mide en «nueves»</h3>
+        <div class="tbl"><table>
+          <thead><tr><th>Nueves</th><th>Disponible</th><th>Caído al año (365 días = 8.760 h)</th></tr></thead>
+          <tbody>
+            <tr><td>2 nueves</td><td>99 %</td><td><strong>87,6 h</strong> ≈ 3 días, 15 h y 36 min</td></tr>
+            <tr><td>3 nueves</td><td>99,9 %</td><td><strong>8,76 h</strong> ≈ 8 h, 45 min y 36 s</td></tr>
+            <tr><td>4 nueves</td><td>99,99 %</td><td><strong>52,56 min</strong> ≈ 52 min y 34 s</td></tr>
+            <tr><td>5 nueves</td><td>99,999 %</td><td><strong>5,26 min</strong> ≈ 5 min y 15 s</td></tr>
+          </tbody>
+        </table></div>
+        <div class="postits">
+          <div class="postit"><span class="lab">Fórmula</span>Caído = <b>8.760 h × (100 − %) ÷ 100</b></div>
+          <div class="postit b"><span class="lab">Truco</span>Cada nueve más divide el tiempo caído <b>entre 10</b></div>
+          <div class="postit g"><span class="lab">Para pasar a minutos</span>0,876 h × 60 = 52,56 min. Los decimales de minuto × 60 = segundos</div>
+        </div>
+      </article>
+
+      <!-- 2 Elementos vulnerables -->
+      <article class="topic" id="t-elem" data-topic="elem" data-name="Elementos vulnerables">
+        <div class="topic-h">
+          <div><span class="kind k-teo">Teoría</span><h2>Elementos vulnerables: hardware, software y datos</h2></div>
+          <button class="done-btn" data-done="elem" aria-pressed="false">Lo domino</button>
+        </div>
+        <p class="quote"><b>Vulnerable:</b> capacidad de un sistema para fallar de manera inesperada. Es decir, un punto débil.</p>
+        <div class="cols">
+          <div class="box"><h3>Hardware</h3><ul class="clean"><li>Fluido eléctrico</li><li>Placa base</li><li>RAM: errores muy difíciles de detectar</li><li>Discos: hay muchas estadísticas de sus fallos</li><li>Tarjetas gráficas</li><li>Interconexiones: cables y soldaduras</li></ul></div>
+          <div class="box"><h3>Software</h3><ul class="clean"><li><b>Sistema operativo:</b> la actualización automática aplica parches sin acordarse</li><li>Pero en <b>equipos críticos</b> se aconseja NO tenerla activada, y sí en otros equipos que hacen de «cobaya»</li><li><b>Aplicaciones:</b> sus fallos pueden dañar sobre todo los datos</li></ul></div>
+          <div class="box"><h3>Datos</h3><ul class="clean"><li>Hoy son casi seguro el <b>activo más valioso</b> de la empresa</li><li>Para protegerlos hay que tomar muchas medidas de seguridad</li></ul></div>
+        </div>
+        <div class="postits">
+          <div class="postit"><span class="lab">Pregunta típica</span>¿Actualización automática en un servidor crítico? <b>No</b>: se prueba antes en equipos cobaya</div>
+          <div class="postit p"><span class="lab">Recuerda</span>RAM = errores <b>muy difíciles de detectar</b></div>
+        </div>
+      </article>
+
+      <!-- 3 Vulnerabilidades -->
+      <article class="topic" id="t-vuln" data-topic="vuln" data-name="Vulnerabilidades y CVE">
+        <div class="topic-h">
+          <div><span class="kind k-teo">Teoría</span><h2>Análisis de las principales vulnerabilidades</h2></div>
+          <button class="done-btn" data-done="vuln" aria-pressed="false">Lo domino</button>
+        </div>
+        <p class="quote"><b>Vulnerabilidad:</b> una debilidad de un sistema que puede ser aprovechada para comprometer su seguridad.</p>
+        <div class="cols">
+          <div class="box"><h3>Qué puede provocar</h3><ul class="clean"><li>Que un intruso consiga <b>permisos de administración</b></li><li>Que un virus <b>tome el control</b> de los equipos de la empresa</li><li>Que un software o una persona <b>borre, altere o cifre</b> datos de la empresa</li></ul></div>
+          <div class="box"><h3>CVE</h3><p>Cada vulnerabilidad detectada se publica como un informe <b>CVE</b> (<i>Common Vulnerabilities and Exposures</i>). Los apuntes enlazan a la lista de Tenable.</p><p class="muted" style="margin:0">Normalmente se asocia el término a problemas de <b>software</b>.</p></div>
+        </div>
+        <div class="postits">
+          <div class="postit b big"><span class="lab">No confundir</span>Vulnerabilidad = <b>punto débil</b>.<br>Amenaza = lo que <b>causa el daño</b>.</div>
+          <div class="postit"><span class="lab">Ejemplo</span>Un Windows sin parchear (vulnerabilidad) y un virus que lo aprovecha (amenaza)</div>
+        </div>
+      </article>
+
+      <!-- 4 Amenazas -->
+      <article class="topic" id="t-amen" data-topic="amen" data-name="Amenazas físicas y lógicas">
+        <div class="topic-h">
+          <div><span class="kind k-teo">Teoría</span><h2>Amenazas: físicas y lógicas</h2></div>
+          <button class="done-btn" data-done="amen" aria-pressed="false">Lo domino</button>
+        </div>
+        <p class="quote"><b>Amenaza:</b> circunstancia, agente o acontecimiento que puede provocar un daño a un sistema.</p>
+        <div class="cols">
+          <div class="box"><h3>Físicas</h3><p class="muted">Afectan físicamente a los equipos, las instalaciones o su entorno.</p><ul class="clean"><li>Robo de un ordenador o servidor</li><li>Incendio o inundación</li><li>Corte eléctrico</li><li>Daño intencionado de un equipo</li><li>Acceso físico no autorizado</li><li>Sobrecalentamiento</li><li>Avería de un disco duro</li></ul></div>
+          <div class="box"><h3>Lógicas</h3><p class="muted">Relacionadas con el software, los datos, las comunicaciones o el acceso lógico.</p><ul class="clean"><li>Malware</li><li>Phishing</li><li>Robo de credenciales</li><li>Explotación de vulnerabilidades</li><li>Acceso no autorizado</li><li>Ataques DoS / DDoS</li><li>Borrado o modificación maliciosa de datos</li><li>Errores de configuración</li></ul></div>
+        </div>
+        <div class="postits">
+          <div class="postit g"><span class="lab">Truco</span>¿Se puede tocar o afecta al edificio? → <b>física</b>. ¿Va por software o red? → <b>lógica</b></div>
+          <div class="postit p"><span class="lab">Cuidado</span>«Acceso no autorizado» está en las dos: <b>físico</b> (entrar en la sala) y <b>lógico</b> (entrar al sistema)</div>
+          <div class="postit"><span class="lab">Cuidado</span>Los <b>errores de configuración</b> también son amenaza lógica</div>
+        </div>
+      </article>
+
+      <!-- 5 Seguridad física -->
+      <article class="topic" id="t-fis" data-topic="fis" data-name="Seguridad física y ambiental">
+        <div class="topic-h">
+          <div><span class="kind k-teo">Teoría</span><h2>Seguridad física y ambiental</h2></div>
+          <button class="done-btn" data-done="fis" aria-pressed="false">Lo domino</button>
+        </div>
+        <p>Medidas para proteger los <b>equipos, instalaciones, personas y soportes</b> frente a amenazas físicas y ambientales. Garantiza sobre todo la <b>disponibilidad</b> de los sistemas, la <b>integridad</b> de equipos y datos y la <b>confidencialidad</b>.</p>
+        <p class="muted">La seguridad no es solo contraseñas y antivirus: si alguien roba el servidor, lo destruye o le corta la corriente, también la compromete.</p>
+        <div class="cols">
+          <div class="box"><h3>Controles físicos</h3><ul class="clean"><li>Cerraduras y puertas de seguridad</li><li>Tarjetas, códigos o biometría</li><li>Videovigilancia</li><li>Personal de seguridad</li><li>Registro de visitantes</li><li>Acceso restringido a la sala de servidores</li><li>Armarios y racks cerrados</li></ul></div>
+          <div class="box"><h3>Protección frente al robo</h3><ul class="clean"><li>Anclajes físicos</li><li>Racks y armarios cerrados</li><li>Control de acceso</li><li>Inventario de equipos</li><li>Cifrado de discos</li><li>Proteger las copias de seguridad</li><li>Destrucción segura de soportes viejos</li></ul></div>
+          <div class="box"><h3>Contra incendios</h3><ul class="clean"><li>Detectores de humo</li><li>Extinción automática</li><li>Extintores para instalaciones eléctricas</li><li>Materiales ignífugos</li><li>Separar las zonas de riesgo</li><li>Planes de evacuación</li></ul></div>
+          <div class="box"><h3>Alimentación eléctrica</h3><p style="margin-bottom:6px"><b>Amenazas:</b> cortes, sobretensiones, bajadas de tensión, picos, microcortes, variaciones de frecuencia.</p><p style="margin:0"><b>Medidas:</b> SAI/UPS, protectores contra sobretensiones, instalación eléctrica adecuada, generadores de emergencia, fuentes redundantes.</p></div>
+        </div>
+        <div class="postits">
+          <div class="postit p big"><span class="lab">Pregunta trampa</span>El cifrado <b>NO evita el robo</b>. Evita que el ladrón lea los datos</div>
+          <div class="postit b"><span class="lab">CPD</span>Extinción con <b>agentes gaseosos</b>, evitando el agua sobre los equipos</div>
+          <div class="postit"><span class="lab">SAI</span>Mantiene los equipos un rato y, sobre todo, da tiempo a <b>apagarlos bien</b></div>
+        </div>
+      </article>
+
+      <!-- 6 SAI -->
+      <article class="topic" id="t-sai" data-topic="sai" data-name="SAI y cálculos">
+        <div class="topic-h">
+          <div><span class="kind k-teo">Teoría</span> <span class="kind k-calc">Cálculo</span><h2>Sistemas de alimentación ininterrumpida (SAI)</h2></div>
+          <button class="done-btn" data-done="sai" aria-pressed="false">Lo domino</button>
+        </div>
+        <p>Un SAI protege contra los problemas eléctricos comunes que pueden afectar al funcionamiento normal de un sistema informático.</p>
+        <div class="tbl"><table>
+          <thead><tr><th>Problema</th><th>Duración</th><th>Consecuencia</th></tr></thead>
+          <tbody>
+            <tr><td>Bajadas de tensión</td><td>—</td><td>Daños a <strong>largo plazo</strong></td></tr>
+            <tr><td>Interrupciones del suministro</td><td>—</td><td><strong>Perjuicios económicos</strong></td></tr>
+            <tr><td>Subidas de tensión puntuales</td><td>≤ 4 ms</td><td>Daños en <strong>días o semanas</strong></td></tr>
+            <tr><td>Subidas de tensión sostenidas</td><td>&gt; 4 ms</td><td>Daños en <strong>minutos o instantáneos</strong></td></tr>
+          </tbody>
+        </table></div>
+
+        <h3 style="margin-top:22px">Potencia: lo que aguanta el SAI</h3>
+        <p>El dato principal es la <b>potencia aparente</b>, en voltio-amperios (<b>VA</b> o kVA, «kabeas»). Lo que interesa es la <b>potencia eficaz</b> en vatios (W).</p>
+        <div class="formulas">
+          <div class="formula"><small>Potencia eficaz</small>W = VA × FdP</div>
+          <div class="formula"><small>Si no dan el factor de potencia</small>FdP = 0,75</div>
+          <div class="formula"><small>Factor de potencia</small>FdP = W ÷ VA</div>
+          <div class="formula"><small>VA a comprar (con margen)</small>VA = W ÷ 0,75 × 1,2</div>
+        </div>
+
+        <h3 style="margin-top:22px">Energía: cuánto dura</h3>
+        <div class="tbl"><table>
+          <thead><tr><th>Unidad</th><th>Qué mide</th></tr></thead>
+          <tbody>
+            <tr><td><strong>W</strong> (vatios)</td><td>Potencia: cómo de rápido se consume la energía</td></tr>
+            <tr><td><strong>Wh</strong> (vatios-hora)</td><td>Energía: cuánta hay disponible. Es Wh, no W/h</td></tr>
+            <tr><td><strong>V</strong> (voltios)</td><td>Tensión o diferencia de potencial</td></tr>
+            <tr><td><strong>A</strong> (amperios)</td><td>Corriente: cuántos electrones circulan</td></tr>
+            <tr><td><strong>Ah</strong> (amperios-hora)</td><td>Capacidad de una batería</td></tr>
+          </tbody>
+        </table></div>
+        <div class="formulas">
+          <div class="formula"><small>Energía de la batería</small>Wh = V × Ah</div>
+          <div class="formula"><small>Autonomía en horas</small>Autonomía = Wh ÷ W</div>
+        </div>
+
+        <h3 style="margin-top:22px">Ejemplos resueltos de los apuntes</h3>
+        <div class="cols">
+          <div class="box"><h3>SAI de 2000 VA sin FdP</h3><p>2000 × 0,75 = <b>1500 W</b>. Tres PCs de 650 W (1950 W) <b>no caben</b>.</p></div>
+          <div class="box"><h3>1500 VA y 850 W</h3><p>FdP = 850 ÷ 1500 = <b>0,57</b>.</p></div>
+          <div class="box"><h3>Servidores de 1300 W</h3><p>1300 ÷ 0,75 = 1733 VA. Con un 20 % de margen: 1733 × 1,2 = <b>2080 VA</b>.</p></div>
+          <div class="box"><h3>Batería de 12 V y 7 Ah</h3><p>12 × 7 = 84 Wh. PC (100 W) + monitor (50 W): 84 ÷ 150 = 0,56 h ≈ <b>34 min</b>. Sin el monitor: 84 ÷ 100 = 0,84 h ≈ <b>50 min</b>.</p></div>
+        </div>
+        <div class="postits">
+          <div class="postit big"><span class="lab">La idea clave</span><b>VA o W</b> = cuánta carga aguanta.<br><b>Wh</b> = cuánto tiempo dura</div>
+          <div class="postit g"><span class="lab">Margen</span>Los edificios crecen: suma un <b>20–30 %</b> a tus cálculos</div>
+          <div class="postit b"><span class="lab">Para minutos</span>0,56 h × 60 = <b>33,6 min</b></div>
+          <div class="postit p"><span class="lab">Ojo</span>12 V no es «potencia», es <b>tensión</b>. Potencia = W</div>
+        </div>
+      </article>
+
+      <!-- 7 Seguridad lógica -->
+      <article class="topic" id="t-log" data-topic="log" data-name="Seguridad lógica">
+        <div class="topic-h">
+          <div><span class="kind k-teo">Teoría</span><h2>Seguridad lógica</h2></div>
+          <button class="done-btn" data-done="log" aria-pressed="false">Lo domino</button>
+        </div>
+        <p>Restringir el acceso a los datos <b>en función de la persona</b> que lo intente. Medidas:</p>
+        <div class="chips">
+          <span class="chip">Claves de acceso</span><span class="chip">Tarjetas de identificación</span><span class="chip">Copias de seguridad</span><span class="chip">Listas de control de acceso</span><span class="chip">Control horario</span><span class="chip">Roles</span><span class="chip">Cortafuegos</span><span class="chip">Distribución de carga</span><span class="chip">Redundancia de sistemas</span><span class="chip">Criptografía</span>
+        </div>
+        <div class="postits">
+          <div class="postit"><span class="lab">Regla para recordar</span>Física protege <b>el aparato</b>. Lógica protege <b>el acceso a los datos</b></div>
+          <div class="postit b"><span class="lab">Truco: 10 medidas</span><b>C</b>laves, <b>T</b>arjetas, <b>C</b>opias, <b>A</b>CL, <b>H</b>orario, <b>R</b>oles, <b>C</b>ortafuegos, <b>C</b>arga, <b>R</b>edundancia, <b>C</b>ripto</div>
+        </div>
+      </article>
+
+      <!-- 8 Cripto y gpg -->
+      <article class="topic" id="t-gpg" data-topic="gpg" data-name="Criptografía y gpg">
+        <div class="topic-h">
+          <div><span class="kind k-teo">Teoría</span> <span class="kind k-prac">Práctica</span><h2>Criptografía asimétrica y cifrado con gpg</h2></div>
+          <button class="done-btn" data-done="gpg" aria-pressed="false">Lo domino</button>
+        </div>
+        <p><b>Criptografía:</b> técnica que transforma mensajes en otros cuyo contenido no se puede conocer. El <b>criptoanálisis</b> intenta descifrarlos: averiguar el idioma, buscar palabras comunes («el», «la», «con»…) o usar fuerza bruta.</p>
+        <div class="cols">
+          <div class="box"><h3>Sistemas antiguos (simétricos)</h3><p style="margin:0">Si alguien conseguía la clave, descifraba el mensaje haciendo el proceso inverso. La informática facilitó mucho atacar las claves.</p></div>
+          <div class="box"><h3>Sistemas asimétricos</h3><p style="margin:0">Una clave para cifrar y otra para descifrar. Con una es <b>matemáticamente imposible</b> averiguar la otra. La <b>pública</b> se da a todo el mundo; la <b>privada</b> te la guardas.</p></div>
+        </div>
+
+        <h3 style="margin-top:24px">gpg paso a paso</h3>
+        <p class="muted">gpg cifra con la <b>clave pública</b> del destinatario, y él descifra con su <b>clave privada</b>. Las claves se guardan en un almacén, en el directorio <code>~/.gnupg</code>.</p>
+        <ol class="steps">
+          <li><div><p><b>Crear tu pareja de claves.</b> Es lento: ten paciencia o trabaja en otra consola.</p><pre class="cmd">gpg --full-generate-key</pre></div></li>
+          <li><div><p><b>Listar las claves</b> del almacén.</p><pre class="cmd">gpg --list-keys</pre></div></li>
+          <li><div><p><b>Preparar el certificado de revocación</b>, para avisar de que no se confíe en tus claves si te las roban. Por costumbre, extensión <code>.asc</code>.</p><pre class="cmd">gpg --output ClaveRevocada.asc --gen-revoke usuario</pre></div></li>
+          <li><div><p><b>Exportar tu clave pública</b> a un fichero (binario, o en texto ASCII con <code>--armor</code>).</p><pre class="cmd">gpg --export usuario &gt; ClavePublicaUsuario.gpg
+gpg --armor --output ClavePublicaUsuario.asc --export usuario</pre></div></li>
+          <li><div><p><b>Importar la clave pública</b> que te pase otra persona.</p><pre class="cmd">gpg --import fichero.gpg</pre></div></li>
+          <li><div><p><b>Cifrar un fichero</b> para que solo esa persona lo pueda descifrar.</p><pre class="cmd">gpg --encrypt --recipient pepito@gmail.com fichero
+gpg --output fichero.doc.gpg --encrypt --recipient persona@mail.com fichero.doc</pre></div></li>
+          <li><div><p><b>Descifrar</b> un fichero que te han enviado.</p><pre class="cmd">gpg --decrypt fichero.gpg</pre></div></li>
+        </ol>
+        <div class="cols" style="margin-top:20px">
+          <div class="box"><h3>Letras de una clave</h3><ul class="clean"><li><b>S</b>: firmar (<i>sign</i>)</li><li><b>C</b>: certificar</li><li><b>E</b>: cifrar (<i>encrypt</i>)</li><li><b>A</b>: autenticar</li></ul><p class="muted" style="margin:8px 0 0">Ejemplo: <code>[SC]</code> o <code>[SCEA]</code></p></div>
+          <div class="box"><h3>Niveles de confianza</h3><div class="chips" style="margin-top:4px"><span class="chip">undefined</span><span class="chip">never</span><span class="chip">marginal</span><span class="chip">full</span><span class="chip">ultimate</span></div><p class="muted" style="margin:10px 0 0">ultimate = confianza absoluta; full = completa.</p></div>
+        </div>
+        <div class="warn"><b>Errata de los apuntes:</b> en <code>gpg --output ficherocifrado.doc.gpg --recipient persona@mail.com ficherooriginal.doc</code> falta <code>--encrypt</code>. Sin él, gpg no sabe que tiene que cifrar.</div>
+        <div class="postits">
+          <div class="postit big"><span class="lab">En gpg</span>Pública → <b>cifrar</b><br>Privada → <b>descifrar</b></div>
+          <div class="postit g"><span class="lab">Orden de examen</span>generar → listar → revocación → exportar → importar → cifrar → descifrar</div>
+          <div class="postit b"><span class="lab">--armor</span>Fichero en <b>texto ASCII</b> en lugar de binario</div>
+        </div>
+      </article>
+
+      <!-- 9 Permisos -->
+      <article class="topic" id="t-perm" data-topic="perm" data-name="Permisos en Linux">
+        <div class="topic-h">
+          <div><span class="kind k-prac">Práctica</span><h2>Permisos en Linux</h2></div>
+          <button class="done-btn" data-done="perm" aria-pressed="false">Lo domino</button>
+        </div>
+        <p>Comprueba tu usuario con <code>whoami</code>, crea uno con <code>sudo adduser usu01</code> y mira los permisos con <code>ls -la</code>. Al crear un usuario, Linux crea también <b>un grupo con su mismo nombre</b> en el que solo está él.</p>
+        <div class="anat" aria-label="Anatomía de una línea de ls -l"><span class="a-t">-</span><span class="a-u">rw-</span><span class="a-g">r--</span><span class="a-o">r--</span> 1 <span class="a-u">usu01</span> <span class="a-g">usu01</span> 3771 sep 25 07:59 .bashrc</div>
+        <div class="legend"><span><b>-</b> tipo: <code>-</code> fichero, <code>d</code> directorio, <code>l</code> enlace</span><span class="lu"><b>rw-</b> dueño (usu01)</span><span class="lg"><b>r--</b> grupo (usu01)</span><span class="lo"><b>r--</b> otros</span></div>
+
+        <div class="tbl"><table>
+          <thead><tr><th>Permiso</th><th>En un fichero</th><th>En un directorio</th></tr></thead>
+          <tbody>
+            <tr><td><strong>r</strong></td><td>Leer el contenido</td><td>Ver los nombres de los ficheros (<code>ls</code>)</td></tr>
+            <tr><td><strong>w</strong></td><td>Escribir o modificar</td><td>Crear (o borrar) nombres de ficheros</td></tr>
+            <tr><td><strong>x</strong></td><td>Ejecutar</td><td>Entrar con <code>cd</code></td></tr>
+            <tr><td><strong>t</strong></td><td>—</td><td>Sticky bit: solo el dueño del fichero, el del directorio o root pueden borrarlo</td></tr>
+          </tbody>
+        </table></div>
+
+        <h3 style="margin-top:22px">Comandos</h3>
+        <div class="cmd-list">
+          <pre class="cmd">chmod [ugoa][+-][rwx] fichero   <span class="c"># u dueño, g grupo, o otros, a todos</span></pre>
+          <pre class="cmd">chmod o-r /tmp/compartida      <span class="c"># quita a otros ver los nombres</span></pre>
+          <pre class="cmd">chown usuario fichero          <span class="c"># cambia el dueño (chown usuario:grupo cambia ambos)</span></pre>
+          <pre class="cmd">chgrp grupo fichero            <span class="c"># cambia el grupo</span></pre>
+          <pre class="cmd">sudo addgroup grupo
+sudo usermod -a -G grupo usuario  <span class="c"># mete un usuario en un grupo</span></pre>
+        </div>
+
+        <h3 style="margin-top:22px">Para que usu02 vea un fichero de usu01</h3>
+        <p>Un <code>r</code> para «otros» en el fichero <b>no sirve</b> si está dentro de un directorio cerrado. Hay tres opciones:</p>
+        <ul class="clean"><li>Dar permiso a otros para explorar el directorio (fácil, pero puedes dar permisos de más)</li><li>Usar un directorio vacío solo con el fichero a compartir</li><li><b>Usar ACLs</b> (lo mejor)</li></ul>
+        <div class="postits">
+          <div class="postit p"><span class="lab">Curiosidad de examen</span>Con <b>x sin r</b> en un directorio puedes entrar, pero no hacer <code>ls</code></div>
+          <div class="postit"><span class="lab">Lectura</span><code>drwxr-x---</code>: el dueño todo, el grupo ver y entrar, los otros <b>nada</b></div>
+          <div class="postit g"><span class="lab">Sticky</span><code>t</code> se ve al final: <code>drwxrwxrwt</code> (como en /tmp)</div>
+          <div class="postit b"><span class="lab">Practica</span>Pestaña <b>Laboratorio</b>: escribe cualquier permiso y te lo explica</div>
+        </div>
+      </article>
+
+      <!-- 10 ACLs -->
+      <article class="topic" id="t-acl" data-topic="acl" data-name="Listas de control de acceso">
+        <div class="topic-h">
+          <div><span class="kind k-prac">Práctica</span><h2>Listas de control de acceso (ACLs)</h2></div>
+          <button class="done-btn" data-done="acl" aria-pressed="false">Lo domino</button>
+        </div>
+        <p>Antes de nada: <code>sudo apt-get install acl</code>.</p>
+        <h3>El problema de los grupos</h3>
+        <p>Quieres que <code>conta01.txt</code> sea de lectura y escritura para conta02 e info01, y solo de lectura para info02. Con grupos tendrías que crear un grupo <code>info01conta02</code>, meter a los dos y cambiar el grupo del fichero. Para info02 solo te quedaría dar permiso a <b>otros</b>, y eso es un <b>agujero de seguridad</b>: se lo das a todos los usuarios.</p>
+        <div class="warn"><b>Erratas de los apuntes:</b> «dar lectura a otros» es <code>chmod o+r</code>, no <code>o+w</code>. Y para info02 (solo lectura) el ACL es <code>u:info02:r</code>, no <code>:w</code>.</div>
+        <h3 style="margin-top:22px">Comandos</h3>
+        <div class="cmd-list">
+          <pre class="cmd">setfacl -m u:usuario:rw fichero   <span class="c"># añadir o modificar</span></pre>
+          <pre class="cmd">setfacl -x u:usuario fichero      <span class="c"># quitar la entrada de un usuario</span></pre>
+          <pre class="cmd">setfacl -b fichero                <span class="c"># borrar todas las ACL</span></pre>
+          <pre class="cmd">getfacl fichero                   <span class="c"># consultar</span></pre>
+        </div>
+        <h3 style="margin-top:22px">Caso resuelto: gerente02 edita Contabilidad.txt de gerente01</h3>
+        <p><code>setfacl -m u:gerente02:rw Contabilidad.txt</code> no basta. <code>/home/gerente01</code> es <code>drwxr-x---</code>: los «otros» no pueden ni entrar. gerente01 tiene que darle también <b>x</b> sobre su carpeta:</p>
+        <pre class="cmd">setfacl -m u:gerente02:x /home/gerente01
+setfacl -m u:gerente02:rw /home/gerente01/Contabilidad.txt</pre>
+        <p class="muted" style="margin-top:10px">Si antes le habías dado <code>r</code> a la carpeta, el <code>-m ...:x</code> lo sustituye: queda solo <code>x</code>. No pasa nada, para abrir el fichero basta con entrar.</p>
+        <div class="good"><b>Receta segura:</b> primero <code>chmod go-rwx fichero</code> (o <code>chmod a-rwx</code>, como en los apuntes), después un <code>setfacl -m</code> por cada persona y, por último, <code>x</code> en la carpeta para quien lo necesite.</div>
+        <div class="postits">
+          <div class="postit big"><span class="lab">La clave de todo</span>Permiso en el fichero <b>+ x en cada carpeta</b> del camino</div>
+          <div class="postit p"><span class="lab">Ojo</span>Haz el <b>chmod antes</b> del setfacl. Si lo haces después, cambia la máscara y puede anular las ACL</div>
+          <div class="postit g"><span class="lab">Sin hacer nada</span>Si a alguien no le das ACL y los otros tienen <code>---</code>, ese usuario <b>no puede nada</b></div>
+          <div class="postit b"><span class="lab">Varios a la vez</span><code>setfacl -m u:luis:rw,u:eva:r f</code></div>
+        </div>
+      </article>
+
+    </div>
+  </div>
+</div>
+
+<!-- ============ LABORATORIO ============ -->
+<div class="panel" id="panel-lab" hidden>
+  <section class="wrap panel-pad">
+    <h2 class="sec-title">Laboratorio</h2>
+    <p class="sec-lead">Calculadoras para comprobar tus resultados y un traductor de permisos. Primero hazlo a mano y luego compara.</p>
+    <div class="lab-grid">
+      <div class="tool">
+        <span class="kind k-calc">Disponibilidad</span>
+        <h3 style="margin-top:8px">Tiempo caído al año</h3>
+        <p class="desc">Caído = 8.760 h × (100 − %) ÷ 100</p>
+        <div class="fields"><div class="field"><label for="n-pct">Disponibilidad (%)</label><input id="n-pct" type="number" step="0.001" min="0" max="100" value="99.99"></div></div>
+        <div class="result"><div class="big" id="n-out">—</div><div class="sub" id="n-sub"></div></div>
+      </div>
+      <div class="tool">
+        <span class="kind k-calc">SAI</span>
+        <h3 style="margin-top:8px">¿Qué SAI compro?</h3>
+        <p class="desc">VA = W ÷ FdP × (1 + margen)</p>
+        <div class="fields">
+          <div class="field"><label for="s-w">Consumo (W)</label><input id="s-w" type="number" min="0" value="1300"></div>
+          <div class="field"><label for="s-f">FdP</label><input id="s-f" type="number" step="0.01" min="0.1" max="1" value="0.75"></div>
+          <div class="field"><label for="s-m">Margen (%)</label><input id="s-m" type="number" min="0" value="20"></div>
+        </div>
+        <div class="result"><div class="big" id="s-out">—</div><div class="sub" id="s-sub"></div></div>
+      </div>
+      <div class="tool">
+        <span class="kind k-calc">SAI</span>
+        <h3 style="margin-top:8px">Vatios que da un SAI</h3>
+        <p class="desc">W = VA × FdP · FdP = W ÷ VA</p>
+        <div class="fields">
+          <div class="field"><label for="w-va">Potencia (VA)</label><input id="w-va" type="number" min="0" value="2000"></div>
+          <div class="field"><label for="w-f">FdP</label><input id="w-f" type="number" step="0.01" min="0.1" max="1" value="0.75"></div>
+        </div>
+        <div class="result"><div class="big" id="w-out">—</div><div class="sub">Compáralo con la suma del consumo de los equipos.</div></div>
+      </div>
+      <div class="tool">
+        <span class="kind k-calc">SAI</span>
+        <h3 style="margin-top:8px">Autonomía de la batería</h3>
+        <p class="desc">Wh = V × Ah · Autonomía = Wh ÷ W</p>
+        <div class="fields">
+          <div class="field"><label for="a-v">Tensión (V)</label><input id="a-v" type="number" min="0" value="12"></div>
+          <div class="field"><label for="a-ah">Capacidad (Ah)</label><input id="a-ah" type="number" min="0" value="7"></div>
+          <div class="field"><label for="a-w">Consumo (W)</label><input id="a-w" type="number" min="0" value="150"></div>
+        </div>
+        <div class="result"><div class="big" id="a-out">—</div><div class="sub" id="a-sub"></div></div>
+      </div>
+      <div class="tool wide">
+        <span class="kind k-prac">Permisos</span>
+        <h3 style="margin-top:8px">Traductor de permisos</h3>
+        <p class="desc">Escribe los 10 caracteres de <code>ls -l</code> o pulsa un ejemplo.</p>
+        <div class="presets" id="presets">
+          <button class="preset">drwxr-x---</button><button class="preset">-rw-r-----</button><button class="preset">-rw-rw-r--</button><button class="preset">drwxrwxrwt</button><button class="preset">d--x------</button><button class="preset">-rwxr-xr-x</button>
+        </div>
+        <label for="perm-in" class="muted" style="font-size:.8rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase">Permisos</label>
+        <input id="perm-in" class="perm-in" value="drwxr-x---" maxlength="10" spellcheck="false" autocomplete="off">
+        <div id="perm-out"></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ============ FLASHCARDS ============ -->
+<div class="panel" id="panel-flash" hidden>
+  <section class="wrap panel-pad">
+    <h2 class="sec-title" style="text-align:center">Flashcards</h2>
+    <p class="sec-lead" style="text-align:center;margin-inline:auto">Intenta responder en voz alta antes de girar la tarjeta. Si no la sabías, márcala para repasar.</p>
+    <div class="fc-wrap">
+      <div class="fc-top"><span id="fc-pos">1 / 30</span><span><span style="color:var(--ok)">Me la sé: <b id="fc-ok">0</b></span> · <span style="color:var(--bad)">Repasar: <b id="fc-bad">0</b></span></span></div>
+      <button class="fc" id="fc" aria-label="Girar tarjeta">
+        <div class="fc-inner">
+          <div class="fc-face fc-front"><div class="q" id="fc-q"></div><div class="fc-hint">Pulsa para ver la respuesta</div></div>
+          <div class="fc-face fc-back"><div id="fc-a"></div><div class="fc-hint">Respuesta</div></div>
+        </div>
+      </button>
+      <div class="fc-ctrl">
+        <button class="btn" id="fc-prev">← Anterior</button>
+        <button class="btn badb" id="fc-no">Repasar</button>
+        <button class="btn okb" id="fc-yes">Me la sé</button>
+        <button class="btn" id="fc-next">Siguiente →</button>
+      </div>
+      <div class="fc-ctrl">
+        <button class="btn" id="fc-shuffle">Barajar</button>
+        <button class="btn" id="fc-only">Solo las de repasar</button>
+        <button class="btn" id="fc-all">Todas</button>
+      </div>
+      <div class="kbd">Teclado: espacio gira · ← → navegar</div>
+    </div>
+  </section>
+</div>
+
+<!-- ============ TEST ============ -->
+<div class="panel" id="panel-test" hidden>
+  <section class="wrap panel-pad">
+    <h2 class="sec-title" style="text-align:center">Test tipo examen</h2>
+    <p class="sec-lead" style="text-align:center;margin-inline:auto">27 preguntas en orden aleatorio. Cada respuesta trae su explicación.</p>
+    <div class="quiz" id="quiz"></div>
+  </section>
+</div>
+
+<!-- ============ EJERCICIOS ============ -->
+<div class="panel" id="panel-ejercicios" hidden>
+  <section class="wrap panel-pad">
+    <h2 class="sec-title">Ejercicios prácticos</h2>
+    <p class="sec-lead">Escribe tu respuesta (se guarda en este navegador) y después abre la solución.</p>
+    <div class="ex-list">
+
+      <div class="ex"><div class="ex-h"><span class="kind k-calc">Nueves</span><h3>Tiempo caído</h3></div>
+        <p>Una empresa contrata un hosting con disponibilidad de <b>4 nueves</b> y otro con <b>2 nueves</b>. ¿Cuánto tiempo puede estar caído cada uno al año? ¿Cuántas veces más?</p>
+        <textarea id="ex-1" aria-label="Tu respuesta"></textarea>
+        <details><summary>Ver solución</summary><div class="sol">
+          <p>4 nueves: 8.760 × 0,01 ÷ 100 = 0,876 h = <b>52,56 min</b> (52 min 34 s).</p>
+          <p>2 nueves: 8.760 × 1 ÷ 100 = <b>87,6 h</b> (3 días, 15 h y 36 min).</p>
+          <p style="margin:0">El de 2 nueves puede caer <b>100 veces más</b> (dos nueves de diferencia = ×10 × 10).</p>
+        </div></details>
+      </div>
+
+      <div class="ex"><div class="ex-h"><span class="kind k-calc">SAI</span><h3>Elegir un SAI</h3></div>
+        <p>Vas a proteger 2 servidores de <b>450 W</b> y un switch de <b>60 W</b>. El fabricante no indica el factor de potencia. ¿Qué potencia aparente debe tener el SAI con un margen del 25 %?</p>
+        <textarea id="ex-2" aria-label="Tu respuesta"></textarea>
+        <details><summary>Ver solución</summary><div class="sol">
+          <p>Consumo total: 450 + 450 + 60 = <b>960 W</b>.</p>
+          <p>Sin FdP usamos 0,75: 960 ÷ 0,75 = <b>1280 VA</b>.</p>
+          <p style="margin:0">Con un 25 % de margen: 1280 × 1,25 = <b>1600 VA</b>.</p>
+        </div></details>
+      </div>
+
+      <div class="ex"><div class="ex-h"><span class="kind k-calc">SAI</span><h3>Factor de potencia</h3></div>
+        <p>Un SAI se anuncia con <b>1500 VA</b> y <b>850 W</b>. ¿Qué factor de potencia tiene? ¿Podrías conectar dos equipos de 450 W?</p>
+        <textarea id="ex-3" aria-label="Tu respuesta"></textarea>
+        <details><summary>Ver solución</summary><div class="sol">
+          <p>FdP = W ÷ VA = 850 ÷ 1500 = <b>0,57</b>.</p>
+          <p style="margin:0">Dos equipos de 450 W suman 900 W, más que los 850 W eficaces: <b>no</b>.</p>
+        </div></details>
+      </div>
+
+      <div class="ex"><div class="ex-h"><span class="kind k-calc">SAI</span><h3>Autonomía</h3></div>
+        <p>La batería de un SAI es de <b>12 V y 9 Ah</b>. Tiene conectado un PC de <b>120 W</b> y un monitor de <b>40 W</b>. ¿Cuántos minutos aguanta? ¿Y si apagas el monitor?</p>
+        <textarea id="ex-4" aria-label="Tu respuesta"></textarea>
+        <details><summary>Ver solución</summary><div class="sol">
+          <p>Energía: 12 × 9 = <b>108 Wh</b>.</p>
+          <p>Con los dos: 108 ÷ 160 = 0,675 h × 60 = <b>40,5 min</b>.</p>
+          <p style="margin:0">Solo el PC: 108 ÷ 120 = 0,9 h × 60 = <b>54 min</b>.</p>
+        </div></details>
+      </div>
+
+      <div class="ex"><div class="ex-h"><span class="kind k-teo">Teoría</span><h3>Clasificar amenazas</h3></div>
+        <p>Di si son <b>físicas o lógicas</b>: a) un ataque DDoS, b) el aire acondicionado del CPD se estropea, c) un empleado configura mal el cortafuegos, d) roban un portátil, e) un correo falso pide la contraseña del banco.</p>
+        <textarea id="ex-5" aria-label="Tu respuesta"></textarea>
+        <details><summary>Ver solución</summary><div class="sol">
+          <p style="margin:0">a) <b>Lógica</b> (DoS/DDoS) · b) <b>Física</b> (sobrecalentamiento) · c) <b>Lógica</b> (error de configuración) · d) <b>Física</b> (robo) · e) <b>Lógica</b> (phishing).</p>
+        </div></details>
+      </div>
+
+      <div class="ex"><div class="ex-h"><span class="kind k-prac">ACLs</span><h3>Las notas de ana</h3></div>
+        <p>El usuario <b>ana</b> tiene <code>/home/ana/notas.txt</code>. Haz que <b>luis</b> pueda leerlo y modificarlo, que <b>eva</b> solo pueda leerlo y que <b>nadie más</b> pueda hacer nada. Ojo: tienen que poder llegar al fichero.</p>
+        <textarea id="ex-6" aria-label="Tus comandos"></textarea>
+        <details><summary>Ver solución</summary><div class="sol">
+          <p>Como ana:</p>
+          <pre class="cmd">chmod go-rwx /home/ana/notas.txt
+setfacl -m u:luis:rw /home/ana/notas.txt
+setfacl -m u:eva:r /home/ana/notas.txt
+setfacl -m u:luis:x /home/ana
+setfacl -m u:eva:x /home/ana
+getfacl /home/ana/notas.txt</pre>
+          <p style="margin:0">El <code>chmod</code> va primero para que no anule las ACL. Sin la <code>x</code> en <code>/home/ana</code>, ni luis ni eva podrían abrir el fichero.</p>
+        </div></details>
+      </div>
+
+      <div class="ex"><div class="ex-h"><span class="kind k-prac">ACLs</span><h3>Datos especiales</h3></div>
+        <p>El usuario <b>usuario</b> crea <code>fichero.txt</code>. Haz que info01 pueda leerlo pero no escribir, info02 leerlo y modificarlo, conta01 no pueda hacer <b>nada</b> y conta02 solo leerlo.</p>
+        <textarea id="ex-7" aria-label="Tus comandos"></textarea>
+        <details><summary>Ver solución</summary><div class="sol">
+          <pre class="cmd">chmod a-rwx fichero.txt
+setfacl -m u:info01:r fichero.txt
+setfacl -m u:info02:rw fichero.txt
+setfacl -m u:conta02:r fichero.txt</pre>
+          <p>Para conta01 no hace falta nada: ya se quitaron todos los permisos.</p>
+          <p style="margin:0">Para que puedan llegar al fichero, añade <code>x</code> en <code>/home/usuario</code> para info01, info02 y conta02 (los apuntes no lo ponen, pero sin eso no funciona).</p>
+        </div></details>
+      </div>
+
+      <div class="ex"><div class="ex-h"><span class="kind k-prac">Permisos</span><h3>Interpretar una línea</h3></div>
+        <p>Explica qué significa: <code>drwxr-x---  2 gerente01 gerente01 4096 oct 8 10:30 gerente01</code></p>
+        <textarea id="ex-8" aria-label="Tu respuesta"></textarea>
+        <details><summary>Ver solución</summary><div class="sol">
+          <p><b>d</b>: es un directorio.</p>
+          <p><b>rwx</b> (dueño gerente01): ve los nombres, crea nombres nuevos y entra.</p>
+          <p><b>r-x</b> (grupo gerente01): ve los nombres y entra, pero no crea ficheros.</p>
+          <p style="margin:0"><b>---</b> (otros): ni ven los nombres, ni crean, ni entran.</p>
+        </div></details>
+      </div>
+
+      <div class="ex"><div class="ex-h"><span class="kind k-prac">gpg</span><h3>Enviar un fichero cifrado</h3></div>
+        <p>Quieres mandarle a <b>pepito@gmail.com</b> el fichero <code>nominas.pdf</code> cifrado. Él ya te ha pasado su clave pública en <code>pepito.gpg</code>. Escribe los comandos. ¿Con qué clave lo descifrará él?</p>
+        <textarea id="ex-9" aria-label="Tus comandos"></textarea>
+        <details><summary>Ver solución</summary><div class="sol">
+          <pre class="cmd">gpg --import pepito.gpg
+gpg --list-keys
+gpg --output nominas.pdf.gpg --encrypt --recipient pepito@gmail.com nominas.pdf</pre>
+          <p style="margin:0">Pepito lo descifra con <b>su clave privada</b>: <code>gpg --decrypt nominas.pdf.gpg</code></p>
+        </div></details>
+      </div>
+
+      <div class="ex"><div class="ex-h"><span class="kind k-teo">Teoría</span><h3>Seguridad física de un CPD</h3></div>
+        <p>Una empresa monta una sala de servidores. Propón dos medidas para cada amenaza: <b>robo</b>, <b>incendio</b> y <b>problemas eléctricos</b>.</p>
+        <textarea id="ex-10" aria-label="Tu respuesta"></textarea>
+        <details><summary>Ver solución</summary><div class="sol">
+          <p><b>Robo:</b> control de acceso con tarjeta o biometría, racks cerrados, anclajes, videovigilancia, inventario, cifrado de discos (no evita el robo, pero protege los datos).</p>
+          <p><b>Incendio:</b> detectores de humo, extinción automática con agentes gaseosos, extintores para instalaciones eléctricas, materiales ignífugos, planes de evacuación.</p>
+          <p style="margin:0"><b>Eléctricos:</b> SAI, protectores contra sobretensiones, generador de emergencia, fuentes de alimentación redundantes.</p>
+        </div></details>
+      </div>
+
+    </div>
+  </section>
+</div>
+</main>
+
+<footer><div class="wrap">Hecho a partir de tus apuntes de SAD · Tema 1. El progreso y las respuestas se guardan solo en este navegador.</div></footer>
+
+<script>
+(function(){
+  var NS='sadt1:';
+  var store={
+    get:function(k,d){try{var v=localStorage.getItem(NS+k);return v===null?d:JSON.parse(v);}catch(e){return d;}},
+    set:function(k,v){try{localStorage.setItem(NS+k,JSON.stringify(v));}catch(e){}}
+  };
+  function $(s,r){return (r||document).querySelector(s);}
+  function $$(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s));}
+
+  /* ---------- Pestañas ---------- */
+  var tabs=$$('[data-tab]');
+  function showTab(id,push){
+    if(!document.getElementById('panel-'+id)) return;
+    tabs.forEach(function(b){b.setAttribute('aria-selected',String(b.dataset.tab===id));});
+    $$('.panel').forEach(function(p){p.hidden=(p.id!=='panel-'+id);});
+    store.set('tab',id);
+    if(push){try{history.replaceState(null,'','#'+id);}catch(e){} window.scrollTo(0,0);}
+  }
+  tabs.forEach(function(b){b.addEventListener('click',function(){showTab(b.dataset.tab,true);});});
+  var h=(location.hash||'').slice(1);
+  showTab(document.getElementById('panel-'+h)?h:store.get('tab','apuntes'),false);
+
+  /* ---------- Cuenta atrás ---------- */
+  (function(){
+    var exam=new Date(2026,9,19,8,0,0), now=new Date(), diff=exam-now, el=$('#countdown');
+    if(diff>48*3600e3) el.textContent='Faltan '+Math.ceil(diff/864e5)+' días';
+    else if(diff>0) el.textContent='Faltan ~'+Math.max(1,Math.round(diff/3600e3))+' h';
+    else el.textContent='¡Mucha suerte!';
+  })();
+
+  /* ---------- Índice y progreso ---------- */
+  var topics=$$('.topic');
+  var done=store.get('done',{});
+  var idx=$('#index');
+  topics.forEach(function(t){
+    var li=document.createElement('li'), a=document.createElement('a');
+    a.href='#'+t.id; a.dataset.for=t.dataset.topic;
+    a.innerHTML='<span class="dot"></span><span>'+t.dataset.name+'</span>';
+    a.addEventListener('click',function(e){e.preventDefault();t.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});});
+    li.appendChild(a); idx.appendChild(li);
+  });
+  function renderProgress(){
+    var n=0;
+    topics.forEach(function(t){
+      var k=t.dataset.topic, on=!!done[k]; if(on) n++;
+      var b=$('[data-done="'+k+'"]'); b.setAttribute('aria-pressed',String(on)); b.textContent=on?'Dominado':'Lo domino';
+      var a=$('[data-for="'+k+'"]'); a.classList.toggle('is-done',on);
+    });
+    $('#prog-n').textContent=n; $('#prog-t').textContent=topics.length;
+    $('#prog-bar').style.width=(n/topics.length*100)+'%';
+  }
+  $$('[data-done]').forEach(function(b){b.addEventListener('click',function(){var k=b.dataset.done;done[k]=!done[k];store.set('done',done);renderProgress();});});
+  renderProgress();
+
+  /* ---------- Plan ---------- */
+  var plan=store.get('plan',{});
+  $$('#plan input').forEach(function(i){i.checked=!!plan[i.id];i.addEventListener('change',function(){plan[i.id]=i.checked;store.set('plan',plan);});});
+
+  /* ---------- Copiar ---------- */
+  $$('pre.cmd').forEach(function(pre){
+    var b=document.createElement('button'); b.className='copy'; b.type='button'; b.textContent='Copiar';
+    b.addEventListener('click',function(){
+      var txt=Array.prototype.map.call(pre.childNodes,function(n){return n===b?'':(n.classList&&n.classList.contains('c')?'':n.textContent);}).join('').replace(/[ \t]+$/gm,'').trim();
+      function ok(){b.textContent='Copiado';setTimeout(function(){b.textContent='Copiar';},1400);}
+      try{navigator.clipboard.writeText(txt).then(ok,function(){sel();});}catch(e){sel();}
+      function sel(){var r=document.createRange();r.selectNodeContents(pre);var s=getSelection();s.removeAllRanges();s.addRange(r);b.textContent='Seleccionado';setTimeout(function(){b.textContent='Copiar';},1400);}
+    });
+    pre.appendChild(b);
+  });
+
+  /* ---------- Calculadoras ---------- */
+  function num(id){var v=parseFloat(String($(id).value).replace(',','.'));return isNaN(v)?null:v;}
+  function fmt(n,d){return n.toLocaleString('es-ES',{maximumFractionDigits:d==null?2:d});}
+  function dur(h){
+    var s=Math.round(h*3600), d=Math.floor(s/86400); s-=d*86400; var hh=Math.floor(s/3600); s-=hh*3600; var m=Math.floor(s/60); s-=m*60;
+    var p=[]; if(d) p.push(d+(d===1?' día':' días')); if(hh) p.push(hh+' h'); if(m) p.push(m+' min'); if(s||!p.length) p.push(s+' s');
+    return p.join(' ');
+  }
+  function calcN(){
+    var p=num('#n-pct');
+    if(p===null||p<0||p>100){$('#n-out').textContent='—';$('#n-sub').textContent='Escribe un porcentaje entre 0 y 100.';return;}
+    var hrs=8760*(100-p)/100;
+    $('#n-out').textContent=dur(hrs);
+    $('#n-sub').textContent='= '+fmt(hrs,4)+' h = '+fmt(hrs*60,2)+' min al año';
+  }
+  function calcS(){
+    var w=num('#s-w'),f=num('#s-f'),m=num('#s-m');
+    if(!w||!f||m===null){$('#s-out').textContent='—';$('#s-sub').textContent='';return;}
+    var va=w/f, vam=va*(1+m/100);
+    $('#s-out').textContent=fmt(Math.round(vam),0)+' VA';
+    $('#s-sub').textContent=fmt(w,0)+' ÷ '+fmt(f)+' = '+fmt(va,0)+' VA, y × '+fmt(1+m/100)+' de margen';
+  }
+  function calcW(){
+    var va=num('#w-va'),f=num('#w-f');
+    $('#w-out').textContent=(va&&f)?fmt(va*f,0)+' W':'—';
+  }
+  function calcA(){
+    var v=num('#a-v'),ah=num('#a-ah'),w=num('#a-w');
+    if(!v||!ah||!w){$('#a-out').textContent='—';$('#a-sub').textContent='';return;}
+    var wh=v*ah, hr=wh/w;
+    $('#a-out').textContent=fmt(hr*60,1)+' min';
+    $('#a-sub').textContent=fmt(v)+' V × '+fmt(ah)+' Ah = '+fmt(wh)+' Wh · '+fmt(wh)+' ÷ '+fmt(w)+' W = '+fmt(hr,3)+' h';
+  }
+  [['#n-pct',calcN],['#s-w',calcS],['#s-f',calcS],['#s-m',calcS],['#w-va',calcW],['#w-f',calcW],['#a-v',calcA],['#a-ah',calcA],['#a-w',calcA]].forEach(function(x){$(x[0]).addEventListener('input',x[1]);});
+  calcN();calcS();calcW();calcA();
+
+  /* ---------- Traductor de permisos ---------- */
+  var TYPES={'-':'Fichero normal','d':'Directorio','l':'Enlace','s':'Socket','c':'Dispositivo de caracteres','b':'Dispositivo de bloques','p':'Tubería (pipe)'};
+  function decode(){
+    var s=$('#perm-in').value.trim(), out=$('#perm-out');
+    if(!/^[-dlscbp][r-][w-][xsS-][r-][w-][xsS-][r-][w-][xtT-]$/.test(s)){
+      out.innerHTML='<p class="perm-meta">Escribe 10 caracteres, por ejemplo <b>drwxr-x---</b>. El primero es el tipo; luego van tres grupos de r, w, x o -.</p>';return;
+    }
+    var dir=s[0]==='d';
+    var M=dir?{r:'Ver los nombres de los ficheros (ls)',w:'Crear o borrar nombres de ficheros',x:'Entrar en el directorio (cd)'}
+             :{r:'Leer el contenido',w:'Modificar el contenido',x:'Ejecutarlo'};
+    var who=[['u','Dueño'],['g','Grupo'],['o','Otros']], oct='', extra=[], html='<div class="perm-out">';
+    who.forEach(function(w,i){
+      var t=s.substr(1+i*3,3), r=t[0]==='r', wr=t[1]==='w', xc=t[2], x=(xc==='x'||xc==='s'||xc==='t');
+      oct+=String((r?4:0)+(wr?2:0)+(x?1:0));
+      if(xc==='s'||xc==='S') extra.push(i===0?'setuid (s en el dueño)':'setgid (s en el grupo)');
+      if(xc==='t'||xc==='T') extra.push('sticky bit (t): solo el dueño del fichero, del directorio o root pueden borrar');
+      html+='<div class="perm-col '+w[0]+'"><h4>'+w[1]+' · '+t+'</h4><ul>'+
+        '<li class="'+(r?'yes':'no')+'">'+M.r+'</li>'+
+        '<li class="'+(wr?'yes':'no')+'">'+M.w+'</li>'+
+        '<li class="'+(x?'yes':'no')+'">'+M.x+'</li></ul></div>';
+    });
+    html+='</div><p class="perm-meta"><b>'+TYPES[s[0]]+'</b> · En octal: <b>'+oct+'</b> (r = 4, w = 2, x = 1)'+(extra.length?' · '+extra.join(' · '):'')+'</p>';
+    if(dir&&s[9]==='-'&&s[7]==='-') html+='<p class="perm-meta">Los «otros» no pueden entrar: aunque un fichero de dentro tenga permisos para ellos, no llegarán a él. Para un usuario concreto usa <b>setfacl -m u:usuario:x</b> en este directorio.</p>';
+    if(dir) {
+      var rx=[1,4,7].filter(function(i){return s[i]==='-'&&/[xst]/.test(s[i+2]);});
+      if(rx.length) html+='<p class="perm-meta">Hay quien tiene <b>x sin r</b>: puede entrar con cd pero no ver los nombres con ls.</p>';
+    }
+    out.innerHTML=html;
+  }
+  $('#perm-in').addEventListener('input',decode);
+  $$('#presets .preset').forEach(function(b){b.addEventListener('click',function(){$('#perm-in').value=b.textContent;decode();});});
+  decode();
+
+  /* ---------- Flashcards ---------- */
+  var CARDS=[
+    ['¿Qué es la fiabilidad?','Que el SI ofrezca la información <b>sin pausas entre peticiones</b>'],
+    ['¿Qué es la confidencialidad?','Que la información solo se muestre a las personas <b>autorizadas</b>'],
+    ['¿Qué es la integridad?','Que la información <b>no se altere</b> por causas involuntarias'],
+    ['¿Qué es la disponibilidad?','Responder a las peticiones con las <b>mínimas pausas</b> por causas involuntarias'],
+    ['3 nueves: ¿cuánto puede estar caído al año?','99,9 % → <b>8,76 h</b> (8 h 45 min 36 s)'],
+    ['5 nueves: ¿cuánto puede estar caído al año?','99,999 % → <b>5 min 15 s</b>'],
+    ['Fórmula del tiempo caído','<b>8.760 h × (100 − %) ÷ 100</b>'],
+    ['¿Qué es una vulnerabilidad?','Una <b>debilidad</b> del sistema que puede aprovecharse para comprometer su seguridad'],
+    ['¿Qué es una amenaza?','Circunstancia, agente o acontecimiento que puede <b>provocar un daño</b> a un sistema'],
+    ['¿Qué es un CVE?','El informe público de una vulnerabilidad conocida (<b>Common Vulnerabilities and Exposures</b>)'],
+    ['Los 3 elementos vulnerables de un SI','<b>Hardware, software y datos</b>. Los datos son el activo más valioso'],
+    ['¿Actualización automática en equipos críticos?','<b>No</b>. Se activa en otros equipos que hacen de «cobaya»'],
+    ['Cuatro amenazas físicas','Robo, incendio o inundación, corte eléctrico, sobrecalentamiento (también daño intencionado, acceso físico, avería de disco)'],
+    ['Cuatro amenazas lógicas','Malware, phishing, DoS/DDoS, errores de configuración (también robo de credenciales, explotación, borrado de datos)'],
+    ['¿El cifrado de discos evita el robo?','<b>No</b>. Impide que el ladrón acceda a los datos'],
+    ['¿Con qué se apaga un incendio en un CPD?','Con <b>agentes gaseosos</b>, evitando el agua sobre los equipos'],
+    ['Seis problemas de la alimentación eléctrica','Cortes, sobretensiones, bajadas de tensión, picos, microcortes y variaciones de frecuencia'],
+    ['Potencia eficaz de un SAI','<b>W = VA × FdP</b> (0,75 si no lo dicen)'],
+    ['¿Qué VA necesito para X vatios?','<b>VA = W ÷ 0,75</b>, y × 1,2–1,3 de margen'],
+    ['Autonomía de un SAI','<b>Wh ÷ W</b> (en horas), con Wh = V × Ah'],
+    ['Subida de tensión puntual vs sostenida','Puntual <b>≤ 4 ms</b>: daños en días o semanas. Sostenida <b>&gt; 4 ms</b>: daños en minutos o instantáneos'],
+    ['Bajadas de tensión e interrupciones: consecuencias','Bajadas → daños a <b>largo plazo</b>. Interrupciones → <b>perjuicios económicos</b>'],
+    ['Medidas de seguridad lógica','Claves, tarjetas, copias, ACLs, control horario, roles, cortafuegos, distribución de carga, redundancia, criptografía'],
+    ['¿Qué es la criptografía asimétrica?','Dos claves: <b>pública</b> (se reparte) y <b>privada</b> (te la guardas). Con una no se puede averiguar la otra'],
+    ['gpg: crear las claves','<code>gpg --full-generate-key</code>'],
+    ['gpg: cifrar para pepito','<code>gpg --encrypt --recipient pepito@gmail.com fichero</code>'],
+    ['¿Qué significa [SCEA]?','<b>S</b> firmar · <b>C</b> certificar · <b>E</b> cifrar · <b>A</b> autenticar'],
+    ['r, w y x en un directorio','<b>r</b> ver nombres · <b>w</b> crear o borrar nombres · <b>x</b> entrar (cd)'],
+    ['¿Qué hace el sticky bit (t)?','Solo el <b>dueño</b> del fichero, el del directorio o <b>root</b> pueden borrarlo'],
+    ['ACL: dar rw a luis','<code>setfacl -m u:luis:rw fichero</code>'],
+    ['ACL: quitar una entrada / borrar todas','<code>setfacl -x u:luis fichero</code><br><code>setfacl -b fichero</code>'],
+    ['gerente02 tiene rw en el fichero pero no puede abrirlo. ¿Por qué?','Le falta <b>x en /home/gerente01</b>:<br><code>setfacl -m u:gerente02:x /home/gerente01</code>']
+  ];
+  var fcBad=store.get('fcBad',{}), fcOk={}, deck=CARDS.map(function(_,i){return i;}), pos=0, fcEl=$('#fc');
+  function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
+  function renderCard(){
+    if(!deck.length){deck=CARDS.map(function(_,i){return i;});}
+    if(pos>=deck.length) pos=0; if(pos<0) pos=deck.length-1;
+    var c=CARDS[deck[pos]];
+    fcEl.classList.remove('flip');
+    $('#fc-q').innerHTML=c[0]; $('#fc-a').innerHTML=c[1];
+    $('#fc-pos').textContent=(pos+1)+' / '+deck.length;
+    $('#fc-ok').textContent=Object.keys(fcOk).length;
+    $('#fc-bad').textContent=Object.keys(fcBad).length;
+  }
+  fcEl.addEventListener('click',function(){fcEl.classList.toggle('flip');});
+  $('#fc-prev').addEventListener('click',function(){pos--;renderCard();});
+  $('#fc-next').addEventListener('click',function(){pos++;renderCard();});
+  $('#fc-yes').addEventListener('click',function(){var k=deck[pos];fcOk[k]=1;delete fcBad[k];store.set('fcBad',fcBad);pos++;renderCard();});
+  $('#fc-no').addEventListener('click',function(){var k=deck[pos];fcBad[k]=1;delete fcOk[k];store.set('fcBad',fcBad);pos++;renderCard();});
+  $('#fc-shuffle').addEventListener('click',function(){shuffle(deck);pos=0;renderCard();});
+  $('#fc-only').addEventListener('click',function(){var d=Object.keys(fcBad).map(Number);if(!d.length){$('#fc-only').textContent='No hay ninguna para repasar';setTimeout(function(){$('#fc-only').textContent='Solo las de repasar';},1600);return;}deck=d;pos=0;renderCard();});
+  $('#fc-all').addEventListener('click',function(){deck=CARDS.map(function(_,i){return i;});pos=0;renderCard();});
+  document.addEventListener('keydown',function(e){
+    if($('#panel-flash').hidden) return;
+    var tg=e.target.tagName; if(tg==='INPUT'||tg==='TEXTAREA') return;
+    if(e.key===' '){e.preventDefault();fcEl.classList.toggle('flip');}
+    else if(e.key==='ArrowRight'){pos++;renderCard();}
+    else if(e.key==='ArrowLeft'){pos--;renderCard();}
+  });
+  renderCard();
+
+  /* ---------- Test ---------- */
+  var Q=[
+    {q:'Capacidad de conseguir que la información solo se muestre a las personas autorizadas:',o:['Integridad','Confidencialidad','Disponibilidad','Fiabilidad'],a:1,e:'<b>Confidencialidad</b>. La integridad es que no se altere y la disponibilidad que responda con las mínimas pausas.'},
+    {q:'Capacidad de conseguir que la información no se altere por causas involuntarias:',o:['Integridad','Fiabilidad','Confidencialidad','Disponibilidad'],a:0,e:'Es la <b>integridad</b>.'},
+    {q:'Un sistema con disponibilidad del 99,99 % puede estar caído al año unos…',o:['8,76 horas','5,26 minutos','52,56 minutos','87,6 horas'],a:2,e:'8.760 × 0,01 ÷ 100 = 0,876 h = <b>52,56 min</b>. Son 4 nueves.'},
+    {q:'¿Cuántos «nueves» tiene un sistema disponible el 99,9 % del tiempo?',o:['2','3','4','5'],a:1,e:'99,9 % = <b>3 nueves</b>: puede caer 8,76 h al año.'},
+    {q:'Una vulnerabilidad es…',o:['Un agente que provoca daños en el sistema','Un programa malicioso','Una debilidad del sistema que puede aprovecharse para comprometer su seguridad','Un informe CVE'],a:2,e:'Vulnerabilidad = <b>punto débil</b>. Lo que causa el daño es la amenaza.'},
+    {q:'¿Cuál de estas es una amenaza física?',o:['Phishing','Sobrecalentamiento','Ataque DoS','Error de configuración'],a:1,e:'El <b>sobrecalentamiento</b> afecta físicamente al equipo. Las otras tres son lógicas.'},
+    {q:'¿Cuál de estas es una amenaza lógica?',o:['Inundación','Avería de un disco duro','Error de configuración','Robo de un servidor'],a:2,e:'Los <b>errores de configuración</b> son amenaza lógica, aunque no haya un atacante.'},
+    {q:'¿Qué consigue el cifrado de discos frente al robo de un equipo?',o:['Evita que lo roben','Impide que el ladrón acceda a los datos','Localiza el equipo robado','Borra los datos automáticamente'],a:1,e:'El cifrado <b>no evita el robo</b>, pero impide que se lean los datos.'},
+    {q:'En un centro de datos, para apagar un incendio sin dañar los equipos se usan…',o:['Rociadores de agua','Extintores de espuma','Agentes gaseosos','Arena'],a:2,e:'<b>Agentes gaseosos</b>, evitando en determinadas circunstancias el agua sobre los equipos.'},
+    {q:'¿Qué es lo MÁS importante que aporta un SAI durante un corte de luz?',o:['Que los equipos funcionen indefinidamente','Tiempo para apagar los equipos correctamente','Más velocidad de proceso','Protección frente a virus'],a:1,e:'Mantiene los equipos un rato y, sobre todo, da <b>tiempo para apagarlos bien</b>.'},
+    {q:'Un SAI indica solo 2000 VA. ¿Qué potencia eficaz tomamos?',o:['2000 W','2667 W','1500 W','1000 W'],a:2,e:'Sin FdP usamos 0,75: 2000 × 0,75 = <b>1500 W</b>.'},
+    {q:'Un SAI se anuncia con 1500 VA y 850 W. Su factor de potencia es aproximadamente…',o:['0,57','0,75','1,76','0,85'],a:0,e:'FdP = W ÷ VA = 850 ÷ 1500 ≈ <b>0,57</b>.'},
+    {q:'Unos servidores consumen 1300 W. Sin FdP y con un 20 % de margen, ¿qué SAI buscamos?',o:['1560 VA','1733 VA','2080 VA','1300 VA'],a:2,e:'1300 ÷ 0,75 = 1733 VA; × 1,2 = <b>2080 VA</b>.'},
+    {q:'Una batería de 12 V y 7 Ah almacena…',o:['19 Wh','84 Wh','84 W','1,7 Wh'],a:1,e:'Wh = V × Ah = 12 × 7 = <b>84 Wh</b>. Es energía (Wh), no potencia (W).'},
+    {q:'Con 84 Wh y un consumo de 150 W, la autonomía es de unos…',o:['56 min','34 min','1 h 47 min','17 min'],a:1,e:'84 ÷ 150 = 0,56 h × 60 = <b>33,6 min</b>.'},
+    {q:'Una subida de tensión sostenida…',o:['Dura ≤ 4 ms y daña en días o semanas','Dura > 4 ms y daña en minutos o al instante','Produce daños a largo plazo','Solo produce perjuicios económicos'],a:1,e:'Sostenida = <b>más de 4 ms</b>, daños en minutos o instantáneos.'},
+    {q:'¿Qué indica la capacidad en Wh de la batería de un SAI?',o:['Qué carga máxima soporta','Cuánta energía almacena, y con el consumo, cuánto dura','La tensión de salida','El factor de potencia'],a:1,e:'Los <b>Wh</b> dicen cuánto tiempo dura. La carga que soporta la dicen los VA o W.'},
+    {q:'¿Cuál de estas medidas es de seguridad LÓGICA?',o:['Extintores','Anclajes físicos','Listas de control de acceso','Detectores de humo'],a:2,e:'Las <b>listas de control de acceso</b> restringen el acceso a los datos según la persona.'},
+    {q:'En gpg, para enviar un fichero cifrado a pepito, se cifra con…',o:['Mi clave privada','La clave pública de pepito','La clave privada de pepito','Mi certificado de revocación'],a:1,e:'Con la <b>clave pública del destinatario</b>. Solo él podrá descifrarlo con su privada.'},
+    {q:'¿Para qué sirve el certificado de revocación en gpg?',o:['Para cifrar ficheros','Para avisar de que no se confíe en nuestras claves si nos las roban','Para importar claves','Para firmar correos'],a:1,e:'Se distribuye si creemos que nos han <b>robado una clave</b>.'},
+    {q:'En un directorio, el permiso x permite…',o:['Ejecutar los ficheros de dentro','Ver los nombres de los ficheros','Entrar en el directorio con cd','Crear ficheros nuevos'],a:2,e:'En directorios, <b>x = entrar</b>. Ver nombres es r y crear nombres es w.'},
+    {q:'Con el sticky bit (t) activo en un directorio, ¿quién puede borrar un fichero?',o:['Cualquiera con w y x en el directorio','Solo root','El dueño del fichero, el del directorio o root','Solo los del grupo'],a:2,e:'La <b>t</b> cambia las reglas de borrado: solo el dueño del fichero, el del directorio o el administrador.'},
+    {q:'Un fichero tiene -rw-r-----. ¿Qué pueden hacer los usuarios de su grupo?',o:['Leer y escribir','Solo leer','Nada','Leer y ejecutar'],a:1,e:'El segundo trío es <b>r--</b>: el grupo solo puede leer.'},
+    {q:'¿Qué comando da lectura y escritura a luis sobre un fichero con ACL?',o:['chmod u:luis:rw fichero','setfacl -m u:luis:rw fichero','getfacl -m luis rw fichero','setfacl -x u:luis:rw fichero'],a:1,e:'<b>setfacl -m</b> añade o modifica. <b>-x</b> quita una entrada y <b>getfacl</b> solo consulta.'},
+    {q:'gerente02 tiene rw por ACL en /home/gerente01/Contabilidad.txt (drwxr-x---), pero no puede abrirlo. ¿Qué falta?',o:['Ejecutar setfacl -b','Darle x en /home/gerente01','Darle w en /home/gerente01','Hacer chmod o+w al fichero'],a:1,e:'Hace falta <b>x en la carpeta</b>: <code>setfacl -m u:gerente02:x /home/gerente01</code>.'},
+    {q:'Al crear el usuario usu01 con adduser, Linux…',o:['Lo mete en el grupo users','Crea un grupo usu01 en el que solo está él','No le asigna grupo','Lo mete en el grupo sudo'],a:1,e:'Por seguridad crea un <b>grupo con el mismo nombre</b> en el que solo está ese usuario.'},
+    {q:'¿Se aconseja tener activada la actualización automática en los equipos críticos?',o:['Sí, siempre','No; se activa en otros equipos que hacen de «cobaya»','Solo los fines de semana','Solo en Windows'],a:1,e:'Para evitar que un parche estropee algo, en los críticos <b>no</b>; se prueba antes en equipos cobaya.'}
+  ];
+  var quiz=$('#quiz'), order, qi, score, wrong, answered;
+  function startQuiz(list){order=shuffle((list||Q.map(function(_,i){return i;})).slice());qi=0;score=0;wrong=[];renderQ();}
+  function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;');}
+  function renderQ(){
+    answered=false;
+    if(qi>=order.length){return renderEnd();}
+    var item=Q[order[qi]], L='ABCD';
+    var h='<div class="q-meta"><span>Pregunta '+(qi+1)+' de '+order.length+'</span><span>Aciertos: '+score+'</span></div>'+
+      '<div class="bar"><i style="width:'+(qi/order.length*100)+'%"></i></div>'+
+      '<div class="q-text">'+esc(item.q)+'</div><div class="opts">';
+    item.o.forEach(function(o,i){h+='<button class="opt" data-i="'+i+'"><span class="l">'+L[i]+'</span><span>'+esc(o)+'</span></button>';});
+    h+='</div><div id="q-after"></div>';
+    quiz.innerHTML=h;
+    $$('.opt',quiz).forEach(function(b){b.addEventListener('click',function(){answer(+b.dataset.i);});});
+  }
+  function answer(i){
+    if(answered) return; answered=true;
+    var item=Q[order[qi]], ok=i===item.a;
+    if(ok) score++; else wrong.push(order[qi]);
+    $$('.opt',quiz).forEach(function(b){var j=+b.dataset.i;b.disabled=true;if(j===item.a)b.classList.add('right');else if(j===i)b.classList.add('wrong');});
+    $('#q-after').innerHTML='<div class="expl">'+(ok?'<b>¡Correcto!</b> ':'<b>No.</b> ')+item.e+'</div><div class="q-foot"><button class="btn pri" id="q-next">'+(qi+1<order.length?'Siguiente →':'Ver resultado')+'</button></div>';
+    $('#q-next').addEventListener('click',function(){qi++;renderQ();});
+    $('#q-next').focus();
+  }
+  function renderEnd(){
+    var tot=order.length, nota=Math.round(score/tot*100)/10;
+    if(tot===Q.length){var best=store.get('best',null);if(best===null||nota>best){store.set('best',nota);}renderBest();}
+    var msg=nota>=9?'Lo llevas genial. Repasa las falladas y a dormir.':nota>=7?'Muy bien. Repasa las falladas y vuelve a hacerlo.':nota>=5?'Aprobado, pero repasa los apartados de las falladas.':'Vuelve a los Apuntes de las preguntas falladas y repite el test.';
+    var h='<div class="score"><div class="n">'+String(nota).replace('.',',')+'</div><p>'+score+' de '+tot+' aciertos. '+msg+'</p></div>';
+    if(wrong.length){
+      h+='<div class="review">'+wrong.map(function(k){var it=Q[k];return '<div><b>'+esc(it.q)+'</b>'+esc(it.o[it.a])+'</div>';}).join('')+'</div>';
+    }
+    h+='<div class="q-foot" style="justify-content:center">'+(wrong.length?'<button class="btn pri" id="q-wrong">Repetir las falladas</button>':'')+'<button class="btn" id="q-again">Empezar de nuevo</button></div>';
+    quiz.innerHTML=h;
+    var wr=wrong.slice();
+    if($('#q-wrong')) $('#q-wrong').addEventListener('click',function(){startQuiz(wr);});
+    $('#q-again').addEventListener('click',function(){startQuiz();});
+  }
+  function renderBest(){var b=store.get('best',null);$('#best').textContent=b===null?'—':String(b).replace('.',',')+' / 10';}
+  renderBest();
+  startQuiz();
+
+  /* ---------- Ejercicios: guardar respuestas ---------- */
+  $$('.ex textarea').forEach(function(t){
+    t.value=store.get('ans-'+t.id,'');
+    t.addEventListener('input',function(){store.set('ans-'+t.id,t.value);});
+  });
+})();
+</script>
+
+<a id="asir-back" href="../../asignatura.html?s=sad" aria-label="Volver a SAD" style="--c:#FF3B30;bottom:14px"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg><span>SAD</span></a><link rel="stylesheet" href="../../assets/back.css"></body></html>

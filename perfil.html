@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#07080f">
+<title>Mi progreso · ASIR 2</title>
+<link rel="stylesheet" href="assets/portal.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+</head>
+<body>
+<main class="wrap">
+  <div class="profile-head">
+    <div class="avatar" id="av">?</div>
+    <div>
+      <input id="name" maxlength="20" placeholder="Tu nombre o apodo" autocomplete="off">
+      <div class="note">Tus puntuaciones y estadísticas se guardan en este navegador. Usa «Exportar» para llevarlas a otro dispositivo.</div>
+    </div>
+  </div>
+
+  <div class="stats" style="justify-content:flex-start;margin-top:26px">
+    <div class="stat"><b id="k1">0</b><span>Intentos</span></div>
+    <div class="stat"><b id="k2">–</b><span>Mejor nota</span></div>
+    <div class="stat"><b id="k3">–</b><span>Nota media</span></div>
+    <div class="stat"><b id="k4">0</b><span>Min. estudiados</span></div>
+    <div class="stat"><b id="k5">0</b><span>Días activos</span></div>
+  </div>
+
+  <div class="charts">
+    <div class="panel wide"><h3>📈 Evolución de tus notas (sobre 10)</h3><div class="chartbox"><canvas id="c1"></canvas></div></div>
+    <div class="panel"><h3>⏱ Tiempo de estudio por asignatura</h3><div class="chartbox"><canvas id="c2"></canvas></div></div>
+    <div class="panel"><h3>📅 Minutos estudiados · últimos 14 días</h3><div class="chartbox"><canvas id="c3"></canvas></div></div>
+    <div class="panel"><h3>🏅 Mejor nota por test</h3><div class="chartbox"><canvas id="c4"></canvas></div></div>
+    <div class="panel"><h3>🔁 Intentos por test</h3><div class="chartbox"><canvas id="c5"></canvas></div></div>
+    <div class="panel wide"><h3>🏆 Ranking</h3><div id="rank"><div class="note">Cargando…</div></div></div>
+  </div>
+
+  <div class="actions">
+    <button class="btn" id="exp">⬇ Exportar mis datos</button>
+    <button class="btn" id="imp">⬆ Importar</button>
+    <button class="btn danger" id="reset">🗑 Borrar mis estadísticas</button>
+    <input type="file" id="file" accept="application/json" hidden>
+  </div>
+</main>
+<script src="assets/config.js"></script>
+<script src="assets/data.js"></script>
+<script src="assets/portal.js"></script>
+<script src="assets/claude-shim.js"></script>
+<script>
+(function(){
+  var P=Portal;P.chrome('perfil');P.curtainIn();
+  var KEYS=['asir.db','asir.user','asir.hist','asir.time'];
+  var user=P.rd('asir.user',{id:'',name:''}),hist=P.rd('asir.hist',[]),time=P.rd('asir.time',{});
+  var nameIn=document.getElementById('name'),av=document.getElementById('av');
+  function setAv(){av.textContent=(user.name||'?').trim().charAt(0).toUpperCase()||'?'}
+  nameIn.value=user.name||'';setAv();
+  nameIn.addEventListener('input',function(){user.name=nameIn.value.trim();localStorage.setItem('asir.user',JSON.stringify(user));setAv()});
+
+  var subj={};P.subjects.forEach(function(s){subj[s.slug]=s});
+  function topicOf(h){var s=subj[h.subject];var t=s&&s.topics.filter(function(t){return t.id===h.topic})[0];return{s:s,t:t,label:t?(s.code+' · '+t.title):(h.subject+'/'+h.topic)}}
+  /* normaliza cada registro a una nota sobre 10 */
+  function grade(d){
+    if(typeof d.score==='number'&&d.total>0)return d.score/d.total*10; /* Oracle en Docker */
+    var f=d.final;if(typeof f==='number'&&f>0)return f;               /* tests con examen final */
+    return null;
+  }
+  var pts=hist.map(function(h){var g=grade(h.data);return g==null?null:{t:h.t,g:Math.round(g*10)/10,k:topicOf(h)}}).filter(Boolean);
+
+  /* KPIs */
+  var ms=0,days={};Object.keys(time).forEach(function(k){ms+=time[k].total;Object.keys(time[k].days).forEach(function(d){days[d]=(days[d]||0)+time[k].days[d]})});
+  var att=hist.length,best=pts.length?Math.max.apply(null,pts.map(function(p){return p.g})):null,avg=pts.length?pts.reduce(function(a,p){return a+p.g},0)/pts.length:null;
+  P.count(document.getElementById('k1'),att);
+  document.getElementById('k2').textContent=best==null?'–':best.toFixed(1);
+  document.getElementById('k3').textContent=avg==null?'–':avg.toFixed(1);
+  P.count(document.getElementById('k4'),Math.round(ms/60000));
+  P.count(document.getElementById('k5'),Object.keys(days).length);
+
+  /* gráficos */
+  var txt='#aab0c8',grid='rgba(255,255,255,.07)';
+  Chart.defaults.color=txt;Chart.defaults.font.family='"Segoe UI",system-ui,sans-serif';Chart.defaults.borderColor=grid;
+  var base={responsive:true,maintainAspectRatio:false,animation:{duration:1100,easing:'easeOutQuart'},plugins:{legend:{labels:{boxWidth:10,usePointStyle:true}}}};
+  function empty(id,msg){var c=document.getElementById(id);var p=c.parentNode;p.innerHTML='<div class="empty-box" style="height:100%;display:grid;place-items:center"><div><b>Sin datos todavía</b>'+msg+'</div></div>'}
+
+  /* 1 · evolución */
+  if(pts.length){
+    var groups={};pts.forEach(function(p){(groups[p.k.label]=groups[p.k.label]||{c:p.k.s?p.k.s.color:'#7c7bff',d:[]}).d.push({x:p.t,y:p.g})});
+    new Chart('c1',{type:'line',data:{datasets:Object.keys(groups).map(function(k){var g=groups[k];return{label:k,data:g.d,borderColor:g.c,backgroundColor:g.c+'33',tension:.35,fill:true,pointRadius:4,pointHoverRadius:7}})},
+      options:Object.assign({},base,{scales:{x:{type:'linear',ticks:{callback:function(v){return new Date(v).toLocaleDateString('es-ES',{day:'2-digit',month:'short'})},maxTicksLimit:7}},y:{min:0,max:10}},
+        plugins:{legend:base.plugins.legend,tooltip:{callbacks:{title:function(i){return new Date(i[0].parsed.x).toLocaleString('es-ES')},label:function(c){return c.dataset.label+': '+c.parsed.y}}}}})});
+  }else empty('c1','Haz un test o examen para ver aquí cómo evolucionas.');
+
+  /* 2 · tiempo por asignatura */
+  var bySub={};Object.keys(time).forEach(function(k){var s=k.split('/')[0];bySub[s]=(bySub[s]||0)+time[k].total});
+  var sk=Object.keys(bySub);
+  if(sk.length)new Chart('c2',{type:'doughnut',data:{labels:sk.map(function(s){return subj[s]?subj[s].code:s}),datasets:[{data:sk.map(function(s){return Math.round(bySub[s]/600)/100}),backgroundColor:sk.map(function(s){return subj[s]?subj[s].color:'#888'}),borderWidth:0,hoverOffset:14}]},
+    options:Object.assign({},base,{cutout:'62%',plugins:{legend:{position:'right',labels:base.plugins.legend.labels},tooltip:{callbacks:{label:function(c){return c.label+': '+c.parsed+' min'}}}}})});
+  else empty('c2','Se cuenta el tiempo que pasas en cada tema.');
+
+  /* 3 · últimos 14 días */
+  var labels=[],vals=[];for(var i=13;i>=0;i--){var d=new Date();d.setDate(d.getDate()-i);var key=d.toISOString().slice(0,10);labels.push(d.toLocaleDateString('es-ES',{day:'numeric',month:'short'}));vals.push(Math.round((days[key]||0)/6000)/10)}
+  new Chart('c3',{type:'bar',data:{labels:labels,datasets:[{label:'min',data:vals,borderRadius:8,backgroundColor:function(c){var a=c.chart.chartArea;if(!a)return'#7c7bff';var g=c.chart.ctx.createLinearGradient(0,a.bottom,0,a.top);g.addColorStop(0,'#7c7bff55');g.addColorStop(1,'#00c2ff');return g}}]},
+    options:Object.assign({},base,{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true},x:{grid:{display:false}}}})});
+
+  /* 4 · mejor nota por test · 5 · intentos */
+  var bt={},ct={};
+  hist.forEach(function(h){var k=topicOf(h);ct[k.label]=ct[k.label]||{n:0,c:k.s?k.s.color:'#888'};ct[k.label].n++});
+  pts.forEach(function(p){var b=bt[p.k.label]=bt[p.k.label]||{g:0,c:p.k.s?p.k.s.color:'#888'};b.g=Math.max(b.g,p.g)});
+  var bl=Object.keys(bt);
+  if(bl.length)new Chart('c4',{type:'bar',data:{labels:bl,datasets:[{data:bl.map(function(k){return bt[k].g}),backgroundColor:bl.map(function(k){return bt[k].c}),borderRadius:10}]},
+    options:Object.assign({},base,{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{min:0,max:10},y:{grid:{display:false}}}})});
+  else empty('c4','Aparecerá tu mejor nota de cada test.');
+  var cl=Object.keys(ct);
+  if(cl.length)new Chart('c5',{type:'polarArea',data:{labels:cl,datasets:[{data:cl.map(function(k){return ct[k].n}),backgroundColor:cl.map(function(k){return ct[k].c+'bb'}),borderWidth:0}]},
+    options:Object.assign({},base,{scales:{r:{grid:{color:grid},ticks:{display:false}}},plugins:{legend:{position:'right',labels:base.plugins.legend.labels}}})});
+  else empty('c5','Aquí verás cuántas veces has hecho cada test.');
+
+  /* ranking (local o compartido si hay Firebase) */
+  var rk=document.getElementById('rank');
+  function rows(title,arr,f){return '<h3 style="margin-top:10px;color:var(--mut)">'+title+'</h3><table><tr><th>#</th><th>Nombre</th><th>Puntos</th></tr>'+arr.slice(0,10).map(function(d,i){return '<tr'+(d.id===user.id?' style="background:#7c7bff22"':'')+'><td>'+(['🥇','🥈','🥉'][i]||i+1)+'</td><td>'+P.esc(d.nick||d.alias||'Anónimo')+(d.id===user.id?' <small style="color:var(--mut)">(tú)</small>':'')+'</td><td>'+f(d)+'</td></tr>'}).join('')+'</table>'}
+  Promise.all([window.claude.use('db')]).then(function(r){var db=r[0];
+    return Promise.all([db.collection('ranking').get(),db.collection('scores').get()]).then(function(s){
+      var rA=s[0].docs.map(function(d){return Object.assign({id:d.id},d.data())}),sA=s[1].docs.map(function(d){return Object.assign({id:d.id},d.data())});
+      var html='';
+      var iaw=rA.filter(function(d){return typeof d.total==='number'}).sort(function(a,b){return b.total-a.total});
+      var ora=rA.filter(function(d){return typeof d.pts==='number'}).sort(function(a,b){return b.pts-a.pts});
+      var doc=sA.filter(function(d){return typeof d.score==='number'}).sort(function(a,b){return b.score-a.score||(a.ms||1e12)-(b.ms||1e12)});
+      if(iaw.length)html+=rows('IAW · Test Tema 1',iaw,function(d){return d.total});
+      if(ora.length)html+=rows('ASGBD · Test Oracle',ora,function(d){return d.pts});
+      if(doc.length)html+=rows('ASGBD · Oracle en Docker',doc,function(d){return d.score+'/'+(d.total||'?')});
+      rk.innerHTML=html||'<div class="note">Todavía no hay puntuaciones. Juega un test para aparecer aquí.</div>';
+      if(!(window.ASIR_CONFIG||{}).firebase)rk.insertAdjacentHTML('beforeend','<div class="note">Ahora mismo el ranking solo incluye tus resultados. Para compararte con otros usuarios hay que activar el ranking compartido (ver README).</div>');
+    });
+  }).catch(function(){rk.innerHTML='<div class="note">No se pudo cargar el ranking.</div>'});
+
+  /* exportar / importar / borrar */
+  document.getElementById('exp').onclick=function(){var o={};KEYS.forEach(function(k){o[k]=localStorage.getItem(k)});var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(o)],{type:'application/json'}));a.download='asir2-mis-datos.json';a.click()};
+  var f=document.getElementById('file');document.getElementById('imp').onclick=function(){f.click()};
+  f.onchange=function(){var r=new FileReader();r.onload=function(){try{var o=JSON.parse(r.result);KEYS.forEach(function(k){if(o[k])localStorage.setItem(k,o[k])});location.reload()}catch(e){alert('Archivo no válido')}};r.readAsText(f.files[0])};
+  document.getElementById('reset').onclick=function(){if(confirm('¿Borrar todas tus puntuaciones y estadísticas de este navegador?')){['asir.db','asir.hist','asir.time'].forEach(function(k){localStorage.removeItem(k)});location.reload()}};
+})();
+</script>
+</body>
+</html>

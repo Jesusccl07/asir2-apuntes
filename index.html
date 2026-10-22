@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#07080f">
+<title>ASIR 2 · Apuntes y tests</title>
+<meta name="description" content="Apuntes, tests y exámenes de 2º de ASIR organizados por asignatura y tema.">
+<link rel="stylesheet" href="assets/portal.css">
+</head>
+<body>
+<main class="wrap">
+  <section class="hero">
+    <span class="tag">Curso 2026 · 2º ASIR</span>
+    <h1>Todo el curso,<br><span class="grad">en un solo sitio</span></h1>
+    <p>Apuntes, tests y exámenes organizados por asignatura y tema. Elige una asignatura para empezar.</p>
+    <div class="stats">
+      <div class="stat"><b id="s1">0</b><span>Asignaturas</span></div>
+      <div class="stat"><b id="s2">0</b><span>Temas</span></div>
+      <div class="stat"><b id="s3">0</b><span>Min. estudiados</span></div>
+    </div>
+    <label class="search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+      <input id="q" type="search" placeholder="Buscar asignatura o tema…" autocomplete="off"><kbd>/</kbd>
+    </label>
+  </section>
+  <section class="cards" id="cards"></section>
+</main>
+<script src="assets/data.js"></script>
+<script src="assets/portal.js"></script>
+<script>
+(function(){
+  var P=Portal;P.chrome('home');P.curtainIn();
+  var box=document.getElementById('cards');
+  function draw(filter){
+    var f=(filter||'').toLowerCase().trim();
+    var list=P.subjects.filter(function(s){
+      if(!f)return true;
+      return (s.name+' '+s.code+' '+s.blurb+' '+s.topics.map(function(t){return t.title+' '+t.type}).join(' ')).toLowerCase().indexOf(f)>=0;
+    });
+    box.innerHTML=list.length?list.map(function(s){
+      var n=s.topics.length;
+      return '<a class="card'+(n?'':' soon')+'" style="--c:'+s.color+'" href="asignatura.html?s='+s.slug+'">'+
+        '<div class="ico">'+P.icon(s.icon)+'</div><div><div class="code">'+P.esc(s.code)+'</div><h3>'+P.esc(s.name)+'</h3></div>'+
+        '<p>'+P.esc(s.blurb)+'</p><div class="foot"><span class="badge">'+(n?n+(n===1?' tema':' temas'):'Próximamente')+'</span><span class="go">'+P.ARROW.replace('<svg','<svg width="18" height="18"')+'</span></div></a>';
+    }).join(''):'<div class="empty">No hay resultados para «'+P.esc(filter)+'»</div>';
+    P.animate('.card',70);P.fx('.card',true);
+  }
+  draw();
+  var q=document.getElementById('q');
+  q.addEventListener('input',function(){draw(q.value)});
+  document.addEventListener('keydown',function(e){if(e.key==='/'&&document.activeElement!==q){e.preventDefault();q.focus()}if(e.key==='Escape'){q.value='';draw();q.blur()}});
+  var time=P.rd('asir.time',{}),ms=0;Object.keys(time).forEach(function(k){ms+=time[k].total});
+  P.count(document.getElementById('s1'),P.subjects.filter(function(s){return s.topics.length}).length);
+  P.count(document.getElementById('s2'),P.subjects.reduce(function(a,s){return a+s.topics.length},0));
+  P.count(document.getElementById('s3'),Math.round(ms/60000));
+})();
+</script>
+</body>
+</html>

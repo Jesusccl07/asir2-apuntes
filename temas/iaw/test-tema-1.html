@@ -1,0 +1,583 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body><script src="../../assets/config.js"></script><script src="../../assets/claude-shim.js"></script>
+<title>Test IAW Tema 1</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=JetBrains+Mono:wght@400;700&display=swap">
+<style>
+/* Layout: arcade de examen, tema oscuro único. Hero gigante, marcador fijo, tarjetas de modo, pregunta con HUD de puntos/racha/vidas/tiempo */
+:root{
+  --bg:#150e2c; --surface:#211846; --surface2:#2d2260; --line:#3a2f74; --ink:#f5f0ff; --muted:#a99cd6;
+  --pink:#ff4f9a; --cyan:#3fd6ff; --yellow:#ffd447; --ok:#3ee08f; --okbg:#173d34; --bad:#ff5b6b; --badbg:#46192e;
+  --f-display:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-display);font-size:16px;line-height:1.5;overflow-x:hidden;
+  background-image:radial-gradient(circle at 15% 0%,rgba(255,79,154,.18),transparent 40%),radial-gradient(circle at 90% 20%,rgba(63,214,255,.14),transparent 40%)}
+.wrap{max-width:820px;margin:0 auto;padding-block:16px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.hero{padding-block:28px 8px;text-align:center}
+.big{font-weight:800;font-size:clamp(3rem,15vw,7.5rem);line-height:.92;letter-spacing:-.03em;margin:0;cursor:pointer;user-select:none;
+  background:linear-gradient(90deg,var(--pink),var(--yellow),var(--cyan),var(--pink));background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;
+  animation:flow 6s linear infinite;display:inline-block;transition:transform .2s}
+.big .emo{-webkit-text-fill-color:initial;color:initial;display:inline-block;animation:bob 1.6s ease-in-out infinite}
+.big .emo+.emo{animation-delay:.25s}
+.big:hover{transform:rotate(-2deg) scale(1.03)}
+.big.boing{animation:flow 6s linear infinite,boing .5s}
+@keyframes flow{to{background-position:300% 0}}
+@keyframes bob{50%{transform:translateY(-8px) rotate(8deg)}}
+@keyframes boing{30%{transform:scale(1.15,.85)}60%{transform:scale(.92,1.1)}100%{transform:none}}
+.sub{font-family:var(--f-mono);font-size:.8rem;color:var(--muted);margin-top:10px;letter-spacing:.04em}
+.stats{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:18px}
+.chip{font-family:var(--f-mono);font-size:.8rem;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-variant-numeric:tabular-nums}
+.chip b{color:var(--yellow)}
+h2{font-size:1.1rem;margin:30px 0 12px;display:flex;align-items:center;gap:10px}
+h2::after{content:"";flex:1;height:1px;background:var(--line)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+.card{background:var(--surface);border:1.5px solid var(--line);border-radius:14px;padding:16px;text-align:left;font:inherit;color:inherit;cursor:pointer;display:flex;flex-direction:column;gap:6px;min-width:0;transition:transform .15s,border-color .15s,box-shadow .15s}
+.card:hover{transform:translateY(-3px);border-color:var(--cyan);box-shadow:0 8px 0 -2px rgba(63,214,255,.25)}
+.card:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid var(--yellow);outline-offset:2px}
+.card .num{font-family:var(--f-mono);font-size:.72rem;color:var(--cyan);letter-spacing:.04em}
+.card strong{font-size:1.1rem}
+.card .meta{font-size:.85rem;color:var(--muted)}
+.card .best{font-family:var(--f-mono);font-size:.72rem;color:var(--muted)}
+.card.hot{border-color:var(--pink);background:linear-gradient(160deg,rgba(255,79,154,.16),var(--surface) 60%)}
+.card.hot .num{color:var(--pink);font-weight:700}
+.card.game{border-color:var(--yellow);background:linear-gradient(160deg,rgba(255,212,71,.13),var(--surface) 60%)}
+.card.game .num{color:var(--yellow);font-weight:700}
+.card[disabled]{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
+.hud{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:4px 0 12px}
+.hud .chip{display:flex;gap:6px;align-items:center}
+.hud .streak b{color:var(--pink)}
+.hud .pop{animation:pop .35s}
+@keyframes pop{40%{transform:scale(1.3)}}
+.qhead{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;font-size:.85rem;color:var(--muted)}
+.qhead .mono{font-family:var(--f-mono)}
+.link{background:none;border:0;color:var(--cyan);font:inherit;cursor:pointer;padding:4px 0;font-weight:600}
+.bar{height:8px;background:var(--surface2);border-radius:4px;overflow:hidden}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--pink),var(--yellow));width:0;transition:width .3s}
+.bar.time i{background:linear-gradient(90deg,var(--cyan),var(--ok));transition:width 1s linear}
+.bar.time.low i{background:var(--bad)}
+.qcard{background:var(--surface);border:1.5px solid var(--line);border-radius:16px;padding:20px;margin-top:14px}
+.qcard.shake{animation:shake .4s}
+@keyframes shake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+.qtext{font-size:1.35rem;font-weight:700;line-height:1.3;margin:0 0 16px;text-wrap:balance}
+.opts{display:grid;gap:10px}
+.opt{display:flex;gap:12px;align-items:flex-start;width:100%;text-align:left;font:inherit;color:inherit;background:var(--surface2);border:2px solid transparent;border-radius:10px;padding:12px 14px;cursor:pointer;transition:transform .1s,border-color .1s}
+.opt:hover:not([disabled]){border-color:var(--cyan);transform:translateX(4px)}
+.opt:active:not([disabled]){transform:scale(.98)}
+.opt .k{font-family:var(--f-mono);font-size:.78rem;font-weight:700;color:var(--bg);background:var(--cyan);border-radius:6px;min-width:1.6em;text-align:center;padding:1px 4px;margin-top:2px}
+.opt.ok{border-color:var(--ok);background:var(--okbg)} .opt.ok .k{background:var(--ok)}
+.opt.bad{border-color:var(--bad);background:var(--badbg)} .opt.bad .k{background:var(--bad)}
+.opt[disabled]{cursor:default}
+.write{display:flex;gap:8px;flex-wrap:wrap}
+.write input{flex:1 1 200px;min-width:0;font-family:var(--f-mono);font-size:1rem;padding:12px 14px;border-radius:10px;border:2px solid var(--line);background:var(--surface2);color:var(--ink)}
+.write input:focus{outline:none;border-color:var(--cyan)}
+.write input.ok{border-color:var(--ok);background:var(--okbg)}
+.write input.bad{border-color:var(--bad);background:var(--badbg)}
+.badge{display:inline-block;vertical-align:middle;font-family:var(--f-mono);font-size:.66rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--bg);background:var(--pink);border-radius:4px;padding:2px 6px;margin-right:8px;position:relative;top:-2px}
+.fb{margin-top:14px;padding:12px 14px;border-radius:10px;background:var(--surface2);font-size:.95rem}
+.fb .code{font-family:var(--f-mono);font-weight:700;margin-right:6px}
+.fb .code.ok{color:var(--ok)} .fb .code.bad{color:var(--bad)}
+.fb .plus{font-family:var(--f-mono);color:var(--yellow);margin-left:6px}
+.actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+.btn{font:inherit;font-weight:800;background:var(--pink);color:var(--bg);border:0;border-radius:10px;padding:12px 20px;cursor:pointer;box-shadow:0 4px 0 #a8255f;transition:transform .08s,box-shadow .08s}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 #a8255f}
+.btn.ghost{background:transparent;color:var(--ink);border:2px solid var(--line);box-shadow:none}
+.result{text-align:center;padding-top:20px}
+.status{font-family:var(--f-mono);font-size:clamp(2.4rem,10vw,4rem);font-weight:700;line-height:1}
+.status.ok{color:var(--ok)} .status.bad{color:var(--bad)}
+.score{font-size:1.2rem;margin:10px 0 4px}
+.result .stats{margin-top:12px}
+.result .actions{justify-content:center}
+.review{display:grid;gap:10px;margin-top:18px;text-align:left}
+.review .it{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--bad);border-radius:8px;padding:10px 12px;font-size:.92rem}
+.review .it b{display:block;margin-bottom:2px}
+.review .it .ans{color:var(--ok);font-weight:600}
+.tip{font-size:.85rem;color:var(--muted);margin-top:28px;text-align:center}
+
+.rank{background:var(--surface);border:1.5px solid var(--yellow);border-radius:16px;padding:16px;margin-top:8px}
+.rank-top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.rank-top h3{margin:0;font-size:1.25rem}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0}
+.tab{font:inherit;font-size:.82rem;font-weight:600;color:var(--muted);background:var(--surface2);border:1.5px solid transparent;border-radius:999px;padding:5px 12px;cursor:pointer}
+.tab[aria-pressed="true"]{color:var(--bg);background:var(--yellow)}
+.rows{display:grid;gap:6px}
+.row{display:grid;grid-template-columns:2.4em 1fr auto;gap:10px;align-items:center;background:var(--surface2);border-radius:10px;padding:9px 12px;font-variant-numeric:tabular-nums}
+.row .pos{font-family:var(--f-mono);font-weight:700;color:var(--muted);text-align:center}
+.row .nm{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+.row .nm small{color:var(--muted);font-weight:400;margin-left:6px;font-family:var(--f-mono);font-size:.72rem}
+.row .val{font-family:var(--f-mono);font-weight:700;color:var(--yellow)}
+.row.p1{background:linear-gradient(90deg,rgba(255,212,71,.28),var(--surface2))} .row.p1 .pos{color:var(--yellow);font-size:1.1rem}
+.row.p2{background:linear-gradient(90deg,rgba(63,214,255,.22),var(--surface2))} .row.p2 .pos{color:var(--cyan)}
+.row.p3{background:linear-gradient(90deg,rgba(255,79,154,.22),var(--surface2))} .row.p3 .pos{color:var(--pink)}
+.row.me{outline:2px solid var(--pink);outline-offset:-2px}
+.row.flash{animation:pop .5s}
+.empty{color:var(--muted);font-size:.9rem;padding:8px 2px}
+.nickf{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.nickf input{flex:1 1 180px;min-width:0;font:inherit;padding:9px 12px;border-radius:10px;border:2px solid var(--line);background:var(--surface2);color:var(--ink)}
+.nickf input:focus{outline:none;border-color:var(--yellow)}
+.nickf .btn{padding:9px 16px;background:var(--yellow);box-shadow:0 4px 0 #a98a1c}
+.me-line{font-size:.85rem;color:var(--muted);margin-top:10px}
+.me-line b{color:var(--ink)}
+.rankres{margin-top:14px;font-family:var(--f-mono);color:var(--yellow)}
+#fx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:50}
+@media (prefers-reduced-motion:reduce){*,*::before{animation:none!important;transition:none!important}}
+</style>
+
+<canvas id="fx"></canvas>
+<header class="wrap hero">
+  <h1 class="big" id="big" title="Haz clic">TEST IAW</h1>
+  <div class="sub">IAW · ASIR 2 · TEMA 1 + APACHE</div>
+  <div class="stats" id="gstats"></div>
+</header>
+
+<main class="wrap">
+  <section id="menu">
+    <div class="rank" id="rank">
+      <div class="rank-top"><h3>🏆 Ranking de la clase</h3><span class="chip" id="rcount">Conectando…</span></div>
+      <div class="tabs" id="tabs"></div>
+      <div class="rows" id="rows"><div class="empty">Cargando ranking…</div></div>
+      <form class="nickf" id="nickf"><input id="nick" maxlength="20" placeholder="Tu nombre en el ranking" autocomplete="off"><button class="btn" type="submit">Guardar nombre</button></form>
+      <div class="me-line" id="meline"></div>
+    </div>
+    <h2>Modos de juego</h2>
+    <div class="grid" id="games"></div>
+    <h2>Tests por bloque</h2>
+    <div class="grid" id="blocks"></div>
+    <h2>Examen y repaso</h2>
+    <div class="grid" id="specials"></div>
+    <p class="tip">Teclas 1–4 para responder, Enter para seguir. Puntos, rachas y fallos se guardan en este navegador.</p>
+  </section>
+
+  <section id="quiz" hidden>
+    <div class="qhead">
+      <button class="link" id="back">← Salir</button>
+      <span id="qtitle"></span>
+      <span class="mono" id="qcount"></span>
+    </div>
+    <div class="hud" id="hud"></div>
+    <div class="bar" id="pbar"><i id="prog"></i></div>
+    <div class="qcard" id="qcard">
+      <div class="qtext" id="qtext"></div>
+      <div class="opts" id="opts"></div>
+      <div class="fb" id="fb" hidden></div>
+      <div class="actions"><button class="btn" id="next" hidden>Siguiente</button></div>
+    </div>
+  </section>
+
+  <section id="result" class="result" hidden></section>
+</main>
+
+<script>
+const P={p:1}, PW={p:1,t:"w"}, PV={p:1,t:"vf"}, W={t:"w"}, V={t:"vf"};
+const B = [
+ {id:"b0", tag:"DEL PROFE", t:"Cuestionario del profe", d:"Las preguntas del cuestionario compartido (Apache y aplicaciones web)", q:[
+  ["¿Para qué sirve la directiva LoadModule?","Para cargar un módulo que añade una funcionalidad a Apache",["Para indicar la página de inicio","Para crear usuarios","Para definir el puerto de escucha"],"Ej.: LoadModule ssl_module modules/mod_ssl.so",P],
+  ["¿Cuáles son los tres niveles de la arquitectura de tres niveles?","Presentación, lógica de aplicación y datos",["Cliente, router y servidor DNS","Entrada, proceso y salida","Hardware, sistema operativo y aplicación"],"Navegador → Apache+PHP → MySQL.",P],
+  ["¿Qué ventaja aporta la arquitectura de tres niveles frente a la de dos?","Mejor separación de responsabilidades, seguridad y escalabilidad",["Elimina la necesidad de una base de datos","Necesita menos equipos y es más barata siempre","Hace innecesario el servidor web"],"Cada servidor una tarea; seguridad por nivel.",P],
+  ["¿Qué módulo de Apache aporta soporte para HTTPS?","mod_ssl",["mod_rewrite","mod_dir","mod_log_config"],"Sale DOS veces en el cuestionario.",P],
+  ["¿Qué puerto usa por defecto MySQL/MariaDB?","3306",[],"3306 TCP. Escribe solo el número.",{...PW,acc:["3306","3306tcp"]}],
+  ["¿Para qué se usa la directiva ServerName?","Para indicar el nombre (y puerto) con el que el servidor se identifica",["Para activar HTTPS","Para cargar módulos","Para borrar la caché"],"Ej.: ServerName localhost:80",P],
+  ["¿Para qué se utiliza mod_rewrite?","Para reescribir y redirigir URLs",["Para ejecutar PHP","Para cifrar la conexión","Para registrar los accesos"],"Sale DOS veces en el cuestionario.",P],
+  ["¿Qué protocolo de aplicación usa por defecto el puerto 80?","HTTP",[],"80 HTTP · 443 HTTPS · 21 FTP · 25 SMTP.",{...PW,acc:["http"]}],
+  ["El código PHP de una página se puede ver con «Ver código fuente» en el navegador.","Falso",["Verdadero"],"Del servidor solo llega el resultado (HTML), nunca el código.",PV],
+  ["Basta con validar un formulario solo con JavaScript en el navegador, sin repetir la validación en el servidor.","Falso",["Verdadero"],"Lo que se valida solo en el navegador puede saltarse.",PV],
+  ["¿Qué es una aplicación web?","Un programa que se ejecuta en un servidor y al que se accede desde un navegador a través de una red",["El sistema operativo de un servidor","Un programa que se instala en cada equipo y funciona sin red","Una página HTML estática sin ningún programa detrás"],"No se instala en el equipo del usuario.",P],
+  ["¿Qué componentes forman XAMPP?","Apache, MariaDB/MySQL, PHP y Perl (multiplataforma)",["IIS, SQL Server, ASP y C#","Apache, MongoDB, Python y Ruby","Nginx, PostgreSQL, Java y Go"],"X = multiplataforma, A = Apache, M = MariaDB/MySQL, P = PHP, P = Perl.",P],
+  ["¿Para qué sirve un bloque Directory en httpd.conf?","Para aplicar directivas y permisos a una carpeta concreta y su contenido",["Para reiniciar el servidor","Para listar los módulos cargados","Para crear una carpeta nueva"],"<Directory \"ruta\"> … </Directory>",P],
+  ["En https://www.ejemplo.es/tienda/producto.php?id=25, ¿qué es «id=25»?","Un parámetro enviado al servidor",["El esquema","El puerto","El nombre del servidor"],"Va detrás del ?.",P],
+  ["¿Para qué sirven FileZilla y Mercury en XAMPP?","Son servidores FTP y de correo respectivamente",["Son navegadores","Son bases de datos","Son editores de PHP"],"FileZilla → FTP (21), Mercury → SMTP (25).",P],
+  ["En httpd.conf, ¿con qué carácter empieza una línea de comentario?","#",[";","--","//"],"Las líneas con # no se aplican.",P],
+  ["¿Qué dirección IP corresponde a localhost? (IPv4)","127.0.0.1",[],"La IP de loopback, el propio equipo.",{...PW,acc:["127.0.0.1"]}],
+  ["¿Cuál es una ventaja del software web frente al de escritorio?","Las actualizaciones se hacen en el servidor y no hay que instalar nada en cada equipo",["Nunca depende del servidor","Funciona igual sin conexión a Internet","Siempre tiene una interfaz más rica"],"Actualizar una vez, todos lo ven.",P],
+  ["¿Qué diferencia a HTTPS de HTTP?","Que la comunicación va cifrada y el servidor se identifica con un certificado",["Que no necesita servidor","Que solo sirve imágenes","Que usa el puerto 21"],"Certificado SSL, puerto 443.",P],
+  ["¿Qué directiva de httpd.conf hay que modificar para cambiar el puerto en el que escucha Apache? (una palabra)","Listen",[],"Ej.: Listen 8080",{...PW,acc:["listen"]}],
+  ["¿Qué número de puerto usa por defecto el protocolo FTP (control)?","21",[],"21 TCP.",{...PW,acc:["21","21tcp"]}],
+  ["En una arquitectura de tres niveles, ¿quién se comunica directamente con la base de datos?","El servidor de aplicaciones",["El navegador del usuario","Cualquier cliente de la red","El servidor DNS"],"El navegador nunca habla con MySQL.",P],
+  ["¿Cuál es un inconveniente típico de una aplicación web?","Depende de la red y del servidor, y si fallan nadie puede trabajar",["No se puede actualizar de forma centralizada","No permite varios usuarios a la vez","Hay que instalarla manualmente en cada equipo"],"El reverso de la web.",P],
+  ["Código HTTP 404:","Recurso no encontrado",["Acceso prohibido","Petición correcta","Error interno del servidor"],"Pregunta de relacionar del cuestionario.",P],
+  ["Código HTTP 301:","Recurso movido de forma permanente",["Recurso no encontrado","Petición correcta","Acceso prohibido"],"Pregunta de relacionar del cuestionario.",P],
+  ["Código HTTP 200:","Petición correcta",["Error interno del servidor","Recurso movido de forma permanente","Acceso prohibido"],"Pregunta de relacionar del cuestionario.",P],
+  ["Código HTTP 403:","Acceso prohibido",["Recurso no encontrado","Petición correcta","Error interno del servidor"],"Pregunta de relacionar del cuestionario.",P],
+  ["Código HTTP 500:","Error interno del servidor",["Acceso prohibido","Recurso no encontrado","Recurso movido de forma permanente"],"Pregunta de relacionar del cuestionario.",P],
+  ["¿Cuál es el archivo principal de configuración de Apache?","httpd.conf",["my.ini","hosts","php.ini"],"Sale DOS veces en el cuestionario.",P]
+ ]},
+ {id:"b6", tag:"SIMILARES", t:"Apache y XAMPP", d:"Preguntas del estilo del profe: directivas, módulos, archivos y puertos", q:[
+  ["Directiva que indica la carpeta donde están los archivos de la web:","DocumentRoot",["ServerName","Listen","LoadModule"],"En XAMPP apunta a htdocs."],
+  ["Carpeta de XAMPP donde se ponen las páginas:","htdocs",["www","public","modules"],"Es el DocumentRoot por defecto."],
+  ["Directiva que define la página de inicio de una carpeta (index.html, index.php):","DirectoryIndex",["DocumentRoot","ServerName","Listen"],"La aporta mod_dir."],
+  ["¿Qué hace mod_dir?","Gestiona la página de índice de un directorio",["Cifra la conexión","Reescribe URLs","Registra accesos"],"Directiva DirectoryIndex."],
+  ["¿Qué hace mod_log_config?","Registrar los accesos (logs)",["Cargar PHP","Activar HTTPS","Redirigir URLs"],"Formato de los logs de acceso."],
+  ["Un uso típico de mod_rewrite es…","Crear URLs amigables o redirigir",["Cifrar contraseñas","Cambiar el puerto","Crear la base de datos"],"Reescribir y redirigir URLs."],
+  ["Directiva para cargar mod_ssl en Apache:","LoadModule",["Listen","Include","ServerName"],"LoadModule ssl_module modules/mod_ssl.so"],
+  ["¿Qué hace la línea «Listen 8080»?","Apache escucha en el puerto 8080",["Carga el módulo 8080","Limita a 8080 usuarios","Cambia la carpeta raíz"],"Se accede con http://localhost:8080"],
+  ["Si Apache escucha en 8080, ¿cómo entras?","http://localhost:8080",["http://localhost","http://8080.localhost","https://localhost:80"],"Si no es el 80, hay que poner el puerto."],
+  ["Apache no arranca porque el puerto 80 está ocupado. ¿Qué haces?","Cambiar Listen a otro puerto o cerrar el programa que lo usa",["Borrar htdocs","Reinstalar MySQL","Cambiar php.ini"],"Típico con IIS o Skype."],
+  ["Tras editar httpd.conf, para que se apliquen los cambios hay que…","Reiniciar Apache",["Reiniciar MySQL","Borrar la caché","Nada, es inmediato"],"Desde el panel de XAMPP: Stop y Start."],
+  ["¿Cómo se cierra un bloque Directory?","</Directory>",["#Directory","[/Directory]","EndDirectory"],"Sintaxis tipo etiqueta."],
+  ["my.ini es el archivo de configuración de…","MySQL/MariaDB",["Apache","PHP","Windows"],"En XAMPP, dentro de mysql/bin."],
+  ["php.ini es el archivo de configuración de…","PHP",["Apache","MySQL","FileZilla"],"httpd.conf es de Apache."],
+  ["El archivo hosts sirve para…","Asociar nombres a IP en el propio equipo",["Configurar Apache","Guardar contraseñas","Listar módulos"],"Resolución local, antes que el DNS."],
+  ["¿Qué servicio usa el puerto 3306?","MySQL/MariaDB",["Apache","FTP","SMTP"],"Nivel 3, servidor de datos."],
+  ["Puerto por defecto de HTTPS:","443",[],"HTTP 80, HTTPS 443.",{t:"w",acc:["443","443tcp"]}],
+  ["Puerto por defecto de SMTP:","25",[],"Mercury en XAMPP.",{t:"w",acc:["25","25tcp"]}],
+  ["Archivo principal de configuración de Apache:","httpd.conf",[],"Escríbelo tal cual.",{t:"w",acc:["httpd.conf"]}],
+  ["Módulo de Apache para HTTPS:","mod_ssl",[],"Escríbelo tal cual.",{t:"w",acc:["mod_ssl","modssl"]}],
+  ["Directiva para cargar un módulo:","LoadModule",[],"Una palabra.",{t:"w",acc:["loadmodule"]}],
+  ["Nombre que equivale a 127.0.0.1:","localhost",[],"El propio equipo.",{t:"w",acc:["localhost"]}],
+  ["En tres niveles, Apache + PHP es el nivel de…","Lógica de aplicación",["Presentación","Datos","Red"],"Presentación = navegador, datos = MySQL."],
+  ["En tres niveles, el navegador es el nivel de…","Presentación",["Lógica de aplicación","Datos","Transporte"],"Nivel 1, cliente."],
+  ["En tres niveles, MySQL es el nivel de…","Datos",["Presentación","Lógica de aplicación","Sesión"],"Nivel 3."],
+  ["La X de XAMPP significa…","Multiplataforma",["eXtra","XML","Windows"],"Funciona en Windows, Linux y macOS."],
+  ["El JavaScript de una página se puede ver con «Ver código fuente».","Verdadero",["Falso"],"El código de cliente siempre es visible.",V],
+  ["En tres niveles, el navegador puede consultar MySQL directamente.","Falso",["Verdadero"],"Solo el servidor de aplicaciones habla con la BD.",V],
+  ["Con XAMPP, un mismo ordenador puede ser cliente y servidor a la vez.","Verdadero",["Falso"],"Cliente y servidor son roles.",V],
+  ["Los puertos estándar (80, 443…) no se pueden cambiar.","Falso",["Verdadero"],"En Apache, con Listen.",V],
+  ["Una aplicación web se instala en cada equipo del usuario.","Falso",["Verdadero"],"Basta un navegador.",V],
+  ["HTTPS cifra la comunicación entre navegador y servidor.","Verdadero",["Falso"],"Con certificado SSL.",V],
+  ["Una línea que empieza por # en httpd.conf se aplica igualmente.","Falso",["Verdadero"],"Es un comentario.",V]
+ ]},
+ {id:"b1", t:"Qué es y cómo funciona", d:"Cliente ligero, recorrido de una petición, cliente vs servidor", q:[
+  ["¿Qué es el cliente ligero en una app web?","El navegador",["El servidor de datos","El sistema operativo","Una API"],"Muestra la interfaz y hace lo mínimo."],
+  ["¿Dónde están los datos y las reglas de negocio?","En el servidor",["En el navegador","En el DNS","En el disco del cliente"],"El usuario trabaja en el navegador; lo importante ocurre en el servidor."],
+  ["¿Qué hace el DNS?","Traduce el nombre en una IP",["Cifra la sesión","Envía el HTML","Guarda las cookies"],"Paso 2 del recorrido de una petición."],
+  ["¿Primer paso al visitar una página?","Escribir la URL en el navegador",["Consultar MySQL","Enviar un POST","Interpretar el CSS"],"Luego DNS → petición HTTP → servidor → respuesta → interpretar."],
+  ["¿Qué método usa el navegador para pedir una página?","GET",["POST","PUT","SEND"],"Ejemplo: GET /index.html"],
+  ["Código de estado si todo va bien:","200",["301","404","500"],"200 OK."],
+  ["¿Qué interpreta el navegador al final?","HTML, CSS y JavaScript",["PHP y MySQL","Java y Python","Solo SQL"],"Último paso del recorrido."],
+  ["¿Cuál se ejecuta en el cliente?","JavaScript",["PHP","MySQL","ASP.NET"],"Cliente: HTML, CSS, JavaScript."],
+  ["¿Cuál se ejecuta en el servidor?","PHP",["HTML","CSS","JavaScript"],"Servidor: PHP, Java, Python, ASP.NET, MySQL."],
+  ["Del código del servidor, ¿qué llega al usuario?","Solo el resultado",["Todo el código","El código PHP comentado","La base de datos"],"El código de cliente sí es visible; el de servidor nunca."],
+  ["Una validación hecha solo en el navegador…","puede saltarse",["es la más segura","no se puede ver","sustituye a la del servidor"],"Por eso las importantes se repiten en el servidor."],
+  ["Moodle o un webmail son…","Aplicaciones web",["Sitios web","Servidores web","Sistemas operativos"],"Tienen lógica, usuarios y datos."],
+  ["Apache es un…","Servidor web",["Navegador","Gestor de BD","Protocolo"],"Atiende peticiones y entrega páginas."],
+  ["¿Dónde ves las peticiones en vivo?","F12 → pestaña Red",["Ver código fuente","Panel de control","Historial"],"Herramientas de desarrollo del navegador."]
+ ]},
+ {id:"b2", t:"Web, escritorio y consola", d:"Problemas del escritorio, ventajas e inconvenientes, la Web como plataforma", q:[
+  ["Cambiar una regla de descuentos en 20 ordenadores es…","Lógica dispersa",["Duplicidad de datos","Poca portabilidad","Configuración distinta"],"Problema típico del escritorio."],
+  ["Dos empleados con teléfonos de clientes distintos:","Duplicidad de datos",["Lógica dispersa","Seguridad difícil","Poca portabilidad"],"Falta de unificación."],
+  ["Un programa que solo va en un SO tiene…","Poca portabilidad",["Lógica dispersa","Datos duplicados","Actualizaciones baratas"],"Problema del escritorio."],
+  ["En la web, ¿dónde se actualiza?","Una vez, en el servidor",["Puesto por puesto","En cada navegador","No se actualiza"],"Todos ven el cambio. Ej.: Moodle."],
+  ["Los puestos cliente web son…","Más baratos y duran más",["Más caros","Necesitan hardware potente","Iguales que en escritorio"],"No necesitan hardware potente."],
+  ["Principal inconveniente de la web:","Si cae red o servidor, nadie trabaja",["Hay que instalar en cada PC","Datos duplicados","Versiones distintas"],"Además: datos concentrados e interfaz menos rica."],
+  ["¿Solución perfecta web o escritorio?","No existe; la más adecuada al caso",["Siempre la web","Siempre el escritorio","La consola"],"Idea clave del reverso."],
+  ["Ejemplos de apps de consola:","Cobol, RPG, FoxPro",["HTML, CSS, JS","Apache, PHP, MySQL","Chrome, Firefox"],"También cliente-servidor con cliente liviano."],
+  ["Protocolo de las apps de consola:","Propio, no estándar",["HTTP","SMTP","FTP"],"La web usa HTTP y URL."],
+  ["Cliente necesario en la web:","Solo un navegador",["API específicas","Un emulador de terminal","Un SO concreto"],"En consola: API que instalar."],
+  ["Una API es…","Funciones de una biblioteca para otro software",["Un servidor web","Un protocolo de correo","Un tipo de navegador"],"Definición del glosario."],
+  ["Límite de la Web como plataforma:","Menos riqueza gráfica",["No tiene usuarios","No guarda datos","No usa red"],"Resuelto con AJAX, Flash y Web 2."],
+  ["CRM y ERP pertenecen a la categoría…","Empresa",["Uso general","Ofimática","Contenidos"],"Junto a proyectos y trabajo colaborativo."],
+  ["WordPress es un…","CMS",["ERP","CRM","Servidor de datos"],"Gestor de contenidos."],
+  ["¿Qué sigue en el escritorio?","CAD/CAM",["El webmail","Los foros","Los buscadores"],"También suites, gráficos, juegos y SO."]
+ ]},
+ {id:"b3", t:"Cliente-servidor", d:"Papeles, ventajas, desventajas, el ejercicio del juego", q:[
+  ["Papel del cliente:","Activo: inicia las peticiones",["Pasivo: espera","Esclavo","Solo almacena"],"Dispositivo maestro."],
+  ["Papel del servidor:","Pasivo: espera peticiones",["Activo","Maestro","Interactúa con el usuario"],"Dispositivo esclavo."],
+  ["¿Quién atiende a muchos clientes a la vez?","El servidor",["El cliente","El usuario","El DNS"],"Aunque el máximo puede estar limitado."],
+  ["¿Quién rara vez trata con el usuario final?","El servidor",["El cliente","El navegador","La interfaz gráfica"],"El cliente usa interfaz gráfica."],
+  ["La separación cliente-servidor es…","Lógica",["Física siempre","Obligatoria en 2 máquinas","Por cable"],"El servidor puede ser varias máquinas o programas."],
+  ["El modelo cliente-servidor sustituye a la…","Arquitectura monolítica",["Red P2P","Arquitectura de 3 niveles","Web 2.0"],"Es un modelo de aplicación distribuida."],
+  ["Cliente y servidor son…","Roles, no tipos de máquina",["Siempre ordenadores distintos","Marcas de hardware","Protocolos"],"Ej.: XAMPP en local, un PC es ambos."],
+  ["Escalabilidad significa que…","Se amplían clientes y servidores por separado",["Hay un solo servidor","No se pueden añadir nodos","El cliente escala solo"],"Ventaja del modelo."],
+  ["Cambiar un servidor sin afectar a clientes:","Encapsulación (fácil mantenimiento)",["Congestión","Duplicidad","Monolito"],"Ej.: migrar la web del centro."],
+  ["Muchos clientes pidiendo a la vez provoca…","Congestión del tráfico",["Más robustez","Menos coste","Encapsulación"],"Desventaja."],
+  ["Frente a P2P, cliente-servidor es…","Menos robusto",["Más robusto","Igual","Más barato"],"Si el servidor cae, no hay respuesta."],
+  ["En P2P los recursos están…","Repartidos entre nodos iguales",["En un servidor central","En el navegador","En la nube del ISP"],"Sin servidor central."],
+  ["Para reducir el riesgo de servidor caído:","Varios servidores y balanceo de carga",["Más clientes","Quitar las copias","Usar consola"],"Se ve más adelante en el curso."],
+  ["Juego: 2 servidores, 3 personas en UN ordenador.","2 servidores, 1 cliente, 3 usuarios",["2 servidores, 3 clientes, 3 usuarios","1 servidor, 1 cliente, 1 usuario","3 servidores, 3 clientes"],"Cliente = programa instalado; usuario = persona."],
+  ["Juego: cada persona lo instala en su PC.","2 servidores, 3 clientes, 3 usuarios",["2 servidores, 1 cliente, 3 usuarios","3 servidores, 3 clientes","1 servidor, 3 clientes"],"Cada instalación es un cliente."],
+  ["En Wikipedia, ¿quién arma la página?","El servidor",["El navegador","El DNS","El usuario"],"Reúne datos, monta la página y la envía."]
+ ]},
+ {id:"b4", t:"Arquitectura de tres niveles", d:"Niveles, recorrido de una petición, 2 vs 3 niveles", q:[
+  ["Nivel 1:","Cliente (navegador)",["Servidor de datos","Servidor de aplicaciones","DNS"],"Interfaz de usuario, presentación."],
+  ["Nivel 2:","Servidor de aplicaciones",["Cliente","Servidor de datos","Servidor de correo"],"Apache + PHP en el curso."],
+  ["Nivel 3:","Servidor de datos",["Cliente","Servidor de aplicaciones","Proxy"],"MySQL en el curso."],
+  ["El 'software intermedio' es…","El servidor de aplicaciones",["El navegador","MySQL","El DNS"],"Necesita otro servidor para dar los recursos."],
+  ["En el curso, el nivel 3 es…","MySQL",["Apache","PHP","Firefox"],"Entrega los datos al nivel 2."],
+  ["¿Quién pide los datos a MySQL?","PHP",["El navegador","El DNS","El usuario"],"Paso 3 del recorrido."],
+  ["¿Quién monta el HTML final?","PHP",["MySQL","El navegador","Apache solo"],"Y lo envía al navegador."],
+  ["¿Qué precios ve cada cliente se decide en…","Apache y PHP (nivel 2)",["MySQL","El navegador","El DNS"],"Aplican las reglas."],
+  ["Reglas de negocio de una tienda online:","Servidor de aplicaciones",["Cliente","Servidor de datos","Navegador"],"Pregunta de reflexión de los apuntes."],
+  ["Regla de negocio es…","Norma propia de la organización",["Un protocolo","Un puerto","Un tipo de BD"],"Ej.: descuentos, permisos."],
+  ["Servidor polivalente que responde a todo:","Dos niveles",["Tres niveles","P2P","Consola"],"En 3 niveles, cada servidor una tarea."],
+  ["Seguridad en tres niveles:","Por servicio y por nivel",["Global","Inexistente","Solo en el cliente"],"En dos niveles es global."],
+  ["Flexibilidad en tres niveles:","Mayor",["Menor","Igual","Nula"],"Frente a dos niveles."],
+  ["Rendimiento en tres niveles:","Tareas repartidas",["Un servidor carga con todo","Peor siempre","Solo en el cliente"],"Entre servidores."],
+  ["Inconveniente de los tres niveles:","Más máquinas, coste y puntos de fallo",["Menos seguridad","Menos flexibilidad","No escala"],"Se deduce en clase."],
+  ["BD que solo acepta conexiones del nivel 2 es…","Una medida de seguridad",["Un error","Arquitectura P2P","Dos niveles"],"No se expone a Internet."]
+ ]},
+ {id:"b5", t:"Protocolos", d:"HTTP, URL, códigos, HTTPS, FTP, SMTP y puertos", q:[
+  ["Un protocolo es…","Un conjunto de reglas para comunicar",["Un servidor","Un lenguaje de cliente","Una base de datos"],"Para enviar y recibir datos en red."],
+  ["Familia de protocolos de Internet:","TCP/IP",["MIME","SSL","P2P"],"Agrupa HTTP, FTP, SMTP…"],
+  ["HTTP es el protocolo más usado desde…","1990",["1971","1973","2000"],"FTP es de 1971."],
+  ["HTTP 1.0 añade…","Cabeceras con codificación MIME",["Cifrado SSL","Correo","Transferencia de archivos"],"La 0.9 solo transfería páginas."],
+  ["MIME sirve para…","Describir el tipo de contenido",["Cifrar","Traducir IP","Enviar correo"],"En las cabeceras HTTP."],
+  ["URL significa…","Uniform Resource Locator",["Universal Remote Link","User Request Line","Unique Resource List"],"Localiza un recurso en la red."],
+  ["En …es:443/tienda… el 443 es el…","Puerto",["Esquema","Servidor","Parámetro"],"https://www.ejemplo.es:443/tienda/producto.php?id=25"],
+  ["En …producto.php?id=25, ?id=25 son…","Parámetros",["La ruta","El puerto","El esquema"],"Esquema, servidor, puerto, ruta, parámetros."],
+  ["/tienda/producto.php es la…","Ruta",["Esquema","Parámetros","Puerto"],"Anatomía de la URL."],
+  ["Método para enviar un formulario:","POST",["GET","HEAD","PUT"],"GET pide un recurso."],
+  ["404 significa…","No encontrado",["Prohibido","Movido","Error del servidor"],"Not Found."],
+  ["403 significa…","Acceso prohibido",["No encontrado","Correcto","Movido"],"Forbidden."],
+  ["301 significa…","Movido permanentemente",["Error del servidor","Prohibido","Correcto"],"Redirección permanente."],
+  ["500 significa…","Error interno del servidor",["No encontrado","Correcto","Prohibido"],"Internal Server Error."],
+  ["HTTPS cifra la sesión con certificados…","SSL",["MIME","FTP","DNS"],"Certificado digital."],
+  ["Módulo de Apache para HTTPS:","mod_ssl",["mod_php","mod_ftp","mod_mime"],"Apache con mod_ssl, puerto 443."],
+  ["El navegador indica HTTPS con…","Un candado",["Una X roja","Un reloj","Nada"],"Y https:// en la dirección."],
+  ["Certificados de validación extendida:","Barra de URL verdosa",["Barra roja","Sin candado","Puerto 80"],"Más garantías visibles."],
+  ["Puerto estándar de HTTP:","80",["443","21","25"],"Apache."],
+  ["Puerto estándar de HTTPS:","443",["80","21","25"],"Apache con mod_ssl."],
+  ["Puerto estándar de FTP:","21",["25","80","443"],"FileZilla en XAMPP."],
+  ["Puerto estándar de SMTP:","25",["21","80","110"],"Mercury en XAMPP."],
+  ["FTP nace en…","1971 en el MIT",["1990 en el CERN","1973 en IBM","2000 en Google"],"RFC 141; mejoras en julio de 1973."],
+  ["Uso práctico de FTP:","Subir los archivos de una web",["Enviar correo","Cifrar la sesión","Traducir nombres"],"Transferir archivos."],
+  ["SMTP sirve para…","Pasar correo entre servidores",["Transferir archivos","Ver páginas","Cifrar"],"Conexión punto a punto."],
+  ["Máximo por línea en SMTP:","1.000 caracteres ASCII",["80 caracteres","255 bytes","Sin límite"],"Comunicación en líneas de texto."],
+  ["Servidor SMTP en XAMPP:","Mercury",["FileZilla","Apache","MySQL"],"FTP: FileZilla."],
+  ["Directiva de Apache para cambiar el puerto:","Listen",["Port","DocumentRoot","ServerName"],"En httpd.conf."]
+ ]}
+];
+const ALL = B.flatMap(b=>b.q.map(q=>({...toQ(q),blk:b.id})));
+function toQ([q,a,w,e,o={}]){return {q,a,w,e,key:q,type:o.t||"mc",p:!!o.p,acc:o.acc||[a]}}
+const norm=s=>s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/\(?tcp\)?/g,"").replace(/\s+/g,"").replace(/[«»"']/g,"");
+const $=s=>document.getElementById(s);
+const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+let best=store.get("iaw1-best",{}), wrongs=new Set(store.get("iaw1-wrong",[]));
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+
+let stats=store.get("iaw1-stats",{pts:0,streak:0,played:0});
+const saveStats=()=>store.set("iaw1-stats",stats);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const HOT=q=>q.blk==="b0"||q.blk==="b6";
+
+/* ---------- confeti ---------- */
+const cv=$("fx"),cx=cv.getContext("2d");let parts=[],raf=0;
+const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+function fitCanvas(){cv.width=innerWidth*devicePixelRatio;cv.height=innerHeight*devicePixelRatio}
+fitCanvas();addEventListener("resize",fitCanvas);
+function burst(x,y,n=40,spread=1){
+  if(reduce)return;
+  const cols=["#ff4f9a","#ffd447","#3fd6ff","#3ee08f","#f5f0ff"],d=devicePixelRatio;
+  for(let i=0;i<n;i++){const a=Math.random()*Math.PI*2,v=(3+Math.random()*6)*spread;
+    parts.push({x:x*d,y:y*d,vx:Math.cos(a)*v*d,vy:(Math.sin(a)*v-5)*d,r:(3+Math.random()*4)*d,c:cols[i%cols.length],l:60+Math.random()*40,rot:Math.random()*6})}
+  if(!raf)raf=requestAnimationFrame(tick);
+}
+function tick(){
+  cx.clearRect(0,0,cv.width,cv.height);
+  parts=parts.filter(p=>p.l-->0);
+  for(const p of parts){p.vy+=.35*devicePixelRatio;p.x+=p.vx;p.y+=p.vy;p.rot+=.2;
+    cx.save();cx.translate(p.x,p.y);cx.rotate(p.rot);cx.globalAlpha=Math.min(1,p.l/30);cx.fillStyle=p.c;cx.fillRect(-p.r,-p.r/2,p.r*2,p.r);cx.restore()}
+  raf=parts.length?requestAnimationFrame(tick):0;
+}
+const rainConfetti=()=>{for(let i=0;i<6;i++)setTimeout(()=>burst(Math.random()*innerWidth,innerHeight*.25,45,1.3),i*140)};
+
+const big=$("big");
+big.onclick=e=>{big.classList.remove("boing");void big.offsetWidth;big.classList.add("boing");burst(e.clientX,e.clientY,60,1.2)};
+
+/* ---------- menú ---------- */
+function card(m,cls,num,title,meta,bestTxt,dis){return `<button class="card ${cls}" data-m="${m}" ${dis?"disabled":""}><span class="num">${num}</span><strong>${title}</strong><span class="meta">${meta}</span><span class="best">${bestTxt}</span></button>`}
+const bt=(k,u="nota")=>best[k]!=null?(u==="nota"?"Mejor nota: "+best[k].toFixed(1):"Récord: "+best[k]+" "+u):"Sin jugar";
+function menu(){
+  clearInterval(S&&S.timer);
+  $("gstats").innerHTML=`<span class="chip">Puntos totales <b>${stats.pts.toLocaleString("es")}</b></span><span class="chip">Mejor racha <b>🔥 ${stats.streak}</b></span><span class="chip">Partidas <b>${stats.played}</b></span>`;
+  $("games").innerHTML=
+    card("crono","game","CONTRARRELOJ · 90 s","Contra el reloj","Acierto +3 s, fallo −5 s. Responde todas las que puedas.",bt("crono","pts"))+
+    card("vidas","game","SUPERVIVENCIA · 3 ❤","Tres vidas","Sigue hasta fallar tres. Las rachas multiplican los puntos.",bt("vidas","pts"))+
+    card("profe","game hot","MODO PROFE · 15","Solo lo que entra","15 preguntas al azar del cuestionario del profe y similares.",bt("profe"));
+  let n=0;
+  $("blocks").innerHTML=B.map(b=>card(b.id,b.tag?"hot":"",(b.tag||"BLOQUE "+(++n))+" · "+b.q.length+" preguntas",b.t,b.d,bt(b.id))).join("");
+  $("specials").innerHTML=
+    card("final","","EXAMEN FINAL · 20","Examen mezclado","12 del profe y similares + 8 del resto del tema, nota sobre 10.",bt("final"))+
+    card("todo","","MARATÓN · "+ALL.length,"Todo el tema","Todas las preguntas en orden aleatorio.",bt("todo"))+
+    card("fallos","","REPASO · "+wrongs.size+" pendientes","Repasar fallos","Las que has fallado. Al acertarlas, salen de la lista.",wrongs.size?"":"Sin fallos guardados",!wrongs.size);
+  document.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>start(b.dataset.m));
+  show("menu");
+}
+function show(id){["menu","quiz","result"].forEach(s=>$(s).hidden=s!==id);window.scrollTo(0,0)}
+
+/* ---------- partida ---------- */
+let S;
+function start(m){
+  let qs,title;
+  if(m==="final"){qs=shuffle([...shuffle(ALL.filter(HOT)).slice(0,12),...shuffle(ALL.filter(q=>!HOT(q))).slice(0,8)]);title="Examen final"}
+  else if(m==="profe"){qs=shuffle(ALL.filter(HOT)).slice(0,15);title="Modo profe"}
+  else if(m==="crono"||m==="vidas"||m==="todo"){qs=shuffle(ALL);title={crono:"Contrarreloj",vidas:"Supervivencia",todo:"Todo el tema"}[m]}
+  else if(m==="fallos"){qs=shuffle(ALL.filter(q=>wrongs.has(q.key)));title="Repaso de fallos"}
+  else{const b=B.find(x=>x.id===m);qs=shuffle(b.q.map(q=>({...toQ(q),blk:b.id})));title=b.t}
+  S={m,title,qs,i:0,ok:0,missed:[],answered:false,pts:0,streak:0,maxStreak:0,lives:3,time:90,timer:null,done:false};
+  $("pbar").classList.toggle("time",m==="crono");
+  show("quiz");render();
+  if(m==="crono")S.timer=setInterval(()=>{S.time--;hud();if(S.time<=0)finish()},1000);
+}
+function hud(pop){
+  let h=`<span class="chip">⭐ <b id="hp">${S.pts}</b></span><span class="chip streak">🔥 <b id="hs">${S.streak}</b>${S.streak>=3?" ×"+mult().toFixed(1):""}</span>`;
+  if(S.m==="vidas")h+=`<span class="chip">${"❤️".repeat(S.lives)}${"🖤".repeat(3-S.lives)}</span>`;
+  if(S.m==="crono")h+=`<span class="chip">⏱ <b>${Math.max(0,S.time)} s</b></span>`;
+  $("hud").innerHTML=h;
+  if(pop&&$(pop))$(pop).classList.add("pop");
+  if(S.m==="crono"){$("prog").style.width=Math.max(0,Math.min(100,S.time/90*100))+"%";$("pbar").classList.toggle("low",S.time<=15)}
+  else $("prog").style.width=(S.i/S.qs.length*100)+"%";
+}
+const mult=()=>1+Math.min(S.streak,10)*.2;
+function render(){
+  if(S.i>=S.qs.length){if(S.m==="crono"||S.m==="vidas"){S.qs=S.qs.concat(shuffle(ALL))}else return finish()}
+  const q=S.qs[S.i];S.answered=false;
+  $("qtitle").textContent=S.title;
+  $("qcount").textContent=(S.m==="crono"||S.m==="vidas")?`#${S.i+1}`:`${S.i+1}/${S.qs.length}`;
+  hud();
+  $("qcard").classList.remove("shake");
+  $("qtext").innerHTML=(q.p?'<span class="badge">Del profe</span>':"")+esc(q.q);
+  if(q.type==="w"){
+    S.opts=[];
+    $("opts").innerHTML=`<form class="write" id="wf"><input id="win" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Escribe la respuesta"><button class="btn" type="submit">Comprobar</button></form>`;
+    $("wf").onsubmit=e=>{e.preventDefault();if($("win").value.trim())answer(-1,$("win"))};
+    setTimeout(()=>$("win")&&$("win").focus(),0);
+  }else{
+    S.opts=q.type==="vf"?["Verdadero","Falso"]:shuffle([q.a,...q.w]);
+    $("opts").innerHTML=S.opts.map((o,i)=>`<button class="opt" id="opt${i}" data-i="${i}"><span class="k">${i+1}</span><span>${esc(o)}</span></button>`).join("");
+    document.querySelectorAll(".opt").forEach(b=>b.onclick=()=>answer(+b.dataset.i,b));
+  }
+  $("fb").hidden=true;$("next").hidden=true;
+}
+function answer(i,el){
+  if(S.answered||S.done)return;S.answered=true;
+  const q=S.qs[S.i];let right;
+  if(q.type==="w"){
+    const inp=$("win");right=q.acc.some(a=>norm(a)===norm(inp.value));
+    inp.disabled=true;inp.classList.add(right?"ok":"bad");$("wf").querySelector("button").hidden=true;
+  }else{
+    right=S.opts[i]===q.a;
+    document.querySelectorAll(".opt").forEach((b,j)=>{b.disabled=true;if(S.opts[j]===q.a)b.classList.add("ok");else if(j===i)b.classList.add("bad")});
+  }
+  let gained=0;
+  if(right){
+    S.ok++;S.streak++;S.maxStreak=Math.max(S.maxStreak,S.streak);
+    gained=Math.round(100*mult());S.pts+=gained;
+    if(S.m==="crono")S.time+=3;
+    if(S.m==="fallos")wrongs.delete(q.key);
+    const r=(el||$("qtext")).getBoundingClientRect();
+    burst(r.left+r.width/2,r.top+r.height/2,S.streak%5===0?90:28,S.streak%5===0?1.4:.8);
+  }else{
+    S.streak=0;S.missed.push(q);wrongs.add(q.key);
+    if(S.m==="crono")S.time-=5;
+    if(S.m==="vidas")S.lives--;
+    void $("qcard").offsetWidth;$("qcard").classList.add("shake");
+  }
+  store.set("iaw1-wrong",[...wrongs]);
+  hud(right?"hp":null);
+  $("fb").innerHTML=`<span class="code ${right?"ok":"bad"}">${right?"200 OK":"404"}</span>${right?"":"Era: <b>"+esc(q.a)+"</b>. "}${esc(q.e)}${gained?`<span class="plus">+${gained}</span>`:""}${right&&S.streak>=3&&S.streak%5===0?` <b>¡Racha de ${S.streak}! 🔥</b>`:""}`;
+  $("fb").hidden=false;
+  const over=(S.m==="vidas"&&S.lives<=0)||(S.m==="crono"&&S.time<=0);
+  if(S.m==="crono"&&!over){setTimeout(()=>{if(!S.done&&S.answered){S.i++;render()}},right?650:1600);return}
+  $("next").textContent=over||(S.i+1>=S.qs.length&&S.m!=="vidas")?"Ver resultado":"Siguiente";
+  $("next").hidden=false;$("next").focus();
+}
+$("next").onclick=()=>{if((S.m==="vidas"&&S.lives<=0)){finish();return}S.i++;render()};
+$("back").onclick=menu;
+function finish(){
+  if(S.done)return;S.done=true;clearInterval(S.timer);
+  const game=S.m==="crono"||S.m==="vidas";
+  const n=game?S.ok+S.missed.length:S.qs.length,grade=n?S.ok/n*10:0,pass=game?S.pts>0:grade>=5;
+  let record=false;
+  if(game){if(best[S.m]==null||S.pts>best[S.m]){best[S.m]=S.pts;record=S.pts>0}}
+  else if(S.m!=="fallos"&&(best[S.m]==null||grade>best[S.m])){best[S.m]=grade;record=true}
+  store.set("iaw1-best",best);
+  stats.pts+=S.pts;stats.played++;stats.streak=Math.max(stats.streak,S.maxStreak);saveStats();
+  const msg=game?(record?"¡Nuevo récord!":"Partida terminada"):(grade>=9?"Tema dominado.":grade>=7?"Muy bien, repasa los fallos.":pass?"Aprobado justo, dale otra vuelta.":"Toca repasar.");
+  $("result").innerHTML=`<div class="sub">${esc(S.title).toUpperCase()}</div>
+  <div class="status ${pass?"ok":"bad"}" style="margin-top:12px">${game?S.pts.toLocaleString("es")+" pts":pass?"200 OK":"500 Error"}</div>
+  <p class="score">${game?`${S.ok} aciertos de ${n}`:`<b>${grade.toFixed(1)}</b> / 10 · ${S.ok} de ${n} aciertos`}</p>
+  <p style="color:var(--muted);margin:0">${msg}</p>
+  <div class="rankres" id="rankres"></div>
+  <div class="stats"><span class="chip">⭐ <b>${S.pts}</b> puntos</span><span class="chip">Mejor racha <b>🔥 ${S.maxStreak}</b></span></div>
+  <div class="actions"><button class="btn" id="again">Otra vez</button>${S.missed.length?'<button class="btn ghost" id="rf">Repasar fallos</button>':""}<button class="btn ghost" id="home">Menú</button></div>
+  ${S.missed.length?`<h2>Tus fallos</h2><div class="review">${S.missed.map(q=>`<div class="it"><b>${esc(q.q)}</b><span class="ans">${esc(q.a)}</span> · ${esc(q.e)}</div>`).join("")}</div>`:""}`;
+  show("result");
+  submitScore();
+  if(pass&&(record||grade>=7))rainConfetti();
+  $("again").onclick=()=>start(S.m);$("home").onclick=menu;
+  if($("rf"))$("rf").onclick=()=>start("fallos");
+}
+document.addEventListener("keydown",e=>{
+  if($("quiz").hidden||!S||S.answered)return;
+  if(e.target.tagName==="INPUT")return;
+  if(e.key>="1"&&e.key<="4"){const i=+e.key-1;if(i<S.opts.length)answer(i,$("opt"+i))}
+});
+/* ---------- ranking compartido ---------- */
+const RT=[["total","Puntos totales",v=>v.toLocaleString("es")+" pts"],["crono","Contrarreloj",v=>v.toLocaleString("es")+" pts"],["vidas","Supervivencia",v=>v.toLocaleString("es")+" pts"],["final","Examen final",v=>v.toFixed(1)+" / 10"],["streak","Mejor racha",v=>"🔥 "+v]];
+let rtab=store.get("iaw1-rtab","total"),rdocs=[],myId=null,myDoc=null,db=null,usr=null,canWrite=true,lastPos=null;
+function rankTabs(){
+  $("tabs").innerHTML=RT.map(([k,l])=>`<button class="tab" data-k="${k}" aria-pressed="${k===rtab}">${l}</button>`).join("");
+  document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{rtab=b.dataset.k;store.set("iaw1-rtab",rtab);rankTabs();renderRank()});
+}
+function sorted(k){return rdocs.filter(d=>typeof d[k]==="number"&&d[k]>0).sort((a,b)=>b[k]-a[k]||(a.at||"").localeCompare(b.at||""))}
+async function renderRank(flashId){
+  const [k,,fmt]=RT.find(t=>t[0]===rtab);
+  const list=sorted(k).slice(0,15);
+  $("rcount").textContent=rdocs.length+(rdocs.length===1?" jugador":" jugadores");
+  if(!list.length){$("rows").innerHTML=`<div class="empty">${db?"Nadie ha puntuado aquí todavía. Juega una partida y estrena el ranking.":"El ranking se ve al abrir la web con tu cuenta de claude.ai."}</div>`;return}
+  let names={};
+  if(usr){try{names=await usr.profiles(list.map(d=>d.id))}catch(e){}}
+  $("rows").innerHTML=list.map((d,i)=>{const nm=d.nick||(names[d.id]&&names[d.id].name)||"Anónimo";
+    return `<div class="row ${i<3?"p"+(i+1):""} ${d.id===myId?"me":""} ${d.id===flashId?"flash":""}"><span class="pos">${["🥇","🥈","🥉"][i]||i+1}</span><span class="nm"></span><span class="val">${fmt(d[k])}</span></div>`}).join("");
+  [...$("rows").querySelectorAll(".nm")].forEach((el,i)=>{const d=list[i];el.textContent=d.nick||(names[d.id]&&names[d.id].name)||"Anónimo";if(d.id===myId){const sm=document.createElement("small");sm.textContent="tú";el.appendChild(sm)}});
+  meLine();
+}
+function myPos(k){const i=sorted(k).findIndex(d=>d.id===myId);return i<0?null:i+1}
+function meLine(){
+  if(!db){$("meline").textContent="";return}
+  if(!canWrite){$("meline").textContent="Con este acceso puedes ver el ranking pero no salir en él.";return}
+  const p=myPos(rtab);
+  $("meline").innerHTML=myDoc?(p?`Vas <b>${p}º</b> en esta categoría.`:"Aún no tienes puntuación en esta categoría."):"Pon tu nombre y juega para aparecer.";
+}
+async function initRank(){
+  rankTabs();
+  try{db=await claude.use("db");usr=await claude.use("user")}catch(e){}
+  if(!db){$("rcount").textContent="Sin conexión";$("nickf").hidden=true;renderRank();return}
+  try{myId=usr?await usr.id():null}catch(e){}
+  try{const w=usr&&await usr.can("data.write");if(w===false)canWrite=false}catch(e){}
+  if(!myId)canWrite=false;
+  $("nickf").hidden=!canWrite;
+  db.collection("ranking").onSnapshot(snap=>{
+    rdocs=snap.docs.map(d=>({id:d.id,...d.data()}));
+    myDoc=rdocs.find(d=>d.id===myId)||null;
+    if(myDoc&&myDoc.nick&&document.activeElement!==$("nick"))$("nick").value=myDoc.nick;
+    renderRank();
+  },()=>{$("rcount").textContent="Sin conexión"});
+}
+let writing=Promise.resolve();
+function saveMine(patch){
+  if(!db||!myId||!canWrite)return Promise.resolve(false);
+  writing=writing.then(async()=>{
+    const cur=myDoc||{};
+    const next={nick:cur.nick||"",total:cur.total||0,crono:cur.crono||0,vidas:cur.vidas||0,final:cur.final||0,streak:cur.streak||0,games:cur.games||0,...patch(cur),at:new Date().toISOString()};
+    try{await db.collection("ranking").doc(myId).set(next);myDoc={id:myId,...next};return true}catch(e){return false}
+  });
+  return writing;
+}
+$("nickf").onsubmit=e=>{e.preventDefault();const v=$("nick").value.trim().slice(0,20);if(!v)return;
+  store.set("iaw1-nick",v);saveMine(()=>({nick:v})).then(ok=>{$("meline").textContent=ok?"Nombre guardado.":"No se pudo guardar el nombre. Prueba otra vez."})};
+try{const n=store.get("iaw1-nick","");if(n)$("nick").value=n}catch(e){}
+async function submitScore(){
+  const game=S.m==="crono"||S.m==="vidas";
+  const n=S.ok+S.missed.length,grade=S.qs.length?S.ok/(game?Math.max(n,1):S.qs.length)*10:0;
+  const nick=($("nick").value||store.get("iaw1-nick","")).trim().slice(0,20);
+  const before=myPos(game?S.m:S.m==="final"?"final":"total");
+  const ok=await saveMine(c=>{const o={total:(c.total||0)+S.pts,games:(c.games||0)+1,streak:Math.max(c.streak||0,S.maxStreak)};
+    if(nick&&!c.nick)o.nick=nick;
+    if(S.m==="crono")o.crono=Math.max(c.crono||0,S.pts);
+    if(S.m==="vidas")o.vidas=Math.max(c.vidas||0,S.pts);
+    if(S.m==="final")o.final=Math.max(c.final||0,Math.round(grade*10)/10);
+    return o});
+  const el=$("rankres");if(!el)return;
+  if(!db){el.textContent="";return}
+  if(!ok){el.textContent=canWrite?"No se pudo subir la puntuación al ranking.":"";return}
+  setTimeout(()=>{const k=game?S.m:S.m==="final"?"final":"total",p=myPos(k),lbl=RT.find(t=>t[0]===k)[1];
+    if(el.isConnected)el.textContent=p?`🏆 Ranking · ${lbl}: vas ${p}º de ${sorted(k).length}${before&&p<before?" (subes "+(before-p)+")":""}`:"Puntuación subida al ranking.";},700);
+}
+initRank();
+menu();
+</script>
+
+<a id="asir-back" href="../../asignatura.html?s=iaw" aria-label="Volver a IAW" style="--c:#00B8D9;bottom:14px"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg><span>IAW</span></a><link rel="stylesheet" href="../../assets/back.css"></body></html>

@@ -1,0 +1,812 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body><script src="../../assets/config.js"></script><script src="../../assets/claude-shim.js"></script>
+<title>Oracle en Docker · ASGBD</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<style>
+/* Layout: hero con flujo de la práctica → índice lateral fijo + secciones con color propio por fase */
+:root{
+  --bg:#f5f6f9; --surface:#ffffff; --surface-2:#eef0f5; --fg:#141824; --muted:#5b6275; --line:#dde1ea;
+  --term:#0f1420; --term-fg:#e6ebf5; --term-muted:#8590a8; --prompt:#7cc4ff;
+  --brand:#c7361f; --brand-2:#ff7a45;
+  --c0:#2f6fed; --c1:#0f9b8e; --c2:#5b4bd6; --c3:#9a3fd1; --c4:#d18a00; --c5:#2c9a46; --c6:#0a8fb3; --c7:#e2622b; --c8:#d1323f; --c9:#5a6680;
+  --display:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
+  --body:"IBM Plex Sans",ui-sans-serif,system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0c0f16; --surface:#131824; --surface-2:#1a2030; --fg:#e8ecf4; --muted:#98a1b6; --line:#252c3d;
+  --term:#070a10; --term-fg:#e6ebf5; --term-muted:#7d88a0; --prompt:#7cc4ff;
+  --brand:#ff5a3c; --brand-2:#ffa05a;
+  --c0:#6a9bff; --c1:#2fd1bf; --c2:#8f84ff; --c3:#c27bf2; --c4:#f4b53a; --c5:#55c96d; --c6:#3cc3e6; --c7:#ff8a52; --c8:#ff5f6a; --c9:#9aa5bf;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0c0f16; --surface:#131824; --surface-2:#1a2030; --fg:#e8ecf4; --muted:#98a1b6; --line:#252c3d;
+  --term:#070a10; --term-fg:#e6ebf5; --term-muted:#7d88a0; --prompt:#7cc4ff;
+  --brand:#ff5a3c; --brand-2:#ffa05a;
+  --c0:#6a9bff; --c1:#2fd1bf; --c2:#8f84ff; --c3:#c27bf2; --c4:#f4b53a; --c5:#55c96d; --c6:#3cc3e6; --c7:#ff8a52; --c8:#ff5f6a; --c9:#9aa5bf;
+  color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15.5px;line-height:1.6;margin:0}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.1}
+code,.mono{font-family:var(--mono)}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--brand);outline-offset:2px;border-radius:4px}
+
+/* HERO */
+.hero{position:relative;overflow:hidden;background:var(--term);color:var(--term-fg);border-bottom:1px solid var(--line)}
+.hero::before{content:"";position:absolute;inset:0;background:
+  radial-gradient(600px 300px at 85% -10%, color-mix(in srgb,var(--brand) 45%,transparent), transparent 70%),
+  radial-gradient(500px 260px at 10% 120%, color-mix(in srgb,var(--c2) 40%,transparent), transparent 70%);
+  pointer-events:none}
+.hero::after{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.04) 1px,transparent 1px);background-size:28px 28px;pointer-events:none}
+.hero .wrap{position:relative;z-index:1;padding-block:56px 40px;display:grid;gap:28px}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--brand-2);display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.eyebrow span{border:1px solid rgba(255,255,255,.18);padding:3px 10px;border-radius:999px;color:#cfd6e6}
+.hero h1{font-size:clamp(38px,6.4vw,74px);font-weight:800;letter-spacing:-.02em}
+.hero h1 em{font-style:normal;background:linear-gradient(90deg,var(--brand),var(--brand-2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p.lead{max-width:62ch;color:#b8c1d4;font-size:17px;margin:0}
+.hero p.lead b{color:#fff}
+.term-mini{font-family:var(--mono);font-size:13.5px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:14px 16px;max-width:620px;overflow-x:auto}
+.term-mini .p{color:var(--prompt)} .term-mini .ok{color:#7be08e}
+.term-mini .dim{color:#7d88a0}
+
+/* FLOW */
+.flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.flow a{text-decoration:none;font-family:var(--mono);font-size:12.5px;padding:7px 12px;border-radius:8px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:#e6ebf5;display:flex;gap:8px;align-items:center;transition:background .15s,transform .15s}
+.flow a:hover{background:rgba(255,255,255,.12);transform:translateY(-1px)}
+.flow a i{width:8px;height:8px;border-radius:50%;display:inline-block;background:var(--k)}
+.flow .arr{color:#5c6782;font-family:var(--mono)}
+.flow-label{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#7d88a0;margin-bottom:8px}
+
+/* LAYOUT */
+.layout{display:grid;grid-template-columns:230px minmax(0,1fr);gap:40px;padding-block:40px 24px}
+nav.toc{position:sticky;top:calc(env(safe-area-inset-top,0px) + 20px);align-self:start;display:flex;flex-direction:column;gap:2px}
+nav.toc .h{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+nav.toc a{text-decoration:none;display:grid;grid-template-columns:26px 1fr;gap:8px;align-items:center;padding:7px 10px;border-radius:8px;color:var(--muted);font-size:14px;border-left:3px solid transparent}
+nav.toc a b{font-family:var(--mono);font-size:12px;color:var(--k);font-weight:700}
+nav.toc a:hover,nav.toc a.on{background:var(--surface);color:var(--fg);border-left-color:var(--k)}
+main{display:flex;flex-direction:column;gap:28px;min-width:0}
+
+/* SECTION */
+section.s{background:var(--surface);border:1px solid var(--line);border-radius:18px;overflow:hidden;scroll-margin-top:20px}
+.s-head{display:flex;gap:16px;align-items:center;padding:20px 24px;background:linear-gradient(90deg,color-mix(in srgb,var(--k) 14%,transparent),transparent 70%);border-bottom:1px solid var(--line)}
+.num{flex:none;width:46px;height:46px;border-radius:12px;display:grid;place-items:center;font-family:var(--mono);font-weight:700;font-size:18px;color:#fff;background:var(--k);box-shadow:0 6px 18px -6px var(--k)}
+.s-head h2{font-size:clamp(21px,2.6vw,27px);font-weight:700;letter-spacing:-.01em}
+.s-head .where{font-family:var(--mono);font-size:12px;color:var(--k);letter-spacing:.06em;text-transform:uppercase;margin-top:3px}
+.s-body{padding:22px 24px 24px;display:flex;flex-direction:column;gap:16px}
+.s-body p{margin:0;max-width:72ch}
+.s-body ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
+.step{display:flex;flex-direction:column;gap:8px}
+.step > .t{font-weight:600}
+.step > .t small{font-weight:400;color:var(--muted)}
+
+/* TERMINAL BLOCKS */
+.cmd{background:var(--term);color:var(--term-fg);border-radius:12px;border:1px solid color-mix(in srgb,var(--k) 35%,var(--line));overflow:hidden}
+.cmd .bar{display:flex;justify-content:space-between;align-items:center;padding:6px 8px 6px 14px;background:rgba(255,255,255,.04);border-bottom:1px solid rgba(255,255,255,.06);font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:var(--term-muted);text-transform:uppercase}
+.cmd .bar .dots{display:flex;gap:6px;align-items:center}
+.cmd .bar .dots i{width:9px;height:9px;border-radius:50%;background:#3a4357}
+.cmd .bar .dots i:first-child{background:var(--k)}
+.copy{font-family:var(--mono);font-size:11.5px;background:transparent;color:#cfd6e6;border:1px solid rgba(255,255,255,.16);border-radius:6px;padding:4px 10px;cursor:pointer;letter-spacing:.04em}
+.copy:hover{background:rgba(255,255,255,.08)}
+.copy.done{color:#7be08e;border-color:#7be08e}
+.cmd pre{margin:0;padding:14px 16px;font-family:var(--mono);font-size:13.5px;line-height:1.55;overflow-x:auto;white-space:pre}
+.cmd pre .pr{color:var(--prompt);user-select:none}
+.kw{color:#ff9b7a}.st{color:#a8e07a}.nm{color:#ffd479}
+.out{margin:0;font-family:var(--mono);font-size:12.5px;line-height:1.5;padding:10px 14px;border-radius:10px;background:var(--surface-2);color:var(--muted);border:1px dashed var(--line);overflow-x:auto;white-space:pre}
+.out b{color:var(--c5);font-weight:700}
+.out::before{content:"salida";display:block;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);opacity:.7;margin-bottom:4px}
+
+/* CALLOUTS */
+.note{display:grid;grid-template-columns:auto 1fr;gap:12px;padding:12px 16px;border-radius:12px;font-size:14.5px;align-items:start}
+.note .ic{font-family:var(--mono);font-weight:700;font-size:12px;padding:2px 8px;border-radius:6px;color:#fff;margin-top:2px}
+.note.tip{background:color-mix(in srgb,var(--c1) 10%,var(--surface));border:1px solid color-mix(in srgb,var(--c1) 35%,transparent)}
+.note.tip .ic{background:var(--c1)}
+.note.warn{background:color-mix(in srgb,var(--c4) 12%,var(--surface));border:1px solid color-mix(in srgb,var(--c4) 40%,transparent)}
+.note.warn .ic{background:var(--c4)}
+.note.danger{background:color-mix(in srgb,var(--c8) 10%,var(--surface));border:1px solid color-mix(in srgb,var(--c8) 40%,transparent)}
+.note.danger .ic{background:var(--c8)}
+.note p{margin:0}
+code.i{font-size:.88em;background:var(--surface-2);border:1px solid var(--line);padding:1px 6px;border-radius:5px}
+
+/* COMPARE CARDS */
+.duo{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.card{border:1px solid var(--line);border-radius:14px;padding:16px 18px;background:var(--surface-2);display:flex;flex-direction:column;gap:6px;border-top:4px solid var(--k)}
+.card .tag{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--k);letter-spacing:.08em}
+.card .q{font-size:15px;font-weight:600}
+.card .d{font-size:14px;color:var(--muted)}
+
+/* KV (developer) */
+.kv{display:grid;grid-template-columns:max-content 1fr;gap:0;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.kv div{padding:9px 14px;border-bottom:1px solid var(--line);font-size:14.5px}
+.kv div:nth-child(odd){font-family:var(--mono);font-size:12.5px;color:var(--muted);background:var(--surface-2);text-transform:uppercase;letter-spacing:.06em}
+.kv div:nth-last-child(-n+2){border-bottom:0}
+.kv b{font-family:var(--mono)}
+
+/* RESIZE VISUAL */
+.bars{display:flex;flex-direction:column;gap:10px}
+.bar-row{display:grid;grid-template-columns:minmax(0,190px) 1fr 64px;gap:12px;align-items:center;font-size:13px}
+.bar-row .n{font-family:var(--mono);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.track{height:14px;border-radius:999px;background:var(--surface-2);position:relative;overflow:hidden;border:1px solid var(--line)}
+.track .a{position:absolute;inset:0 auto 0 0;background:color-mix(in srgb,var(--k) 40%,transparent)}
+.track .b{position:absolute;inset:0 auto 0 0;background:var(--k);border-radius:999px}
+.bar-row .v{font-family:var(--mono);font-variant-numeric:tabular-nums;text-align:right;font-weight:700}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+
+/* ERRORS */
+.errs{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.err{border:1px solid var(--line);border-radius:12px;padding:14px;background:var(--surface-2);display:flex;flex-direction:column;gap:6px}
+.err .code{font-family:var(--mono);font-weight:700;font-size:13px;color:#fff;background:var(--c8);align-self:flex-start;padding:2px 9px;border-radius:6px}
+.err .code.sp{background:var(--c9)}
+.err .w{font-size:14px;font-weight:600}
+.err .fix{font-family:var(--mono);font-size:12.5px;color:var(--c5);word-break:break-word}
+.err .fix.txt{font-family:var(--body);font-size:13.5px;color:var(--muted)}
+.filter{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.filter input{font:inherit;font-family:var(--mono);font-size:14px;padding:9px 12px;border-radius:10px;border:1px solid var(--line);background:var(--surface-2);color:var(--fg);width:min(320px,100%)}
+.filter span{font-size:13px;color:var(--muted)}
+
+/* EXTRA (no está en los apuntes) */
+.extra{--x:var(--c5);margin-top:6px;border:1.5px dashed color-mix(in srgb,var(--x) 55%,var(--line));border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:14px;background:color-mix(in srgb,var(--x) 5%,var(--surface))}
+.extra .badge{background:var(--x)}
+.extra-h{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.extra-h h3{font-size:19px;font-weight:700}
+.badge{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.12em;color:#fff;background:var(--c5);padding:3px 9px;border-radius:6px}
+.extra .src{font-size:14px;color:var(--muted)}
+.rooms{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+@media (max-width:600px){.rooms{grid-template-columns:1fr}}
+
+/* TEST + RANKING */
+.arena{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:18px;align-items:start}
+.panel{border:1px solid var(--line);border-radius:16px;background:var(--surface-2);padding:18px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.panel h3{font-size:19px;font-weight:700}
+.panel .sub{font-size:13.5px;color:var(--muted);margin:0}
+.btn{font:inherit;font-weight:600;font-size:14.5px;border:0;border-radius:10px;padding:11px 18px;cursor:pointer;background:var(--k);color:#fff;transition:transform .12s,filter .12s}
+.btn:hover{filter:brightness(1.08);transform:translateY(-1px)}
+.btn:disabled{opacity:.5;cursor:default;transform:none}
+.btn.ghost{background:transparent;color:var(--fg);border:1px solid var(--line)}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-family:var(--mono);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.field input{font:inherit;font-size:15px;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--fg)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.qtop{display:flex;justify-content:space-between;gap:10px;font-family:var(--mono);font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.prog{height:6px;border-radius:999px;background:var(--surface);overflow:hidden;border:1px solid var(--line)}
+.prog i{display:block;height:100%;background:var(--k);transition:width .3s}
+.qtext{font-family:var(--display);font-size:20px;font-weight:700;line-height:1.25;text-wrap:balance}
+.opts{display:flex;flex-direction:column;gap:8px}
+.opt{font:inherit;text-align:left;font-size:14px;padding:12px 14px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer;display:grid;grid-template-columns:26px 1fr;gap:10px;align-items:start;transition:border-color .12s,background .12s}
+.opt:hover:not(:disabled){border-color:var(--k)}
+.opt b{font-family:var(--mono);font-size:12px;color:var(--k);padding-top:1px}
+.opt code{font-family:var(--mono);font-size:12.5px;word-break:break-word}
+.opt.ok{border-color:var(--c5);background:color-mix(in srgb,var(--c5) 14%,var(--surface))}
+.opt.ko{border-color:var(--c8);background:color-mix(in srgb,var(--c8) 12%,var(--surface))}
+.opt:disabled{cursor:default}
+.expl{font-size:14px;padding:10px 14px;border-radius:10px;background:var(--surface);border-left:4px solid var(--c5)}
+.expl.bad{border-left-color:var(--c8)}
+.result{display:flex;flex-direction:column;gap:12px;align-items:flex-start}
+.big{font-family:var(--display);font-size:56px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+.big small{font-size:22px;color:var(--muted)}
+.msg{font-size:13.5px;padding:9px 12px;border-radius:10px;background:var(--surface);border:1px solid var(--line)}
+.msg.warn{border-color:color-mix(in srgb,var(--c4) 50%,var(--line))}
+.podium{display:grid;grid-template-columns:1fr 1.15fr 1fr;gap:8px;align-items:end}
+.pod{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;min-width:0}
+.pod .who{font-size:13px;font-weight:600;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pod .pts{font-family:var(--mono);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.pod .blk{width:100%;border-radius:10px 10px 4px 4px;display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:24px;color:#fff}
+.pod.p1 .blk{height:92px;background:linear-gradient(180deg,#e9b832,#c98d0a)}
+.pod.p2 .blk{height:70px;background:linear-gradient(180deg,#a9b4c6,#7d899c)}
+.pod.p3 .blk{height:54px;background:linear-gradient(180deg,#d38a55,#a8602f)}
+.pod.empty .blk{background:var(--surface);border:1px dashed var(--line);color:var(--muted)}
+.rank{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.rank li{display:grid;grid-template-columns:30px minmax(0,1fr) auto auto;gap:10px;align-items:center;padding:9px 12px;border-radius:10px;background:var(--surface);border:1px solid var(--line);font-size:14px}
+.rank li.me{border-color:var(--k);background:color-mix(in srgb,var(--k) 10%,var(--surface))}
+.rank .pos{font-family:var(--mono);font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums}
+.rank .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rank .nm em{font-style:normal;font-size:11px;font-family:var(--mono);color:var(--k);margin-left:6px}
+.rank .sc{font-family:var(--mono);font-weight:700;font-variant-numeric:tabular-nums}
+.rank .tm{font-family:var(--mono);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;min-width:44px;text-align:right}
+.rank .del{font:inherit;font-size:11px;border:1px solid var(--line);background:transparent;color:var(--muted);border-radius:6px;padding:2px 6px;cursor:pointer;margin-left:6px}
+.empty-r{font-size:14px;color:var(--muted);padding:14px;border:1px dashed var(--line);border-radius:10px;text-align:center}
+details.admin{border-top:1px solid var(--line);padding-top:12px}
+details.admin summary{cursor:pointer;font-size:13.5px;font-weight:600}
+details.admin .row{margin-top:10px}
+details.admin input{width:120px}
+details.admin input#ma{width:180px}
+@media (max-width:900px){.arena{grid-template-columns:1fr}}
+.hero-cta{display:inline-flex;align-items:center;gap:8px;text-decoration:none;font-weight:600;font-size:14.5px;padding:10px 16px;border-radius:10px;background:linear-gradient(90deg,var(--brand),var(--brand-2));color:#fff;align-self:flex-start}
+
+/* PIPELINE final */
+.pipe{display:flex;flex-wrap:wrap;gap:8px;counter-reset:p}
+.pipe span{counter-increment:p;font-size:13.5px;padding:8px 12px;border-radius:10px;background:var(--surface-2);border:1px solid var(--line);display:flex;gap:8px;align-items:center}
+.pipe span::before{content:counter(p);font-family:var(--mono);font-weight:700;font-size:11px;color:#fff;background:var(--k);width:20px;height:20px;border-radius:6px;display:grid;place-items:center}
+
+/* FOOTER */
+footer{margin-top:24px;background:var(--term);color:#b8c1d4;border-top:3px solid var(--brand)}
+footer .wrap{padding-block:30px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:center}
+footer .sig{font-family:var(--display);font-size:20px;font-weight:700;color:#fff}
+footer .sig small{display:block;font-family:var(--mono);font-size:11.5px;font-weight:400;letter-spacing:.12em;text-transform:uppercase;color:#7d88a0;margin-top:4px}
+footer .copy-r{font-family:var(--mono);font-size:13px}
+footer .copy-r b{color:var(--brand-2)}
+
+@media (max-width:900px){
+  .layout{grid-template-columns:1fr;gap:20px}
+  nav.toc{position:static;flex-direction:row;flex-wrap:wrap;gap:6px}
+  nav.toc .h{width:100%}
+  nav.toc a{grid-template-columns:auto auto;border-left:0;border:1px solid var(--line);background:var(--surface);padding:5px 10px;font-size:13px}
+}
+@media (max-width:600px){
+  .duo{grid-template-columns:1fr}
+  .s-head,.s-body{padding-left:16px;padding-right:16px}
+  .bar-row{grid-template-columns:1fr 56px}
+  .bar-row .n{grid-column:1/-1}
+  .kv{grid-template-columns:1fr}
+  .kv div:nth-child(odd){border-bottom:0;padding-bottom:2px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+html{scroll-behavior:smooth}
+</style>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow">ASGBD · ASIR2 <span>Oracle AI Database 26ai Free</span><span>Docker Desktop</span></div>
+    <h1>Oracle en <em>Docker</em>,<br>paso a paso</h1>
+    <p class="lead">Chuleta práctica para montar una <b>PDB</b>, sus <b>tablespaces</b> y <b>usuarios</b> desde la pestaña <b>Exec</b> del contenedor. Donde pone <code class="mono">jcs</code> van tus iniciales.</p>
+    <a class="hero-cta" href="#s10">Haz el test y entra en el ranking →</a>
+    <div class="term-mini"><span class="dim">Oracle-ASIR2 › Exec</span><br><span class="p">sh-4.4$</span> sqlplus / as sysdba<br><span class="ok">Connected to: Oracle AI Database 26ai Free Release 23.26.3.0.0</span><br><span class="p">SQL&gt;</span> <span class="dim">_</span></div>
+    <div>
+      <div class="flow-label">Flujo de la incidencia</div>
+      <div class="flow">
+        <a href="#s2" style="--k:var(--c2)"><i></i>PDB</a><span class="arr">→</span>
+        <a href="#s2" style="--k:var(--c2)"><i></i>OPEN + SAVE STATE</a><span class="arr">→</span>
+        <a href="#s3" style="--k:var(--c3)"><i></i>ALTER SESSION</a><span class="arr">→</span>
+        <a href="#s4" style="--k:var(--c4)"><i></i>Tablespaces</a><span class="arr">→</span>
+        <a href="#s5" style="--k:var(--c5)"><i></i>Usuarios + grants</a><span class="arr">→</span>
+        <a href="#s6" style="--k:var(--c6)"><i></i>Developer</a><span class="arr">→</span>
+        <a href="#s7" style="--k:var(--c7)"><i></i>RESIZE / ADD DATAFILE</a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap layout">
+  <nav class="toc" aria-label="Índice">
+    <div class="h">Índice</div>
+    <a href="#s0" style="--k:var(--c0)"><b>00</b>Entrar en Oracle</a>
+    <a href="#s1" style="--k:var(--c1)"><b>01</b>Comprobar la BD</a>
+    <a href="#s2" style="--k:var(--c2)"><b>02</b>Crear la PDB</a>
+    <a href="#s3" style="--k:var(--c3)"><b>03</b>Entrar en la PDB</a>
+    <a href="#s4" style="--k:var(--c4)"><b>04</b>Tablespaces</a>
+    <a href="#s5" style="--k:var(--c5)"><b>05</b>Usuarios y permisos</a>
+    <a href="#s6" style="--k:var(--c6)"><b>06</b>SQL Developer</a>
+    <a href="#s7" style="--k:var(--c7)"><b>07</b>Cambiar tamaños</a>
+    <a href="#s8" style="--k:var(--c8)"><b>08</b>Errores</a>
+    <a href="#s9" style="--k:var(--c9)"><b>09</b>Borrar y mover PDB</a>
+    <a href="#s10" style="--k:var(--brand)"><b>10</b>Test y ranking</a>
+  </nav>
+
+  <main>
+
+  <!-- 0 -->
+  <section class="s" id="s0" style="--k:var(--c0)">
+    <div class="s-head"><div class="num">00</div><div><h2>Entrar en Oracle</h2><div class="where">Docker Desktop › Containers</div></div></div>
+    <div class="s-body">
+      <ul>
+        <li>Abre <b>Docker Desktop › Containers</b>. <b>Oracle-ASIR2</b> debe tener el <b>punto verde</b>. Si no, pulsa ▶ <b>Start</b> y espera 1 minuto.</li>
+        <li>Pincha en el nombre <b>Oracle-ASIR2</b> › pestaña <b>Exec</b>. Sale una terminal <code class="i">sh-4.4$</code>.</li>
+      </ul>
+      <div class="cmd"><div class="bar"><span class="dots"><i></i><i></i><i></i>&nbsp;sh-4.4$</span><button class="copy">Copiar</button></div><pre><span class="kw">sqlplus</span> / as sysdba</pre></div>
+      <pre class="out">Connected to:
+Oracle AI Database 26ai Free Release 23.26.3.0.0 - Develop, Learn, and Run for Free
+<b>SQL&gt;</b></pre>
+      <p>Ya estás dentro como <b>SYS</b> (el administrador). Cada orden termina en <code class="i">;</code> y se ejecuta con Intro. Para salir: <code class="i">exit</code></p>
+      <div class="note warn"><span class="ic">OJO</span><p>En sqlplus la flecha <b>↑</b> no recupera la orden anterior (salen caracteres raros). Vuelve a escribirla o pégala (clic derecho › pegar / <b>Ctrl+Shift+V</b>). Si una orden se queda a medias con un número delante (2, 3…), escribe <code class="i">;</code> o <code class="i">/</code> y Intro.</p></div>
+    </div>
+  </section>
+
+  <!-- 1 -->
+  <section class="s" id="s1" style="--k:var(--c1)">
+    <div class="s-head"><div class="num">01</div><div><h2>Comprobar que la base de datos funciona</h2><div class="where">Raíz · CDB$ROOT</div></div></div>
+    <div class="s-body">
+      <div class="step"><div class="t">Dónde estás <small>(debe salir CDB$ROOT, la raíz)</small></div>
+        <div class="cmd"><div class="bar"><span class="dots"><i></i><i></i><i></i>&nbsp;SQL&gt;</span><button class="copy">Copiar</button></div><pre><span class="kw">SHOW</span> CON_NAME;</pre></div>
+        <pre class="out">CON_NAME
+------------------------------
+<b>CDB$ROOT</b></pre></div>
+      <div class="step"><div class="t">La instancia está abierta <small>(debe salir OPEN)</small></div>
+        <div class="cmd"><div class="bar"><span class="dots"><i></i><i></i><i></i>&nbsp;SQL&gt;</span><button class="copy">Copiar</button></div><pre><span class="kw">select</span> instance_name, status <span class="kw">from</span> v$instance;</pre></div>
+        <pre class="out">INSTANCE_NAME    STATUS
+---------------- ------------
+FREE             <b>OPEN</b></pre></div>
+      <div class="step"><div class="t">Procesos y listener <small>(fuera de sqlplus: escribe <code class="i">exit</code> primero)</small></div>
+        <div class="cmd"><div class="bar"><span class="dots"><i></i><i></i><i></i>&nbsp;sh-4.4$</span><button class="copy">Copiar</button></div><pre>ps -eaf | grep FREE
+lsnrctl status</pre></div></div>
+      <div class="note tip"><span class="ic">TIP</span><p>Para volver a entrar: <code class="i">sqlplus / as sysdba</code></p></div>
+    </div>
+  </section>
+
+  <!-- 2 -->
+  <section class="s" id="s2" style="--k:var(--c2)">
+    <div class="s-head"><div class="num">02</div><div><h2>Crear la PDB</h2><div class="where">Raíz · CDB$ROOT</div></div></div>
+    <div class="s-body">
+      <div class="step"><div class="t">Ver las PDB que hay</div>
+        <div class="cmd"><div class="bar"><span class="dots"><i></i><i></i><i></i>&nbsp;SQL&gt;</span><button class="copy">Copiar</button></div><pre><span class="kw">SELECT</span> NAME, OPEN_MODE <span class="kw">FROM</span> V$PDBS;</pre></div>
+        <pre class="out">NAME          OPEN_MODE
+------------- ----------
+PDB$SEED      READ ONLY
+FREEPDB1      READ WRITE</pre></div>
+      <div class="step"><div class="t">Dónde están los ficheros de la plantilla <small>(PDB$SEED es siempre con_id = 2)</small></div>
+        <div class="cmd"><div class="bar"><span class="dots"><i></i><i></i><i></i>&nbsp;SQL&gt;</span><button class="copy">Copiar</button></div><pre><span class="kw">SELECT</span> name <span class="kw">FROM</span> v$datafile <span class="kw">WHERE</span> con_id = <span class="nm">2</span>;</pre></div>
+        <pre class="out">/opt/oracle/oradata/FREE/pdbseed/system01.dbf
+/opt/oracle/oradata/FREE/pdbseed/sysaux01.dbf
+/opt/oracle/oradata/FREE/pdbseed/undotbs01.dbf</pre></div>
+      <div class="step"><div class="t">Crear la PDB copiando la plantilla <small>(todo en una línea)</small></div>
+        <div class="cmd"><div class="bar"><span class="dots"><i></i><i></i><i></i>&nbsp;SQL&gt;</span><button class="copy">Copiar</button></div><pre><span class="kw">CREATE PLUGGABLE DATABASE</span> pruebajcs <span class="kw">ADMIN USER</span> pdbadmin <span class="kw">IDENTIFIED BY</span> oracle <span class="kw">FILE_NAME_CONVERT</span>=(<span class="st">'/opt/oracle/oradata/FREE/pdbseed/'</span>,<span class="st">'/opt/oracle/oradata/FREE/PRUEBAJCS/'</span>);</pre></div>
+        <pre class="out"><b>Pluggable database created.</b></pre></div>
+      <div class="note tip"><span class="ic">CLAVE</span><p><b>FILE_NAME_CONVERT = (de dónde copio, a dónde copio).</b> La carpeta destino es el nombre de la PDB en <b>MAYÚSCULAS</b>, terminado en <code class="i">/</code>.</p></div>
+      <div class="step"><div class="t">Abrir y guardar el estado <small>(recién creada queda MOUNTED, cerrada)</small></div>
+        <div class="cmd"><div class="bar"><span class="dots"><i></i><i></i><i></i>&nbsp;SQL&gt;</span><button class="copy">Copiar</button></div><pre><span class="kw">ALTER PLUGGABLE DATABASE</span> pruebajcs <span class="kw">OPEN</span>;
+<span class="kw">ALTER PLUGGABLE DATABASE</span> pruebajcs <span class="kw">SAVE STATE</span>;
+<span class="kw">SELECT</span> NAME, OPEN_MODE <span class="kw">FROM</span> V$PDBS;</pre></div>
+        <pre class="out">Pluggable database altered.
+Pluggable database altered.
+PRUEBAJCS     <b>READ WRITE</b></pre></div>
+    </div>
+  </section>
+
+  <!-- 3 -->
+  <section class="s" id="s3" style="--k:var(--c3)">
+    <div class="s-head"><div class="num">03</div><div><h2>Entrar en la PDB</h2><div class="where">Dentro de PRUEBAJCS</div></div></div>
+    <div class="s-body">
+      <div class="note danger"><span class="ic">!</span><p>A partir de aquí <b>todo se hace dentro de la PDB</b>. Si no entras, al crear usuarios sale <b>ORA-65096</b>.</p></div>
+      <div class="cmd"><div class="bar"><span class="dots"><i></i><i></i><i></i>&nbsp;SQL&gt;</span><button class="copy">Copiar</button></div><pre><span class="kw">ALTER SESSION SET CONTAINER</span> = pruebajcs;
+<span class="kw">SHOW</span> CON_NAME;</pre></div>
+      <pre class="out">Session altered.
+CON_NAME
+------------------------------
+<b>PRUEBAJCS</b></pre>
+      <div class="step"><div class="t">Qué tablespaces hay <small>(USERS no debe aparecer)</small></div>
+        <div class="cmd"><div class="bar"><span class="dots"><i></i><i></i><i></i>&nbsp;SQL&gt;</span><button class="copy">Copiar</button></div><pre><span class="kw">SELECT</span> tablespace_name, status <span class="kw">FROM</span> dba_tablespaces;</pre></div>
+        <pre class="out">SYSTEM    ONLINE
+SYSAUX    ONLINE
+UNDOTBS1  ONLINE
+TEMP      ONLINE</pre></div>
+    </div>
+  </section>
+
+  <!-- 4 -->
+  <section class="s" id="s4" style="--k:var(--c4)">
+    <div class="s-head"><div class="num">04</div><div><h2>Crear los tablespaces</h2><div class="where">Dentro de PRUEBAJCS</div></div></div>
+    <div class="s-body">
+      <div class="duo">
+        <div class="card" style="--k:var(--c4)"><span class="tag">BIGFILE</span><span class="q">"Un solo fichero sin posibilidad de añadir ficheros"</span><span class="d">Se amplía o reduce con RESIZE del tablespace.</span></div>
+        <div class="card" style="--k:var(--c6)"><span class="tag">SMALLFILE</span><span class="q">"Con posibilidad de añadir nuevos ficheros"</span><span class="d">Se amplía con ADD DATAFILE.</span></div>
+      </div>
+      <div class="cmd"><div class="bar"><span class="dots"><i></i><i></i><i></i>&nbsp;SQL&gt;</span><button class="copy">Copiar</button></div><pre><span class="kw">CREATE BIGFILE TABLESPACE</span> replicajcs_cliente <span class="kw">DATAFILE</span> <span class="st">'/opt/oracle/oradata/FREE/PRUEBAJCS/replicajcs_cliente01.dbf'</span> <span class="kw">SIZE</span> <span class="nm">20M</span>;
+<span class="kw">CREATE BIGFILE TABLESPACE</span> replicajcs_cliente2 <span class="kw">DATAFILE</span> <span class="st">'/opt/oracle/oradata/FREE/PRUEBAJCS/replicajcs_cliente2_01.dbf'</span> <span class="kw">SIZE</span> <span class="nm">25M</span>;
+<span class="kw">CREATE SMALLFILE TABLESPACE</span> datosjcs_pruebas <span class="kw">DATAFILE</span> <span class="st">'/opt/oracle/oradata/FREE/PRUEBAJCS/datosjcs_pruebas01.dbf'</span> <span class="kw">SIZE</span> <span class="nm">15M</span>;</pre></div>
+      <pre class="out"><b>Tablespace created.</b>  (×3)</pre>
+      <div class="step"><div class="t">Comprobar <small>(BIG = YES es BIGFILE, NO es SMALLFILE)</small></div>
+        <div class="cmd"><div class="bar"><span class="dots"><i></i><i></i><i></i>&nbsp;SQL&gt;</span><button class="copy">Copiar</button></div><pre><span class="kw">SELECT</span> tablespace_name, status, bigfile <span class="kw">FROM</span> dba_tablespaces;
+<span class="kw">SELECT</span> FILE_NAME, BYTES/1024/1024 MB <span class="kw">FROM</span> DBA_DATA_FILES;</pre></div>
+        <pre class="out">REPLICAJCS_CLIENTE   ONLINE  <b>YES</b>
+REPLICAJCS_CLIENTE2  ONLINE  <b>YES</b>
+DATOSJCS_PRUEBAS     ONLINE  NO
+
+/opt/oracle/oradata/FREE/PRUEBAJCS/replicajcs_cliente01.dbf     20
+/opt/oracle/oradata/FREE/PRUEBAJCS/replicajcs_cliente2_01.dbf   25
+/opt/oracle/oradata/FREE/PRUEBAJCS/datosjcs_pruebas01.dbf       15</pre></div>
+      <div class="note tip"><span class="ic">EXTRA</span><p>Si te pidieran quitar USERS y existiera: <code class="i">DROP TABLESPACE users INCLUDING CONTENTS AND DATAFILES;</code></p></div>
+      <div class="extra" style="--x:var(--c4)">
+        <div class="extra-h"><span class="badge">OJO</span><h3>Si no pones BIGFILE ni SMALLFILE</h3></div>
+        <p>Oracle 26ai crea el tablespace como <b>BIGFILE por defecto</b>: un solo datafile (puede llegar a 32 TB con bloques de 8K). Entonces <b>no podrás añadirle ficheros</b> (ORA-32771).</p>
+        <div class="step"><div class="t">1. Lo creas sin decir el tipo</div>
+          <div class="cmd"><div class="bar"><span class="dots"><i></i><i></i><i></i>&nbsp;SQL&gt;</span><button class="copy">Copiar</button></div><pre><span class="kw">CREATE TABLESPACE</span> datos <span class="kw">DATAFILE</span> <span class="st">'/opt/oracle/oradata/FREE/PRUEBAJCS/datos01.dbf'</span> <span class="kw">SIZE</span> <span class="nm">10M</span>;</pre></div></div>
+        <div class="step"><div class="t">2. Compruebas si es BIGFILE <small>(nombre en MAYÚSCULAS)</small></div>
+          <div class="cmd"><div class="bar"><span class="dots"><i></i><i></i><i></i>&nbsp;SQL&gt;</span><button class="copy">Copiar</button></div><pre><span class="kw">SELECT</span> tablespace_name, bigfile <span class="kw">FROM</span> dba_tablespaces <span class="kw">WHERE</span> tablespace_name = <span class="st">'DATOS'</span>;</pre></div>
+          <pre class="out">TABLESPACE_NAME  BIG
+DATOS            <b>YES</b>   ← es BIGFILE</pre></div>
+        <div class="step"><div class="t">3. Si necesitas SMALLFILE: bórralo con sus ficheros y créalo otra vez</div>
+          <div class="cmd"><div class="bar"><span class="dots"><i></i><i></i><i></i>&nbsp;SQL&gt;</span><button class="copy">Copiar</button></div><pre><span class="kw">DROP TABLESPACE</span> datos <span class="kw">INCLUDING CONTENTS AND DATAFILES</span>;
+<span class="kw">CREATE SMALLFILE TABLESPACE</span> datos <span class="kw">DATAFILE</span> <span class="st">'/opt/oracle/oradata/FREE/PRUEBAJCS/datos01.dbf'</span> <span class="kw">SIZE</span> <span class="nm">10M</span>;</pre></div></div>
+        <div class="note warn"><span class="ic">OJO</span><p>Con un <code class="i">DROP TABLESPACE datos;</code> a secas el fichero <b>se queda en disco</b>, y al recrearlo con el mismo nombre sale <b>ORA-01119</b>. Usa <code class="i">INCLUDING CONTENTS AND DATAFILES</code> o pon otro nombre de fichero.</p></div>
+      </div>
+      <div class="note warn"><span class="ic">TEST</span><p>En el test, <code class="i">DROP USER users;</code> aparece como opción <b>incorrecta</b> para quitar el tablespace USERS. La buena es <b>DROP TABLESPACE</b>: USERS aquí es un tablespace, no un usuario.</p></div>
+    </div>
+  </section>
+
+  <!-- 5 -->
+  <section class="s" id="s5" style="--k:var(--c5)">
+    <div class="s-head"><div class="num">05</div><div><h2>Crear los usuarios y darles permisos</h2><div class="where">Dentro de PRUEBAJCS</div></div></div>
+    <div class="s-body">
+      <div class="duo">
+        <div class="card" style="--k:var(--c5)"><span class="tag">ENUNCIADO</span><span class="q">"Podrá escribir en X e Y"</span><span class="d"><code class="mono">QUOTA UNLIMITED ON X QUOTA UNLIMITED ON Y</code></span></div>
+        <div class="card" style="--k:var(--c5)"><span class="tag">PERMISOS MÍNIMOS</span><span class="q">create session + create table</span><span class="d">Uno para conectarse, otro para crear tablas.</span></div>
+      </div>
+      <div class="step"><div class="t">Usuario replicalientejcs</div>
+        <div class="cmd"><div class="bar"><span class="dots"><i></i><i></i><i></i>&nbsp;SQL&gt;</span><button class="copy">Copiar</button></div><pre><span class="kw">CREATE USER</span> replicalientejcs <span class="kw">IDENTIFIED BY</span> oracle <span class="kw">DEFAULT TABLESPACE</span> replicajcs_cliente <span class="kw">QUOTA UNLIMITED ON</span> replicajcs_cliente <span class="kw">QUOTA UNLIMITED ON</span> replicajcs_cliente2 <span class="kw">TEMPORARY TABLESPACE</span> TEMP;
+<span class="kw">grant</span> create session <span class="kw">to</span> replicalientejcs;
+<span class="kw">grant</span> create table <span class="kw">to</span> replicalientejcs;</pre></div></div>
+      <div class="step"><div class="t">Usuario mispruebasjcs</div>
+        <div class="cmd"><div class="bar"><span class="dots"><i></i><i></i><i></i>&nbsp;SQL&gt;</span><button class="copy">Copiar</button></div><pre><span class="kw">CREATE USER</span> mispruebasjcs <span class="kw">IDENTIFIED BY</span> oracle <span class="kw">DEFAULT TABLESPACE</span> datosjcs_pruebas <span class="kw">QUOTA UNLIMITED ON</span> datosjcs_pruebas <span class="kw">TEMPORARY TABLESPACE</span> TEMP;
+<span class="kw">grant</span> create session <span class="kw">to</span> mispruebasjcs;
+<span class="kw">grant</span> create table <span class="kw">to</span> mispruebasjcs;</pre></div></div>
+      <pre class="out"><b>User created.</b>
+<b>Grant succeeded.</b>
+<b>Grant succeeded.</b></pre>
+      <div class="note tip"><span class="ic">TIP</span><p>Si el usuario ya existía y solo hay que darle permiso en otro tablespace: <code class="i">ALTER USER replicalientejcs QUOTA UNLIMITED ON otro_tablespace;</code></p></div>
+
+      <div class="extra">
+        <div class="extra-h"><span class="badge">EXTRA</span><h3>Borrar un usuario y crearlo otra vez</h3></div>
+        <p class="src">No viene en los PDF ni en las webs de clase: lo añadí en los apuntes del Word. Es raro que lo pregunten en la teoría, pero te salva en la práctica si creas mal un usuario (nombre equivocado, tablespace por defecto mal…). Si intentas crearlo otra vez sin borrarlo, Oracle da <b>ORA-01920</b>.</p>
+        <p>Desde la pestaña Exec, como SYS y <b>dentro de la PDB</b> (<code class="i">ALTER SESSION SET CONTAINER = pruebajcs;</code>):</p>
+        <div class="duo">
+          <div class="step"><div class="t">Sin objetos <small>(solo si no tiene ninguna tabla)</small></div>
+            <div class="cmd"><div class="bar"><span class="dots"><i></i><i></i><i></i>&nbsp;SQL&gt;</span><button class="copy">Copiar</button></div><pre><span class="kw">DROP USER</span> mispruebasjcs;</pre></div>
+            <pre class="out">Si tiene alguna tabla:
+ORA-01922: CASCADE must be specified
+to drop 'MISPRUEBASJCS'</pre></div>
+          <div class="step"><div class="t">Con objetos <small>(el que necesitas si ya creaste la tabla de prueba)</small></div>
+            <div class="cmd"><div class="bar"><span class="dots"><i></i><i></i><i></i>&nbsp;SQL&gt;</span><button class="copy">Copiar</button></div><pre><span class="kw">DROP USER</span> mispruebasjcs <span class="kw">CASCADE</span>;</pre></div>
+            <pre class="out"><b>User dropped.</b>
+Borra el usuario y todas sus tablas.</pre></div>
+        </div>
+        <div class="rooms">
+          <div class="card" style="--k:var(--c5)"><span class="tag">DROP USER</span><span class="q">Borra una persona</span><span class="d">El usuario (y con CASCADE, sus tablas).</span></div>
+          <div class="card" style="--k:var(--c4)"><span class="tag">DROP TABLESPACE</span><span class="q">Borra una habitación</span><span class="d">El tablespace y, con INCLUDING CONTENTS AND DATAFILES, sus ficheros.</span></div>
+        </div>
+        <div class="note danger"><span class="ic">CUIDADO</span><p>Si lo haces en la raíz (<code class="i">CDB$ROOT</code>) no encuentra al usuario de la PDB y da <b>ORA-01918: user does not exist</b>. Y no tiene vuelta atrás: tendrás que repetir su <code class="i">CREATE USER</code> y sus <code class="i">grant</code>.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6 -->
+  <section class="s" id="s6" style="--k:var(--c6)">
+    <div class="s-head"><div class="num">06</div><div><h2>Conexión y tabla de prueba</h2><div class="where">SQL Developer › Conexiones › + verde</div></div></div>
+    <div class="s-body">
+      <div class="kv">
+        <div>Name</div><div>El que quieras (ej. <b>Replicalientejcs Docker PRUEBAJCS</b>)</div>
+        <div>Usuario</div><div><b>replicalientejcs</b></div>
+        <div>Contraseña</div><div><b>oracle</b> · marcar <i>Guardar contraseña</i></div>
+        <div>Host</div><div><b>localhost</b></div>
+        <div>Puerto</div><div><b>1521</b></div>
+        <div>Servicio</div><div>Marcar <b>Nombre del servicio</b> (no SID): <b>pruebajcs</b></div>
+      </div>
+      <div class="note tip"><span class="ic">OK</span><p>Pulsa <b>Probar</b>: abajo debe poner <b>"Estado: Correcto"</b> (haz captura) → <b>Conectar</b>.</p></div>
+      <div class="step"><div class="t">En la hoja de trabajo <small>(ejecutar con F5)</small></div>
+        <div class="cmd"><div class="bar"><span class="dots"><i></i><i></i><i></i>&nbsp;SQL Developer</span><button class="copy">Copiar</button></div><pre><span class="kw">CREATE TABLE</span> prueba (campo1 number(<span class="nm">10</span>), campo2 varchar2(<span class="nm">20</span>)) <span class="kw">TABLESPACE</span> replicajcs_cliente;
+<span class="kw">INSERT INTO</span> prueba <span class="kw">VALUES</span> (<span class="nm">1</span>, <span class="st">'prueba escritura'</span>);
+<span class="kw">COMMIT</span>;
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> prueba;</pre></div>
+        <pre class="out"><b>Table PRUEBA creado.</b>
+1 fila insertadas.
+Confirmación terminada.</pre></div>
+      <p>Repite con el otro usuario y su tablespace.</p>
+      <div class="step"><div class="t">Comprobarlo desde Docker <small>(como SYS, dentro de la PDB)</small></div>
+        <div class="cmd"><div class="bar"><span class="dots"><i></i><i></i><i></i>&nbsp;SQL&gt;</span><button class="copy">Copiar</button></div><pre><span class="kw">SELECT</span> owner, table_name <span class="kw">FROM</span> dba_tables <span class="kw">WHERE</span> tablespace_name = <span class="st">'REPLICAJCS_CLIENTE'</span>;</pre></div>
+        <pre class="out">OWNER                TABLE_NAME
+-------------------- ---------------
+REPLICALIENTEJCS     <b>PRUEBA</b></pre></div>
+      <div class="note warn"><span class="ic">OJO</span><p>El nombre del tablespace en el WHERE va en <b>MAYÚSCULAS</b> y entre comillas simples.</p></div>
+    </div>
+  </section>
+
+  <!-- 7 -->
+  <section class="s" id="s7" style="--k:var(--c7)">
+    <div class="s-head"><div class="num">07</div><div><h2>Cambiar el tamaño de los tablespaces</h2><div class="where">Docker · dentro de la PDB</div></div></div>
+    <div class="s-body">
+      <div class="note danger"><span class="ic">REGLA</span><p><b>RESIZE pone el tamaño FINAL, no lo que sumas.</b> "Aumenta 20" a uno de 20 → <code class="i">RESIZE 40M</code>.</p></div>
+
+      <div class="step"><div class="t">¿Me quedo sin espacio en un tablespace? Dos opciones</div>
+        <div class="duo">
+          <div class="card" style="--k:var(--c7)"><span class="tag">OPCIÓN 1 · REDIMENSIONAR</span><span class="q">Agrandar el datafile que ya tiene</span><span class="d">Vale para BIGFILE y SMALLFILE.</span><code class="mono" style="font-size:12.5px;word-break:break-word">ALTER DATABASE DATAFILE '…/datos01.dbf' RESIZE 20M;</code></div>
+          <div class="card" style="--k:var(--c6)"><span class="tag">OPCIÓN 2 · AÑADIR DATAFILE</span><span class="q">Meterle otro fichero</span><span class="d">Solo SMALLFILE. En un BIGFILE da ORA-32771.</span><code class="mono" style="font-size:12.5px;word-break:break-word">ALTER TABLESPACE datos ADD DATAFILE '…/datos02.dbf' SIZE 70M;</code></div>
+        </div></div>
+
+      <div class="bars" aria-label="Tamaños antes y después">
+        <div class="legend"><span><i style="background:color-mix(in srgb,var(--c7) 40%,transparent)"></i>Después</span><span><i style="background:var(--c7)"></i>Antes</span></div>
+        <div class="bar-row"><span class="n">replicajcs_cliente01</span><div class="track"><div class="a" style="width:100%"></div><div class="b" style="width:50%"></div></div><span class="v">20→40</span></div>
+        <div class="bar-row"><span class="n">replicajcs_cliente2_01</span><div class="track"><div class="b" style="width:62.5%"></div><div class="a" style="width:50%;background:var(--c8);opacity:.35"></div></div><span class="v">25→20</span></div>
+        <div class="bar-row"><span class="n">datosjcs_pruebas01</span><div class="track"><div class="b" style="width:37.5%"></div></div><span class="v">15</span></div>
+        <div class="bar-row"><span class="n">datosjcs_pruebas02 (nuevo)</span><div class="track"><div class="a" style="width:50%"></div></div><span class="v">+20</span></div>
+      </div>
+
+      <div class="step"><div class="t">Ver tamaños antes</div>
+        <div class="cmd"><div class="bar"><span class="dots"><i></i><i></i><i></i>&nbsp;SQL&gt;</span><button class="copy">Copiar</button></div><pre><span class="kw">SELECT</span> FILE_NAME, BYTES/1024/1024 MB <span class="kw">FROM</span> DBA_DATA_FILES;</pre></div></div>
+
+      <div class="duo">
+        <div class="step"><div class="t">BIGFILE <small>— tamaño TOTAL con RESIZE (20 + 20 = 40)</small></div>
+          <div class="cmd"><div class="bar"><span class="dots"><i></i><i></i><i></i>&nbsp;SQL&gt;</span><button class="copy">Copiar</button></div><pre><span class="kw">ALTER TABLESPACE</span> replicajcs_cliente <span class="kw">RESIZE</span> <span class="nm">40M</span>;</pre></div></div>
+        <div class="step"><div class="t">Reducir <small>— RESIZE al tamaño final (25 − 5 = 20)</small></div>
+          <div class="cmd"><div class="bar"><span class="dots"><i></i><i></i><i></i>&nbsp;SQL&gt;</span><button class="copy">Copiar</button></div><pre><span class="kw">ALTER TABLESPACE</span> replicajcs_cliente2 <span class="kw">RESIZE</span> <span class="nm">20M</span>;</pre></div></div>
+      </div>
+
+      <div class="step"><div class="t">SMALLFILE <small>— añadir otro fichero con lo que hay que aumentar (+20)</small></div>
+        <div class="cmd"><div class="bar"><span class="dots"><i></i><i></i><i></i>&nbsp;SQL&gt;</span><button class="copy">Copiar</button></div><pre><span class="kw">ALTER TABLESPACE</span> datosjcs_pruebas <span class="kw">ADD DATAFILE</span> <span class="st">'/opt/oracle/oradata/FREE/PRUEBAJCS/datosjcs_pruebas02.dbf'</span> <span class="kw">SIZE</span> <span class="nm">20M</span>;</pre></div></div>
+      <div class="step"><div class="t">Alternativa SMALLFILE <small>— agrandar su fichero</small></div>
+        <div class="cmd"><div class="bar"><span class="dots"><i></i><i></i><i></i>&nbsp;SQL&gt;</span><button class="copy">Copiar</button></div><pre><span class="kw">ALTER DATABASE DATAFILE</span> <span class="st">'/opt/oracle/oradata/FREE/PRUEBAJCS/datosjcs_pruebas01.dbf'</span> <span class="kw">RESIZE</span> <span class="nm">35M</span>;</pre></div></div>
+
+      <div class="step"><div class="t">Ver tamaños después</div>
+        <pre class="out">/opt/oracle/oradata/FREE/PRUEBAJCS/replicajcs_cliente01.dbf     <b>40</b>
+/opt/oracle/oradata/FREE/PRUEBAJCS/replicajcs_cliente2_01.dbf   <b>20</b>
+/opt/oracle/oradata/FREE/PRUEBAJCS/datosjcs_pruebas01.dbf       15
+/opt/oracle/oradata/FREE/PRUEBAJCS/datosjcs_pruebas02.dbf       <b>20</b></pre></div>
+    </div>
+  </section>
+
+  <!-- 8 -->
+  <section class="s" id="s8" style="--k:var(--c8)">
+    <div class="s-head"><div class="num">08</div><div><h2>Si sale un error</h2><div class="where">Qué pasa · qué hago</div></div></div>
+    <div class="s-body">
+      <div class="filter"><label for="ef" class="mono" style="font-size:13px">Buscar:</label><input id="ef" type="search" placeholder="ORA-01950, cuota, PDB…" autocomplete="off"><span id="ec">19 errores</span></div>
+      <div class="errs" id="errs">
+        <div class="err"><span class="code">ORA-65096</span><span class="w">Creas un usuario estando en la raíz</span><span class="fix">ALTER SESSION SET CONTAINER = pruebajcs; y repite</span></div>
+        <div class="err"><span class="code">ORA-01109</span><span class="w">La PDB está cerrada</span><span class="fix">ALTER PLUGGABLE DATABASE pruebajcs OPEN;</span></div>
+        <div class="err"><span class="code">ORA-65011</span><span class="w">La PDB no existe</span><span class="fix">SELECT NAME FROM V$PDBS;</span></div>
+        <div class="err"><span class="code">ORA-01045</span><span class="w">Al usuario le falta create session</span><span class="fix">grant create session to usuario;</span></div>
+        <div class="err"><span class="code">ORA-01031</span><span class="w">Le falta create table</span><span class="fix">grant create table to usuario;</span></div>
+        <div class="err"><span class="code">ORA-01950</span><span class="w">No tiene cuota en el tablespace</span><span class="fix">ALTER USER usuario QUOTA UNLIMITED ON ts;</span></div>
+        <div class="err"><span class="code">ORA-32771</span><span class="w">Añades fichero a un BIGFILE</span><span class="fix">Usa RESIZE</span></div>
+        <div class="err"><span class="code">ORA-03214</span><span class="w">BIGFILE demasiado pequeño (menos de 7 MB)</span><span class="fix txt">Pon más tamaño o usa SMALLFILE</span></div>
+        <div class="err"><span class="code">ORA-03297</span><span class="w">Reduces por debajo de lo que ocupan los datos</span><span class="fix txt">Reduce menos</span></div>
+        <div class="err"><span class="code">ORA-01543</span><span class="w">El tablespace ya existe</span><span class="fix txt">Ya estaba creado: sigue o usa otro nombre</span></div>
+        <div class="err"><span class="code">ORA-01920</span><span class="w">El usuario ya existe</span><span class="fix txt">Ya estaba creado: sigue, usa otro nombre o <code class="mono">DROP USER ... CASCADE</code></span></div>
+        <div class="err"><span class="code">ORA-01922</span><span class="w">DROP USER de un usuario que tiene tablas</span><span class="fix">DROP USER usuario CASCADE;</span></div>
+        <div class="err"><span class="code">ORA-01119</span><span class="w">El datafile ya existe en disco (borraste el tablespace sin sus ficheros)</span><span class="fix txt">Usa otro nombre de fichero o borra con <code class="mono">INCLUDING CONTENTS AND DATAFILES</code></span></div>
+        <div class="err"><span class="code">ORA-01918</span><span class="w">El usuario no existe (¿estás en la raíz?)</span><span class="fix">ALTER SESSION SET CONTAINER = pruebajcs;</span></div>
+        <div class="err"><span class="code">ORA-00942</span><span class="w">La tabla o vista no existe</span><span class="fix txt">Revisa el nombre y en qué contenedor estás</span></div>
+        <div class="err"><span class="code">ORA-12514</span><span class="w">Developer: el servicio no existe</span><span class="fix txt">Nombre del servicio = nombre de la PDB, y que esté abierta</span></div>
+        <div class="err"><span class="code">ORA-01017</span><span class="w">Usuario o contraseña mal</span><span class="fix txt">Revísalos</span></div>
+        <div class="err"><span class="code sp">SP2-0734</span><span class="w">sqlplus no entiende la orden</span><span class="fix txt">Algo mal escrito al principio de la línea</span></div>
+        <div class="err" style="border-style:dashed"><span class="code sp">ORDEN</span><span class="w">¿Dudas de dónde estás?</span><span class="fix">SHOW CON_NAME;</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9 -->
+  <section class="s" id="s9" style="--k:var(--c9)">
+    <div class="s-head"><div class="num">09</div><div><h2>Borrar, desenchufar y empezar de cero</h2><div class="where">Desde la raíz · CDB$ROOT</div></div></div>
+    <div class="s-body">
+      <div class="step"><div class="t">Borrar la PDB del todo <small>(para repetir la práctica)</small></div></div>
+      <div class="cmd"><div class="bar"><span class="dots"><i></i><i></i><i></i>&nbsp;SQL&gt;</span><button class="copy">Copiar</button></div><pre><span class="kw">ALTER SESSION SET CONTAINER</span> = CDB$ROOT;
+<span class="kw">ALTER PLUGGABLE DATABASE</span> pruebajcs <span class="kw">CLOSE</span>;
+<span class="kw">DROP PLUGGABLE DATABASE</span> pruebajcs <span class="kw">INCLUDING DATAFILES</span>;</pre></div>
+      <div class="note danger"><span class="ic">CUIDADO</span><p>Esto borra la PDB y todo lo que tiene. Úsalo solo con PDB de práctica.</p></div>
+
+      <div class="extra" style="--x:var(--c2)">
+        <div class="extra-h"><span class="badge">PLUG / UNPLUG</span><h3>Quitar la PDB sin perder sus datos y volver a enchufarla</h3></div>
+        <p>La PDB se “desenchufa” a un fichero <b>.xml</b> que describe sus datafiles. Con <b>KEEP DATAFILES</b> los ficheros se quedan en disco y con <b>NOCOPY</b> se vuelve a enchufar usándolos tal cual.</p>
+        <div class="step"><div class="t">1. Cerrar y desenchufar <small>(genera el .xml; sin este paso no existe)</small></div>
+          <div class="cmd"><div class="bar"><span class="dots"><i></i><i></i><i></i>&nbsp;SQL&gt;</span><button class="copy">Copiar</button></div><pre><span class="kw">ALTER PLUGGABLE DATABASE</span> pruebajcs <span class="kw">CLOSE</span>;
+<span class="kw">ALTER PLUGGABLE DATABASE</span> pruebajcs <span class="kw">UNPLUG INTO</span> <span class="st">'/opt/oracle/oradata/FREE/PRUEBAJCS/pruebajcs.xml'</span>;</pre></div></div>
+        <div class="step"><div class="t">2. Quitarla dejando los ficheros</div>
+          <div class="cmd"><div class="bar"><span class="dots"><i></i><i></i><i></i>&nbsp;SQL&gt;</span><button class="copy">Copiar</button></div><pre><span class="kw">DROP PLUGGABLE DATABASE</span> pruebajcs <span class="kw">KEEP DATAFILES</span>;</pre></div>
+          <pre class="out"><b>Pluggable database dropped.</b></pre></div>
+        <div class="step"><div class="t">3. Enchufarla otra vez, abrirla y guardar el estado</div>
+          <div class="cmd"><div class="bar"><span class="dots"><i></i><i></i><i></i>&nbsp;SQL&gt;</span><button class="copy">Copiar</button></div><pre><span class="kw">CREATE PLUGGABLE DATABASE</span> pruebajcs <span class="kw">USING</span> <span class="st">'/opt/oracle/oradata/FREE/PRUEBAJCS/pruebajcs.xml'</span> <span class="kw">NOCOPY</span>;
+<span class="kw">ALTER PLUGGABLE DATABASE</span> pruebajcs <span class="kw">OPEN</span>;
+<span class="kw">ALTER PLUGGABLE DATABASE</span> pruebajcs <span class="kw">SAVE STATE</span>;</pre></div>
+          <pre class="out"><b>Pluggable database created.</b>
+Pluggable database altered.
+Pluggable database altered.</pre></div>
+        <div class="duo">
+          <div class="card" style="--k:var(--c8)"><span class="tag">INCLUDING DATAFILES</span><span class="q">Borra la PDB y sus ficheros</span><span class="d">No se puede recuperar.</span></div>
+          <div class="card" style="--k:var(--c5)"><span class="tag">KEEP DATAFILES</span><span class="q">Quita la PDB, deja los ficheros</span><span class="d">Se vuelve a enchufar con el .xml.</span></div>
+        </div>
+      </div>
+      <div class="step"><div class="t">Orden que siempre se repite en la incidencia</div>
+        <div class="pipe">
+          <span>PDB</span><span>OPEN + SAVE STATE</span><span>ALTER SESSION</span><span>Tablespaces</span><span>Usuarios + grants</span><span>Developer (conexión + tabla)</span><span>RESIZE / ADD DATAFILE</span><span>Capturas de todo</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 10 -->
+  <section class="s" id="s10" style="--k:var(--brand)">
+    <div class="s-head"><div class="num">10</div><div><h2>Test y ranking</h2><div class="where">14 preguntas · gana quien más acierte y, si empata, quien tarde menos</div></div></div>
+    <div class="s-body">
+      <div class="arena">
+        <div class="panel" id="game" aria-live="polite">
+          <div id="g-start" class="result">
+            <h3>¿Quién domina Oracle en Docker?</h3>
+            <p class="sub">Preguntas sacadas de esta chuleta. Se guarda tu mejor intento en el ranking.</p>
+            <div class="field" style="width:100%"><label for="alias">Tu nombre en el ranking</label><input id="alias" maxlength="24" placeholder="Ej. Jesús C." autocomplete="nickname"></div>
+            <button class="btn" id="b-start" type="button">Empezar</button>
+          </div>
+          <div id="g-play" hidden>
+            <div class="qtop"><span id="q-n">1 / 14</span><span id="q-t">0:00</span></div>
+            <div class="prog"><i id="q-bar" style="width:0%"></i></div>
+            <div class="qtext" id="q-text"></div>
+            <div class="opts" id="q-opts"></div>
+            <div class="expl" id="q-expl" hidden></div>
+            <div class="row"><button class="btn" id="b-next" type="button" hidden>Siguiente</button></div>
+          </div>
+          <div id="g-end" class="result" hidden>
+            <span class="sub">Resultado</span>
+            <div class="big" id="r-score">0<small>/14</small></div>
+            <div class="sub" id="r-time"></div>
+            <div class="msg" id="r-msg">Guardando en el ranking…</div>
+            <div class="row"><button class="btn" id="b-again" type="button">Repetir</button><a class="btn ghost" href="#s8" style="text-decoration:none">Repasar errores</a></div>
+          </div>
+        </div>
+
+        <div class="panel" id="board">
+          <h3>Ranking</h3>
+          <div class="podium" id="podium"></div>
+          <ol class="rank" id="rank"></ol>
+          <div class="empty-r" id="rank-empty">Cargando el ranking…</div>
+          <details class="admin" id="admin" hidden>
+            <summary>Añadir una puntuación a mano</summary>
+            <p class="sub" style="margin-top:8px">Para compañeros que no pueden guardar su resultado desde la página.</p>
+            <div class="row">
+              <input id="ma" maxlength="24" placeholder="Nombre" aria-label="Nombre">
+              <input id="ms" type="number" min="0" max="14" placeholder="Aciertos" aria-label="Aciertos">
+              <button class="btn" id="b-add" type="button">Añadir</button>
+            </div>
+          </details>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  </main>
+</div>
+
+<footer>
+  <div class="wrap">
+    <div class="sig">Jesús Clemente Sánchez<small>ASGBD · ASIR2 · Oracle en Docker</small></div>
+    <div class="copy-r">© <b>2026</b> Jesús Clemente Sánchez. Todos los derechos reservados.</div>
+  </div>
+</footer>
+
+<script>
+// Copiar comandos
+document.querySelectorAll('.cmd').forEach(function(c){
+  var b=c.querySelector('.copy'), pre=c.querySelector('pre');
+  b.addEventListener('click',function(){
+    var t=pre.innerText.trim();
+    function ok(){b.textContent='Copiado';b.classList.add('done');setTimeout(function(){b.textContent='Copiar';b.classList.remove('done')},1400)}
+    function fallback(){var r=document.createRange();r.selectNodeContents(pre);var s=getSelection();s.removeAllRanges();s.addRange(r);b.textContent='Seleccionado'}
+    try{navigator.clipboard.writeText(t).then(ok,fallback)}catch(e){fallback()}
+  });
+});
+// Filtro de errores
+var inp=document.getElementById('ef'),cnt=document.getElementById('ec'),errs=[].slice.call(document.querySelectorAll('#errs .err'));
+inp.addEventListener('input',function(){
+  var q=inp.value.toLowerCase().trim(),n=0;
+  errs.forEach(function(e){var m=!q||e.textContent.toLowerCase().indexOf(q)>-1;e.hidden=!m;if(m)n++});
+  cnt.textContent=n+(n===1?' error':' errores');
+});
+// Índice activo
+var links=[].slice.call(document.querySelectorAll('nav.toc a'));
+if('IntersectionObserver' in window){
+  var io=new IntersectionObserver(function(en){en.forEach(function(x){if(x.isIntersecting){links.forEach(function(l){l.classList.toggle('on',l.getAttribute('href')==='#'+x.target.id)})}})},{rootMargin:'-30% 0px -60% 0px'});
+  document.querySelectorAll('section.s').forEach(function(s){io.observe(s)});
+}
+// ===== TEST + RANKING =====
+(function(){
+  var Q=[
+    {q:"Vas a crear un usuario y te sale ORA-65096. ¿Qué te falta?",o:["<code>ALTER SESSION SET CONTAINER = pruebajcs;</code>","<code>ALTER PLUGGABLE DATABASE pruebajcs OPEN;</code>","<code>grant create session to usuario;</code>","<code>SHOW CON_NAME;</code>"],a:0,e:"Estás en la raíz (CDB$ROOT). Los usuarios de la práctica se crean dentro de la PDB."},
+    {q:"El enunciado dice \"un solo fichero sin posibilidad de añadir ficheros\". ¿Qué tipo de tablespace es?",o:["BIGFILE","SMALLFILE","TEMPORARY","UNDO"],a:0,e:"BIGFILE: un único datafile. SMALLFILE es el que admite añadir ficheros."},
+    {q:"Un tablespace BIGFILE mide 20M y te piden aumentarlo 20M. ¿Qué escribes?",o:["<code>ALTER TABLESPACE x RESIZE 40M;</code>","<code>ALTER TABLESPACE x RESIZE 20M;</code>","<code>ALTER TABLESPACE x ADD DATAFILE '…' SIZE 20M;</code>","<code>ALTER TABLESPACE x EXTEND 20M;</code>"],a:0,e:"RESIZE pone el tamaño FINAL: 20 + 20 = 40M. A un BIGFILE no se le pueden añadir ficheros."},
+    {q:"El tablespace USERS no debe estar. ¿Cómo lo quitas?",o:["<code>DROP TABLESPACE users INCLUDING CONTENTS AND DATAFILES;</code>","<code>DROP USER users;</code>","<code>DROP USER users CASCADE;</code>","<code>ALTER TABLESPACE users OFFLINE;</code>"],a:0,e:"USERS es un tablespace (una habitación), no un usuario. DROP USER es la trampa."},
+    {q:"Acabas de crear la PDB. ¿En qué estado queda?",o:["MOUNTED (cerrada)","READ WRITE","READ ONLY","OPEN"],a:0,e:"Hay que abrirla con OPEN y guardar el estado con SAVE STATE."},
+    {q:"¿Para qué sirve <code>ALTER PLUGGABLE DATABASE pruebajcs SAVE STATE;</code>?",o:["Para que la PDB vuelva a abrirse sola al reiniciar","Para hacer una copia de seguridad","Para guardar los cambios de las tablas","Para desenchufar la PDB a un .xml"],a:0,e:"Guarda el estado OPEN, así al reiniciar el contenedor la PDB arranca abierta."},
+    {q:"Un usuario intenta crear una tabla y sale ORA-01950. ¿Qué pasa?",o:["No tiene cuota en el tablespace","Le falta create session","La PDB está cerrada","El tablespace no existe"],a:0,e:"Solución: <code>ALTER USER usuario QUOTA UNLIMITED ON ts;</code>"},
+    {q:"En SQL Developer, ¿qué marcas para conectarte a la PDB?",o:["Nombre del servicio = pruebajcs","SID = FREE","SID = pruebajcs","Nombre del servicio = CDB$ROOT"],a:0,e:"Nombre del servicio (no SID), con el nombre de la PDB. Si no, ORA-12514."},
+    {q:"Intentas hacer ADD DATAFILE a un tablespace BIGFILE. ¿Qué error sale?",o:["ORA-32771","ORA-01950","ORA-03297","ORA-01543"],a:0,e:"ORA-32771: un BIGFILE solo tiene un fichero. Usa RESIZE."},
+    {q:"¿Qué con_id tiene siempre la plantilla PDB$SEED?",o:["2","0","1","3"],a:0,e:"Por eso se consulta <code>v$datafile WHERE con_id = 2</code> para ver sus ficheros."},
+    {q:"<code>DROP USER mispruebasjcs;</code> falla con ORA-01922. ¿Qué haces?",o:["<code>DROP USER mispruebasjcs CASCADE;</code>","<code>DROP TABLESPACE mispruebasjcs;</code>","Cambiarte a la raíz y repetir","<code>ALTER USER mispruebasjcs ACCOUNT LOCK;</code>"],a:0,e:"El usuario tiene objetos (la tabla de prueba). CASCADE borra el usuario y sus tablas."},
+    {q:"En Oracle 26ai, si haces <code>CREATE TABLESPACE datos …</code> sin decir el tipo, ¿qué crea?",o:["BIGFILE","SMALLFILE","Uno temporal","Da error"],a:0,e:"Por defecto es BIGFILE. Si necesitas añadir ficheros, créalo con SMALLFILE."},
+    {q:"Quieres quitar la PDB pero conservar sus ficheros para volver a enchufarla. ¿Qué usas?",o:["<code>DROP PLUGGABLE DATABASE … KEEP DATAFILES;</code>","<code>DROP PLUGGABLE DATABASE … INCLUDING DATAFILES;</code>","<code>ALTER PLUGGABLE DATABASE … CLOSE;</code>","<code>DROP TABLESPACE … INCLUDING CONTENTS;</code>"],a:0,e:"Antes: CLOSE y UNPLUG INTO el .xml. Luego se enchufa con USING '….xml' NOCOPY."},
+    {q:"Fuera de sqlplus, ¿con qué compruebas el listener?",o:["<code>lsnrctl status</code>","<code>SHOW CON_NAME;</code>","<code>select * from v$instance;</code>","<code>docker ps</code>"],a:0,e:"Se escribe en la terminal sh-4.4$, después de salir con exit."}
+  ];
+  var N=Q.length, $=function(i){return document.getElementById(i)};
+  var order=[],i=0,score=0,t0=0,tick=null,answered=false;
+  var db=null,me=null,uid=null,owner=false,rows=[],lastSaved=null;
+  function fmt(ms){if(ms==null)return"—";var s=Math.round(ms/1000);return Math.floor(s/60)+":"+String(s%60).padStart(2,"0")}
+  function shuffle(a){a=a.slice();for(var k=a.length-1;k>0;k--){var j=Math.floor(Math.random()*(k+1));var t=a[k];a[k]=a[j];a[j]=t}return a}
+  try{var sv=localStorage.getItem("alias");if(sv)$("alias").value=sv}catch(e){}
+
+  function show(id){["g-start","g-play","g-end"].forEach(function(x){$(x).hidden=x!==id})}
+  function start(){
+    var al=$("alias").value.trim();
+    if(!al){$("alias").focus();$("alias").placeholder="Escribe tu nombre para empezar";return}
+    try{localStorage.setItem("alias",al)}catch(e){}
+    order=shuffle(Q.map(function(_,k){return k}));i=0;score=0;t0=Date.now();
+    clearInterval(tick);tick=setInterval(function(){$("q-t").textContent=fmt(Date.now()-t0)},500);
+    show("g-play");render();
+  }
+  function render(){
+    answered=false;var q=Q[order[i]];
+    $("q-n").textContent=(i+1)+" / "+N;$("q-bar").style.width=(i/N*100)+"%";
+    $("q-text").innerHTML=q.q;$("q-expl").hidden=true;$("b-next").hidden=true;
+    var box=$("q-opts");box.innerHTML="";
+    var idx=shuffle(q.o.map(function(_,k){return k}));
+    idx.forEach(function(k,p){
+      var b=document.createElement("button");b.type="button";b.className="opt";b.dataset.k=k;
+      b.innerHTML="<b>"+"ABCD"[p]+"</b><span>"+q.o[k]+"</span>";
+      b.addEventListener("click",function(){pick(b,k)});box.appendChild(b);
+    });
+  }
+  function pick(b,k){
+    if(answered)return;answered=true;var q=Q[order[i]],ok=k===q.a;if(ok)score++;
+    [].forEach.call($("q-opts").children,function(x){x.disabled=true;if(+x.dataset.k===q.a)x.classList.add("ok")});
+    if(!ok)b.classList.add("ko");
+    var ex=$("q-expl");ex.className="expl"+(ok?"":" bad");ex.innerHTML="<b>"+(ok?"Correcto.":"No era esa.")+"</b> "+q.e;ex.hidden=false;
+    $("b-next").textContent=i===N-1?"Ver resultado":"Siguiente";$("b-next").hidden=false;$("b-next").focus();
+    $("q-bar").style.width=((i+1)/N*100)+"%";
+  }
+  function next(){if(i<N-1){i++;render()}else finish()}
+  function finish(){
+    clearInterval(tick);var ms=Date.now()-t0;
+    $("r-score").innerHTML=score+"<small>/"+N+"</small>";$("r-time").textContent="Tiempo: "+fmt(ms);
+    show("g-end");save(score,ms);
+  }
+  function better(a,b){return !b||a.score>b.score||(a.score===b.score&&(a.ms||1e12)<(b.ms||1e12))}
+  async function save(sc,ms){
+    var m=$("r-msg");m.className="msg";
+    if(!db||!uid){m.className="msg warn";m.textContent="Para entrar en el ranking tienes que abrir la página con tu cuenta de Claude. Tu resultado no se ha guardado.";return}
+    var alias=$("alias").value.trim().slice(0,24),ref=db.doc("scores/"+uid);
+    try{
+      var prev=null,snap=await ref.get();if(snap.exists)prev=snap.data();
+      var cur={alias:alias,score:sc,total:N,ms:ms,at:Date.now()};
+      var att=((prev&&prev.attempts)||0)+1;
+      if(better(cur,prev)){cur.attempts=att;await ref.set(cur);m.textContent="Guardado en el ranking."+(prev?" Has mejorado tu marca.":"")}
+      else{await ref.update({attempts:att,alias:alias});m.textContent="Tu mejor marca sigue siendo "+prev.score+"/"+(prev.total||N)+" en "+fmt(prev.ms)+"."}
+    }catch(e){
+      m.className="msg warn";
+      m.textContent=e&&e.code==="invalid_argument"?"No tienes permiso para guardar en esta página. Pásale tu resultado a Jesús para que lo añada al ranking.":"No se ha podido guardar ahora mismo. Prueba otra vez en un rato.";
+    }
+  }
+  function renderBoard(){
+    var list=rows.slice().sort(function(a,b){return better(a,b)?-1:better(b,a)?1:0});
+    var pod=$("podium"),ol=$("rank");pod.innerHTML="";ol.innerHTML="";
+    $("rank-empty").hidden=list.length>0;if(!list.length)$("rank-empty").textContent="Nadie ha jugado todavía. Sé el primero.";
+    [1,0,2].forEach(function(p){
+      var r=list[p],d=document.createElement("div");d.className="pod p"+(p+1)+(r?"":" empty");
+      var w=document.createElement("span");w.className="who";w.textContent=r?r.alias:"—";
+      var pt=document.createElement("span");pt.className="pts";pt.textContent=r?r.score+"/"+(r.total||N)+" · "+fmt(r.ms):"";
+      var bl=document.createElement("div");bl.className="blk";bl.textContent=p+1;
+      d.appendChild(w);d.appendChild(pt);d.appendChild(bl);pod.appendChild(d);
+    });
+    list.forEach(function(r,k){
+      var li=document.createElement("li");if(r.id===uid)li.className="me";
+      var a=document.createElement("span");a.className="pos";a.textContent=k+1;
+      var n=document.createElement("span");n.className="nm";n.textContent=r.alias||"Alguien";
+      if(r.id===uid){var em=document.createElement("em");em.textContent="TÚ";n.appendChild(em)}
+      var sc=document.createElement("span");sc.className="sc";sc.textContent=r.score+"/"+(r.total||N);
+      var tm=document.createElement("span");tm.className="tm";tm.textContent=fmt(r.ms);
+      if(owner){var x=document.createElement("button");x.type="button";x.className="del";x.textContent="Quitar";
+        x.addEventListener("click",function(){if(x.dataset.c){db.doc("scores/"+r.id).delete().catch(function(){})}else{x.dataset.c=1;x.textContent="¿Seguro?";setTimeout(function(){x.textContent="Quitar";delete x.dataset.c},3000)}});
+        tm.appendChild(x)}
+      li.appendChild(a);li.appendChild(n);li.appendChild(sc);li.appendChild(tm);ol.appendChild(li);
+    });
+  }
+  $("b-start").addEventListener("click",start);
+  $("alias").addEventListener("keydown",function(e){if(e.key==="Enter")start()});
+  $("b-next").addEventListener("click",next);
+  $("b-again").addEventListener("click",function(){show("g-start");$("b-start").focus()});
+  $("b-add").addEventListener("click",async function(){
+    var a=$("ma").value.trim().slice(0,24),sc=parseInt($("ms").value,10);
+    if(!a||isNaN(sc)||sc<0||sc>N)return;
+    try{await db.doc("scores/m_"+Math.random().toString(36).slice(2,10)).set({alias:a,score:sc,total:N,ms:null,at:Date.now(),manual:true});$("ma").value="";$("ms").value=""}catch(e){}
+  });
+  renderBoard();$("rank-empty").textContent="Cargando el ranking…";
+  (async function(){
+    if(!window.claude||!claude.use){$("rank-empty").textContent="El ranking solo funciona dentro de Claude.";return}
+    var u=await claude.use("user");db=await claude.use("db");
+    if(u){try{uid=await u.id();owner=await u.isOwner()}catch(e){}}
+    if(owner)$("admin").hidden=false;
+    if(!db){$("rank-empty").textContent="Inicia sesión en Claude para ver el ranking.";return}
+    db.collection("scores").limit(300).onSnapshot(function(s){
+      rows=s.docs.map(function(d){var x=d.data()||{};x.id=d.id;return x}).filter(function(x){return typeof x.score==="number"});
+      renderBoard();
+    },function(){$("rank-empty").hidden=false;$("rank-empty").textContent="No se ha podido cargar el ranking."});
+  })();
+})();
+</script>
+
+<a id="asir-back" href="../../asignatura.html?s=asgbd" aria-label="Volver a ASGBD" style="--c:#F2A900;bottom:14px"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg><span>ASGBD</span></a><link rel="stylesheet" href="../../assets/back.css"></body></html>

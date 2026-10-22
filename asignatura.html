@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#07080f">
+<title>Asignatura · ASIR 2</title>
+<link rel="stylesheet" href="assets/portal.css">
+</head>
+<body>
+<main class="wrap" id="main"></main>
+<script src="assets/data.js"></script>
+<script src="assets/portal.js"></script>
+<script>
+(function(){
+  var P=Portal,slug=new URLSearchParams(location.search).get('s'),s=P.find(slug);
+  P.chrome('home');P.curtainIn();
+  var main=document.getElementById('main');
+  if(!s){location.replace('index.html');return}
+  document.title=s.code+' · ASIR 2';
+  var time=P.rd('asir.time',{});
+  function mins(t){var v=time[s.slug+'/'+t.id];return v?Math.round(v.total/60000):0}
+  var total=s.topics.reduce(function(a,t){return a+mins(t)},0);
+  main.innerHTML=
+    '<div class="crumbs"><a href="index.html">Asignaturas</a><span>›</span><b style="color:var(--text)">'+P.esc(s.code)+'</b></div>'+
+    '<section class="sub-hero" style="--c:'+s.color+'"><div class="ico">'+P.icon(s.icon)+'</div><div class="code">'+P.esc(s.code)+'</div>'+
+    '<h1>'+P.esc(s.name)+'</h1><p>'+P.esc(s.blurb)+'</p><div class="meta">'+
+    (s.teacher?'<span>👤 '+P.esc(s.teacher)+'</span>':'')+'<span>📚 '+s.topics.length+(s.topics.length===1?' tema':' temas')+'</span>'+(total?'<span>⏱ '+total+' min estudiados</span>':'')+'</div></section>'+
+    '<div class="sec-title"><span>Temas</span></div>'+
+    '<div class="topics" id="topics">'+(s.topics.length?s.topics.map(function(t){
+      var m=mins(t);
+      return '<a class="topic" style="--c:'+s.color+'" href="'+t.file+'"><div class="num">'+t.n+'</div><div class="tx"><h3>'+P.esc(t.title)+'</h3><p>'+P.esc(t.desc)+(m?' · ⏱ '+m+' min':'')+'</p></div><span class="tp">'+P.esc(t.type)+'</span>'+P.ARROW.replace('<svg','<svg class="arr"')+'</a>';
+    }).join(''):'<div class="empty-box"><b>Próximamente</b>Aún no hay temas publicados en esta asignatura.</div>')+'</div>'+
+    '<div class="sec-title"><span>Otras asignaturas</span></div><div class="others">'+
+    P.subjects.filter(function(x){return x.slug!==s.slug}).map(function(x){return '<a style="--c:'+x.color+'" href="asignatura.html?s='+x.slug+'"><i></i>'+P.esc(x.code)+'</a>'}).join('')+'</div>';
+  P.animate('.topic',90);
+})();
+</script>
+</body>
+</html>

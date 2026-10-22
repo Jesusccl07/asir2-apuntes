@@ -1,0 +1,5 @@
+#asir-back{position:fixed;left:14px;z-index:2147483000;display:flex;align-items:center;gap:6px;height:42px;padding:0 14px 0 10px;border-radius:999px;color:#fff;font:700 13px/1 system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:.4px;text-decoration:none;background:color-mix(in srgb,var(--c) 78%,#000);box-shadow:0 8px 24px rgba(0,0,0,.35),0 0 0 1px rgba(255,255,255,.18) inset;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);transition:transform .25s cubic-bezier(.2,.9,.2,1),box-shadow .25s}
+#asir-back span{max-width:0;overflow:hidden;white-space:nowrap;transition:max-width .3s ease}
+#asir-back:hover span,#asir-back:focus-visible span{max-width:90px}
+#asir-back:hover{transform:translateX(-2px) scale(1.04);box-shadow:0 10px 30px color-mix(in srgb,var(--c) 55%,transparent)}
+@media (max-width:600px){#asir-back span{max-width:90px}}

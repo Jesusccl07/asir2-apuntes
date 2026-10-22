@@ -1,0 +1,1334 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body><script src="../../assets/config.js"></script><script src="../../assets/claude-shim.js"></script>
+<title>Test Oracle ASGBD</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=JetBrains+Mono:wght@400;600;700&display=swap">
+<style>
+/* Layout: app de estudio con barra de navegación fija; vistas Inicio · Arquitectura · Tests · Ranking. Tema oscuro único (consola de base de datos). */
+:root{
+  --bg:#0b0e1d; --bg2:#10152b; --surface:#151b36; --surface2:#1c2447; --surface3:#232c55; --line:#283160; --line2:#36407a;
+  --ink:#eef1ff; --muted:#9aa3cf; --dim:#6c76a8;
+  --pink:#ff4f9a; --cyan:#3fd6ff; --yellow:#ffd447; --violet:#9b7bff;
+  --ok:#3ee08f; --okbg:#123a2c; --bad:#ff5b6b; --badbg:#431a2b; --mid:#ffb547; --midbg:#3d2f17;
+  --f-display:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-display);font-size:16px;line-height:1.55;overflow-x:hidden;
+  background-image:
+    radial-gradient(circle at 12% -5%,rgba(255,79,154,.16),transparent 38%),
+    radial-gradient(circle at 92% 8%,rgba(63,214,255,.13),transparent 40%),
+    radial-gradient(circle at 50% 110%,rgba(155,123,255,.12),transparent 45%),
+    linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);
+  background-size:auto,auto,auto,40px 40px,40px 40px;background-attachment:fixed}
+.wrap{max-width:1080px;margin:0 auto;padding-block:20px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+:focus-visible{outline:3px solid var(--yellow);outline-offset:2px}
+button{font:inherit;color:inherit}
+
+/* ---------- barra superior ---------- */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:40;background:rgba(11,14,29,.82);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.top .in{max-width:1080px;margin:0 auto;display:flex;align-items:center;gap:16px;padding:10px max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px))}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:-.01em;white-space:nowrap;cursor:pointer;background:none;border:0;padding:0}
+.brand .logo{width:32px;height:32px;border-radius:9px;display:grid;place-items:center;background:linear-gradient(135deg,var(--pink),var(--yellow) 55%,var(--cyan));color:var(--bg);font-family:var(--f-mono);font-size:.8rem;font-weight:700}
+.brand small{font-family:var(--f-mono);font-weight:400;color:var(--muted);font-size:.72rem}
+.nav{display:flex;gap:4px;margin-left:auto;overflow-x:auto;scrollbar-width:none;min-width:0}
+.nav::-webkit-scrollbar{display:none}
+.nav button{background:none;border:0;color:var(--muted);padding:8px 14px;border-radius:10px;cursor:pointer;font-weight:600;white-space:nowrap;position:relative;transition:color .2s,background .2s}
+.nav button:hover{color:var(--ink);background:var(--surface)}
+.nav button.on{color:var(--ink);background:var(--surface2)}
+.nav button.on::after{content:"";position:absolute;left:14px;right:14px;bottom:3px;height:2px;border-radius:2px;background:linear-gradient(90deg,var(--pink),var(--cyan))}
+@media (max-width:620px){.brand small{display:none}.top .in{gap:8px}.nav button{padding:8px 10px}}
+
+/* ---------- tipografía y bloques comunes ---------- */
+.eyebrow{font-family:var(--f-mono);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--cyan)}
+h2.sec{font-size:clamp(1.3rem,3vw,1.7rem);margin:44px 0 6px;line-height:1.2;text-wrap:balance}
+p.lead{color:var(--muted);margin:0 0 18px;max-width:68ch}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+.grid.g3{grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}
+.panel{background:linear-gradient(180deg,rgba(255,255,255,.035),transparent 60%),var(--surface);border:1px solid var(--line);border-radius:18px;padding:20px;min-width:0}
+.panel h3{margin:0 0 4px;font-size:1.1rem}
+.panel .hint{color:var(--muted);font-size:.88rem;margin:0 0 12px}
+.chip{font-family:var(--f-mono);font-size:.8rem;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-variant-numeric:tabular-nums}
+.chip b{color:var(--yellow)}
+.btn{font-weight:800;background:var(--pink);color:var(--bg);border:0;border-radius:11px;padding:12px 20px;cursor:pointer;box-shadow:0 4px 0 #a8255f;transition:transform .08s,box-shadow .08s,filter .2s}
+.btn:hover{filter:brightness(1.08)}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 #a8255f}
+.btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line2);box-shadow:none}
+.btn.ghost:hover{border-color:var(--cyan)}
+.btn.cy{background:var(--cyan);box-shadow:0 4px 0 #1b8aa8}
+.btn.g{background:var(--ok);box-shadow:0 4px 0 #1f8a57} .btn.m{background:var(--mid);box-shadow:0 4px 0 #a8701f} .btn.r{background:var(--bad);box-shadow:0 4px 0 #a82a38}
+.btn.sm{padding:8px 14px;font-size:.9rem}
+.btn[disabled]{opacity:.35;cursor:not-allowed;filter:none}
+.link{background:none;border:0;color:var(--cyan);cursor:pointer;padding:4px 0;font-weight:600}
+
+/* ---------- inicio ---------- */
+.hero{text-align:center;padding-block:34px 6px}
+.big{font-weight:800;font-size:clamp(2.8rem,12vw,6.6rem);line-height:.92;letter-spacing:-.035em;margin:0;cursor:pointer;user-select:none;
+  background:linear-gradient(90deg,var(--pink),var(--yellow),var(--cyan),var(--pink));background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;
+  animation:flow 7s linear infinite;display:inline-block;transition:transform .2s}
+.big .emo{-webkit-text-fill-color:initial;color:initial;display:inline-block;animation:bob 1.8s ease-in-out infinite}
+.big:hover{transform:rotate(-2deg) scale(1.03)}
+.big.boing{animation:flow 7s linear infinite,boing .5s}
+@keyframes flow{to{background-position:300% 0}}
+@keyframes bob{50%{transform:translateY(-8px) rotate(8deg)}}
+@keyframes boing{30%{transform:scale(1.15,.85)}60%{transform:scale(.92,1.1)}100%{transform:none}}
+.hero .sub{font-family:var(--f-mono);font-size:.82rem;color:var(--muted);margin-top:12px;letter-spacing:.06em}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:28px}
+@media (max-width:760px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px 18px;display:flex;flex-direction:column;gap:2px;position:relative;overflow:hidden}
+.stat::before{content:"";position:absolute;inset:0 auto 0 0;width:3px;background:var(--c,var(--cyan))}
+.stat .k{font-family:var(--f-mono);font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.stat .v{font-size:clamp(1.6rem,4vw,2.2rem);font-weight:800;font-variant-numeric:tabular-nums;line-height:1.1}
+.stat .s{font-size:.82rem;color:var(--dim)}
+.charts{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:14px;margin-top:14px}
+@media (max-width:860px){.charts{grid-template-columns:minmax(0,1fr)}}
+.chartbox{position:relative;height:270px}
+.chartbox canvas{max-width:100%}
+.empty{position:absolute;inset:0;display:grid;place-items:center;text-align:center;color:var(--muted);font-size:.9rem;padding:20px;pointer-events:none}
+.quick{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.qa{display:flex;flex-direction:column;gap:6px;text-align:left;background:var(--surface);border:1.5px solid var(--line);border-radius:16px;padding:18px;cursor:pointer;transition:transform .18s,border-color .18s,box-shadow .18s;min-width:0}
+.qa:hover{transform:translateY(-4px);border-color:var(--cyan);box-shadow:0 10px 30px -12px rgba(63,214,255,.45)}
+.qa .ic{font-size:1.5rem}
+.qa strong{font-size:1.08rem}
+.qa span{color:var(--muted);font-size:.88rem}
+.qa.feat{border-color:var(--yellow);background:linear-gradient(160deg,rgba(255,212,71,.13),var(--surface) 60%)}
+.podium{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;align-items:end;margin-top:6px}
+.pod{background:var(--surface2);border:1px solid var(--line);border-radius:14px 14px 6px 6px;padding:12px 10px;text-align:center;min-width:0}
+.pod .m{font-size:1.6rem}
+.pod .n{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pod .p{font-family:var(--f-mono);color:var(--yellow);font-size:.85rem}
+.pod.p1{padding-block:26px 14px;border-color:var(--yellow);background:linear-gradient(180deg,rgba(255,212,71,.16),var(--surface2))}
+.pod.p2{padding-block:18px 12px}
+
+/* ---------- arquitectura ---------- */
+.subnav{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 4px}
+.subnav button{font-family:var(--f-mono);font-size:.78rem;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:6px 12px;color:var(--muted);cursor:pointer}
+.subnav button:hover{color:var(--ink);border-color:var(--cyan)}
+.arqgrid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:14px;align-items:start}
+@media (max-width:900px){.arqgrid{grid-template-columns:minmax(0,1fr)}}
+.scrollx{overflow-x:auto;border-radius:14px}
+.diagram{display:block;width:100%;min-width:680px;height:auto}
+.diagram text{font-family:var(--f-display);fill:var(--ink);font-size:14px;pointer-events:none}
+.diagram text.sm{font-size:11px;fill:var(--muted)}
+.diagram text.lab{font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;fill:var(--muted)}
+.diagram .zone{fill:rgba(255,255,255,.02);stroke:var(--line2);stroke-dasharray:6 6}
+.diagram .zone.mem{fill:rgba(63,214,255,.04);stroke:rgba(63,214,255,.45)}
+.diagram .zone.disk{fill:rgba(255,212,71,.035);stroke:rgba(255,212,71,.45)}
+.node{cursor:pointer}
+.node rect,.node path.shape{fill:var(--surface2);stroke:var(--line2);stroke-width:1.5;transition:fill .25s,stroke .25s}
+.node.cl rect{stroke:rgba(155,123,255,.8)} .node.mem rect{stroke:rgba(63,214,255,.75)} .node.bg rect{stroke:rgba(255,79,154,.75)} .node.dk rect,.node.dk path.shape{stroke:rgba(255,212,71,.75)}
+.node:hover rect,.node:hover path.shape,.node:focus-visible rect{fill:var(--surface3);stroke:var(--ink)}
+.node:focus{outline:none}
+.node.on rect,.node.on path.shape{fill:#2d2a5c;stroke:var(--yellow);stroke-width:2.5}
+.node.pulse rect,.node.pulse path.shape{animation:npulse .9s ease-out}
+@keyframes npulse{0%{stroke-width:6;stroke:var(--yellow)}100%{stroke-width:1.5}}
+.wire{stroke:var(--line2);stroke-width:1.5;fill:none;stroke-dasharray:4 6;animation:dash 1.6s linear infinite}
+.wire.hot{stroke:rgba(63,214,255,.6)}
+@keyframes dash{to{stroke-dashoffset:-20}}
+#token{filter:url(#glow)}
+.info{position:sticky;top:76px}
+.info .tag{display:inline-block;font-family:var(--f-mono);font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:2px 8px;border-radius:5px;background:var(--surface3);color:var(--cyan);margin-bottom:8px}
+.info h3{font-size:1.25rem;margin:0 0 6px}
+.info p{margin:0 0 10px;color:var(--ink)}
+.info .trap{border-left:3px solid var(--pink);background:rgba(255,79,154,.08);padding:8px 10px;border-radius:0 8px 8px 0;font-size:.9rem;color:var(--ink)}
+.info .trap b{color:var(--pink)}
+.info .amp{font-size:.8rem;color:var(--dim);margin-top:8px}
+.legend{display:flex;flex-wrap:wrap;gap:8px 14px;font-size:.82rem;color:var(--muted);margin-top:10px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.sim{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;align-items:center}
+.sim .lbl{font-family:var(--f-mono);font-size:.75rem;color:var(--muted);margin-right:4px}
+.steps{list-style:none;margin:14px 0 0;padding:0;display:flex;flex-direction:column;gap:6px;counter-reset:st}
+.steps li{counter-increment:st;display:grid;grid-template-columns:28px minmax(0,1fr);gap:10px;align-items:start;padding:8px 10px;border-radius:10px;background:var(--surface2);color:var(--muted);font-size:.92rem;transition:background .25s,color .25s}
+.steps li::before{content:counter(st);font-family:var(--f-mono);font-weight:700;font-size:.78rem;width:24px;height:24px;border-radius:7px;display:grid;place-items:center;background:var(--surface3);color:var(--muted)}
+.steps li.on{background:rgba(63,214,255,.12);color:var(--ink)}
+.steps li.on::before{background:var(--cyan);color:var(--bg)}
+.steps li.done{color:var(--ink)}
+.steps li.done::before{background:var(--ok);color:var(--bg)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:6px;min-width:0;transition:transform .18s,border-color .18s}
+.card:hover{transform:translateY(-3px);border-color:var(--line2)}
+.card .code{font-family:var(--f-mono);font-size:.78rem;color:var(--cyan)}
+.card strong{font-size:1.05rem}
+.card p{margin:0;color:var(--muted);font-size:.92rem}
+.card .f{font-family:var(--f-mono);font-size:.75rem;color:var(--yellow);margin-top:auto}
+.card.proc{border-top:3px solid var(--pink)}
+.card.ts{border-top:3px solid var(--yellow)}
+.lyr text{font-family:var(--f-display);fill:var(--ink);font-size:15px;pointer-events:none}
+.lyr text.sm{font-size:11px;fill:var(--muted)}
+.lyr text.lab{font-family:var(--f-mono);font-size:12px;letter-spacing:.12em;fill:var(--muted)}
+.lvl{cursor:pointer}
+.lvl rect{fill:var(--surface2);stroke:var(--line2);stroke-width:1.5;transition:fill .25s,stroke .25s}
+.lvl.lg rect{stroke:rgba(63,214,255,.7)} .lvl.ph rect{stroke:rgba(255,212,71,.7)}
+.lvl:hover rect,.lvl.on rect{fill:var(--surface3);stroke:var(--yellow);stroke-width:2.5}
+.lyr .arrow{stroke:var(--muted);stroke-width:2;fill:none}
+.lyr .link{stroke:var(--pink);stroke-width:2.5;fill:none;stroke-dasharray:7 6}
+.lyr .div{stroke:var(--line2);stroke-dasharray:4 6}
+.lvlinfo{margin-top:12px;min-height:3.2em;padding:12px 14px;border-radius:12px;background:var(--surface2);border:1px solid var(--line)}
+.lvlinfo b{color:var(--yellow)}
+.conc{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr) minmax(0,1fr);gap:12px;align-items:stretch}
+@media (max-width:760px){.conc{grid-template-columns:minmax(0,1fr)}}
+.cpanel,.cbox{background:var(--surface2);border:1px solid var(--line);border-radius:14px;padding:14px;min-width:0}
+.cpanel h4{margin:0 0 8px;font-size:.95rem}
+.cpanel h4 span{font-family:var(--f-mono);font-size:.72rem;color:var(--muted);font-weight:400;margin-left:6px}
+.csql{font-family:var(--f-mono);font-size:.82rem;color:var(--cyan);min-height:2.6em;word-break:break-word}
+.cres{font-family:var(--f-mono);font-size:1.6rem;font-weight:700;color:var(--yellow);margin-top:6px;min-height:1.4em}
+.cmid{display:flex;flex-direction:column;gap:10px}
+.cbox span{font-family:var(--f-mono);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.cbox b{display:block;font-family:var(--f-mono);font-size:1.9rem;line-height:1.2}
+.cbox small{color:var(--muted)}
+.cbox.rb{border-color:rgba(255,79,154,.5)}
+.cbox.flash{animation:flash .7s}
+@keyframes flash{0%{background:rgba(255,212,71,.35)}100%{background:var(--surface2)}}
+.cbtns{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.cexp{margin:12px 0 0;padding:12px 14px;border-radius:12px;background:rgba(63,214,255,.08);border-left:3px solid var(--cyan);min-height:3em}
+.flip{perspective:1000px;background:none;border:0;padding:0;cursor:pointer;min-height:150px;text-align:left}
+.flip .in{position:relative;width:100%;height:100%;min-height:150px;transition:transform .6s cubic-bezier(.2,.8,.2,1);transform-style:preserve-3d}
+.flip.on .in{transform:rotateY(180deg)}
+.flip .fc,.flip .bc{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:6px;border:1px solid var(--line)}
+.flip .fc{background:linear-gradient(160deg,rgba(155,123,255,.16),var(--surface) 65%)}
+.flip .fc strong{font-size:1.2rem;margin-top:auto}
+.flip .fc small{font-family:var(--f-mono);font-size:.7rem;letter-spacing:.1em;color:var(--violet);text-transform:uppercase}
+.flip .fc em{font-style:normal;font-size:.78rem;color:var(--dim)}
+.flip .bc{background:var(--surface2);transform:rotateY(180deg);font-size:.92rem;overflow:auto;border-color:var(--cyan)}
+.trapc{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.trapc .no{color:var(--bad);text-decoration:line-through;text-decoration-color:rgba(255,91,107,.6)}
+.trapc .si{color:var(--ink)}
+.trapc .no::before{content:"✗ ";text-decoration:none;display:inline-block}
+.trapc .si::before{content:"✓ ";color:var(--ok)}
+.cta{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-top:40px;padding:22px;border-radius:18px;border:1.5px solid var(--yellow);background:linear-gradient(120deg,rgba(255,212,71,.12),rgba(255,79,154,.1))}
+.cta h3{margin:0;font-size:1.25rem}
+.cta p{margin:2px 0 0;color:var(--muted)}
+
+/* ---------- tests ---------- */
+.mcard{background:var(--surface);border:1.5px solid var(--line);border-radius:16px;padding:16px;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:6px;min-width:0;transition:transform .15s,border-color .15s,box-shadow .15s}
+.mcard:hover{transform:translateY(-3px);border-color:var(--cyan);box-shadow:0 8px 0 -2px rgba(63,214,255,.25)}
+.mcard .num{font-family:var(--f-mono);font-size:.72rem;color:var(--cyan);letter-spacing:.04em}
+.mcard strong{font-size:1.1rem}
+.mcard .meta{font-size:.85rem;color:var(--muted)}
+.mcard .best{font-family:var(--f-mono);font-size:.72rem;color:var(--muted)}
+.mcard .bar2{height:5px;border-radius:3px;background:var(--surface2);overflow:hidden;margin-top:4px}
+.mcard .bar2 i{display:block;height:100%;background:linear-gradient(90deg,var(--pink),var(--yellow));width:0;transition:width .8s cubic-bezier(.2,.8,.2,1)}
+.mcard.hot{border-color:var(--pink);background:linear-gradient(160deg,rgba(255,79,154,.16),var(--surface) 60%)}
+.mcard.hot .num{color:var(--pink);font-weight:700}
+.mcard.game{border-color:var(--yellow);background:linear-gradient(160deg,rgba(255,212,71,.13),var(--surface) 60%)}
+.mcard.game .num{color:var(--yellow);font-weight:700}
+.mcard.arqc{border-color:var(--violet);background:linear-gradient(160deg,rgba(155,123,255,.18),var(--surface) 60%)}
+.mcard.arqc .num{color:var(--violet);font-weight:700}
+.mcard[disabled]{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
+.tip{font-size:.85rem;color:var(--muted);margin-top:28px;text-align:center}
+
+/* ---------- quiz ---------- */
+.hud{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:4px 0 12px}
+.hud .chip{display:flex;gap:6px;align-items:center}
+.hud .streak b{color:var(--pink)}
+.hud .pop{animation:pop .35s}
+@keyframes pop{40%{transform:scale(1.3)}}
+.qhead{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;font-size:.85rem;color:var(--muted)}
+.qhead .mono{font-family:var(--f-mono)}
+.bar{height:8px;background:var(--surface2);border-radius:4px;overflow:hidden}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--pink),var(--yellow));width:0;transition:width .3s}
+.bar.time i{background:linear-gradient(90deg,var(--cyan),var(--ok));transition:width 1s linear}
+.bar.time.low i{background:var(--bad)}
+.qcard{background:var(--surface);border:1.5px solid var(--line);border-radius:18px;padding:22px;margin-top:14px;max-width:820px}
+.qcard.shake{animation:shake .4s}
+@keyframes shake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+.prompt{font-family:var(--f-mono);font-size:.78rem;color:var(--cyan);margin-bottom:6px}
+.qtext{font-size:1.3rem;font-weight:700;line-height:1.3;margin:0 0 16px;text-wrap:balance}
+.opts{display:grid;gap:10px}
+.opt{display:flex;gap:12px;align-items:flex-start;width:100%;text-align:left;background:var(--surface2);border:2px solid transparent;border-radius:11px;padding:12px 14px;cursor:pointer;transition:transform .1s,border-color .1s}
+.opt:hover:not([disabled]){border-color:var(--cyan);transform:translateX(4px)}
+.opt:active:not([disabled]){transform:scale(.98)}
+.opt .k{font-family:var(--f-mono);font-size:.78rem;font-weight:700;color:var(--bg);background:var(--cyan);border-radius:6px;min-width:1.6em;text-align:center;padding:1px 4px;margin-top:2px}
+.opt.ok{border-color:var(--ok);background:var(--okbg)} .opt.ok .k{background:var(--ok)}
+.opt.bad{border-color:var(--bad);background:var(--badbg)} .opt.bad .k{background:var(--bad)}
+.opt[disabled]{cursor:default}
+.write{display:flex;gap:8px;flex-wrap:wrap}
+.write input,.write textarea{flex:1 1 200px;min-width:0;font-family:var(--f-mono);font-size:1rem;padding:12px 14px;border-radius:10px;border:2px solid var(--line);background:var(--surface2);color:var(--ink)}
+.write textarea{flex-basis:100%;font-family:var(--f-display);min-height:110px;resize:vertical;line-height:1.45}
+.write input:focus,.write textarea:focus{outline:none;border-color:var(--cyan)}
+.write .ok{border-color:var(--ok)!important;background:var(--okbg)!important}
+.write .bad{border-color:var(--bad)!important;background:var(--badbg)!important}
+.badge{display:inline-block;vertical-align:middle;font-family:var(--f-mono);font-size:.66rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--bg);background:var(--pink);border-radius:4px;padding:2px 6px;margin-right:8px;position:relative;top:-2px}
+.badge.c{background:var(--cyan)} .badge.s{background:var(--yellow)} .badge.v{background:var(--violet)} .badge.t{background:var(--bad)}
+.fb{margin-top:14px;padding:12px 14px;border-radius:10px;background:var(--surface2);font-size:.95rem;display:flex;flex-direction:column;gap:8px}
+.fb .code{font-family:var(--f-mono);font-weight:700;margin-right:6px}
+.fb .code.ok{color:var(--ok)} .fb .code.bad{color:var(--bad)} .fb .code.mid{color:var(--mid)}
+.fb .plus{font-family:var(--f-mono);color:var(--yellow);margin-left:6px}
+.fb .sql{font-family:var(--f-mono);font-size:.9rem;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;overflow-x:auto;white-space:pre-wrap;word-break:break-word;color:var(--ok)}
+.kws{display:flex;flex-wrap:wrap;gap:6px}
+.kw{font-family:var(--f-mono);font-size:.75rem;border-radius:999px;padding:2px 9px;border:1px solid var(--line)}
+.kw.hit{border-color:var(--ok);color:var(--ok)} .kw.miss{border-color:var(--bad);color:var(--bad)}
+.selfg{display:flex;gap:8px;flex-wrap:wrap}
+.actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+.result{text-align:center;padding-top:20px}
+.result .sub{font-family:var(--f-mono);font-size:.82rem;color:var(--muted);letter-spacing:.06em}
+.status{font-family:var(--f-mono);font-size:clamp(2.2rem,9vw,3.6rem);font-weight:700;line-height:1}
+.status.ok{color:var(--ok)} .status.bad{color:var(--bad)}
+.score{font-size:1.2rem;margin:10px 0 4px}
+.rstats{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:12px}
+.result .actions{justify-content:center}
+.review{display:grid;gap:10px;margin-top:18px;text-align:left;max-width:820px;margin-inline:auto}
+.review .it{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--bad);border-radius:8px;padding:10px 12px;font-size:.92rem}
+.review .it b{display:block;margin-bottom:2px}
+.review .it .ans{color:var(--ok);font-weight:600}
+.result h2{font-size:1.1rem;margin:30px auto 12px;max-width:820px;text-align:left}
+.rpos{font-family:var(--f-mono);color:var(--cyan);margin:10px 0 0}
+#fx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:60}
+
+/* ---------- ranking ---------- */
+.rank{background:var(--surface);border:1.5px solid var(--yellow);border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:12px;background-image:linear-gradient(160deg,rgba(255,212,71,.10),transparent 55%)}
+.rtabs{display:flex;gap:6px;flex-wrap:wrap}
+.rtab{font-family:var(--f-mono);font-size:.78rem;background:var(--surface2);color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:5px 12px;cursor:pointer}
+.rtab.on{background:var(--yellow);color:var(--bg);border-color:var(--yellow);font-weight:700}
+.rlist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.rrow{display:grid;grid-template-columns:2.6em minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 14px;border-radius:11px;background:var(--surface2)}
+.rrow .pos{font-family:var(--f-mono);font-weight:700;color:var(--muted);text-align:center}
+.rrow.p1 .pos{color:var(--yellow)} .rrow.p2 .pos{color:var(--cyan)} .rrow.p3 .pos{color:var(--pink)}
+.rrow .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+.rrow .nm small{font-family:var(--f-mono);color:var(--cyan);font-weight:700;margin-left:6px}
+.rrow .sc{font-family:var(--f-mono);font-variant-numeric:tabular-nums;color:var(--yellow);font-weight:700}
+.rrow.me{outline:2px solid var(--cyan)}
+.rme{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.rme input{flex:1 1 160px;min-width:0;font:inherit;padding:9px 12px;border-radius:10px;border:2px solid var(--line);background:var(--surface2);color:var(--ink)}
+.rme input:focus{outline:none;border-color:var(--cyan)}
+.rnote{font-size:.88rem;color:var(--muted);margin:0}
+
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}html{scroll-behavior:auto}}
+</style>
+
+<canvas id="fx"></canvas>
+<header class="top">
+  <div class="in">
+    <button class="brand" type="button" data-go="inicio"><span class="logo">SQL</span><span>TEST ASGBD <small>· Oracle en Docker</small></span></button>
+    <nav class="nav" aria-label="Secciones">
+      <button type="button" data-go="inicio">Inicio</button>
+      <button type="button" data-go="arq">Arquitectura</button>
+      <button type="button" data-go="tests">Tests</button>
+      <button type="button" data-go="rank">Ranking</button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <!-- ===================== INICIO ===================== -->
+  <section id="v-inicio" class="view">
+    <div class="hero" data-anim>
+      <h1 class="big" id="big" title="Haz clic">TEST ASGBD <span class="emo">🗄️</span></h1>
+      <div class="sub">ASGBD · ASIR 2 · ORACLE EN DOCKER</div>
+    </div>
+    <div class="stats">
+      <div class="stat" data-anim style="--c:var(--yellow)"><span class="k">Puntos totales</span><span class="v" id="st-pts">0</span><span class="s">sumando todas tus partidas</span></div>
+      <div class="stat" data-anim style="--c:var(--pink)"><span class="k">Mejor racha</span><span class="v" id="st-streak">0</span><span class="s">aciertos seguidos</span></div>
+      <div class="stat" data-anim style="--c:var(--cyan)"><span class="k">Partidas</span><span class="v" id="st-played">0</span><span class="s" id="st-fails">0 fallos por repasar</span></div>
+      <div class="stat" data-anim style="--c:var(--violet)"><span class="k">Preguntas</span><span class="v" id="st-bank">0</span><span class="s" id="st-arq">de arquitectura: 0</span></div>
+    </div>
+    <div class="charts">
+      <div class="panel" data-anim>
+        <h3>Tu acierto por tema</h3>
+        <p class="hint">Porcentaje de aciertos en todas tus partidas. Rojo: repásalo; verde: dominado.</p>
+        <div class="chartbox"><canvas id="ch-topic" aria-label="Porcentaje de acierto por tema"></canvas><div class="empty" id="ch-empty" hidden>Juega cualquier test y aquí aparecerán tus barras por tema.</div></div>
+      </div>
+      <div class="panel" data-anim>
+        <h3>Banco de preguntas</h3>
+        <p class="hint">Cuántas preguntas hay de cada tema.</p>
+        <div class="chartbox"><canvas id="ch-bank" aria-label="Preguntas por tema"></canvas></div>
+      </div>
+    </div>
+    <h2 class="sec" data-anim>Empieza por aquí</h2>
+    <div class="quick" id="quick"></div>
+    <h2 class="sec" data-anim>🏆 Podio</h2>
+    <div class="panel" data-anim><div id="podium"><p class="rnote">Conectando con el ranking…</p></div><div class="actions" style="margin-top:12px"><button class="btn ghost sm" type="button" data-go="rank">Ver ranking completo</button></div></div>
+  </section>
+
+  <!-- ===================== ARQUITECTURA ===================== -->
+  <section id="v-arq" class="view" hidden>
+    <div data-anim>
+      <span class="eyebrow">Tema de estudio · PDF "Arquitectura de Oracle"</span>
+      <h2 class="sec" style="margin-top:6px">Arquitectura de un servidor Oracle</h2>
+      <p class="lead">Toca cada pieza del esquema para ver qué es y cuál es la trampa típica del examen. Con los botones verás cómo viaja una consulta por dentro.</p>
+      <div class="subnav">
+        <button type="button" data-jump="a-serv">Servidor</button>
+        <button type="button" data-jump="a-proc">Procesos</button>
+        <button type="button" data-jump="a-ts">Tablespaces</button>
+        <button type="button" data-jump="a-est">Estructura</button>
+        <button type="button" data-jump="a-conc">Concurrencia</button>
+        <button type="button" data-jump="a-notas">Notas</button>
+        <button type="button" data-jump="a-trampas">Trampas</button>
+      </div>
+    </div>
+
+    <div class="arqgrid" id="a-serv" style="margin-top:18px">
+      <div class="panel" data-anim>
+        <div class="scrollx">
+        <svg class="diagram" id="dg" viewBox="0 0 960 560" role="img" aria-label="Esquema de un servidor Oracle: clientes, listener, instancia con procesos y memoria, y ficheros en disco">
+          <defs>
+            <filter id="glow" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+            <radialGradient id="tokg"><stop offset="0" stop-color="#ffffff"/><stop offset=".45" stop-color="#ffd447"/><stop offset="1" stop-color="#ff4f9a"/></radialGradient>
+          </defs>
+          <g id="wires">
+            <path class="wire" d="M170 142 L220 180"/><path class="wire" d="M170 242 L220 204"/>
+            <path class="wire hot" d="M340 182 L390 112"/><path class="wire hot" d="M340 202 L390 196"/>
+            <path class="wire hot" d="M540 109 L585 140"/><path class="wire hot" d="M540 199 L585 190"/>
+            <path class="wire" d="M827 156 L827 168"/>
+            <path class="wire" d="M610 332 L520 435"/><path class="wire" d="M700 332 L765 435"/>
+            <path class="wire" d="M790 332 L650 435"/><path class="wire" d="M880 332 L800 435"/>
+          </g>
+          <g class="node cl" data-id="cliente" tabindex="0" role="button" aria-label="Cliente 1"><rect x="20" y="110" width="150" height="64" rx="12"/><text x="95" y="138" text-anchor="middle">Cliente 1</text><text class="sm" x="95" y="157" text-anchor="middle">SQL Developer</text></g>
+          <g class="node cl" data-id="cliente2" tabindex="0" role="button" aria-label="Cliente 2"><rect x="20" y="210" width="150" height="64" rx="12"/><text x="95" y="238" text-anchor="middle">Cliente 2</text><text class="sm" x="95" y="257" text-anchor="middle">sqlplus</text></g>
+          <text class="lab" x="95" y="96" text-anchor="middle">RED</text>
+          <g class="node" data-id="listener" tabindex="0" role="button" aria-label="Listener"><rect x="220" y="160" width="120" height="64" rx="12"/><text x="280" y="188" text-anchor="middle">Listener</text><text class="sm" x="280" y="207" text-anchor="middle">puerto 1521</text></g>
+
+          <rect class="zone" x="370" y="20" width="570" height="345" rx="18"/>
+          <text class="lab" x="390" y="46">SERVIDOR · INSTANCIA FREE (memoria + procesos)</text>
+          <g class="node" data-id="ps" tabindex="0" role="button" aria-label="Proceso servidor 1 con su PGA"><rect x="390" y="80" width="150" height="58" rx="12"/><text x="465" y="104" text-anchor="middle">Proceso servidor 1</text><text class="sm" x="465" y="123" text-anchor="middle">+ su PGA (privada)</text></g>
+          <g class="node" data-id="ps2" tabindex="0" role="button" aria-label="Proceso servidor 2 con su PGA"><rect x="390" y="170" width="150" height="58" rx="12"/><text x="465" y="194" text-anchor="middle">Proceso servidor 2</text><text class="sm" x="465" y="213" text-anchor="middle">+ su PGA (privada)</text></g>
+          <rect class="zone mem" x="570" y="60" width="355" height="190" rx="14"/>
+          <g class="node" data-id="sga" tabindex="0" role="button" aria-label="SGA"><rect x="572" y="62" width="250" height="26" rx="8" style="fill:transparent;stroke:none"/><text class="lab" x="585" y="80">SGA · MEMORIA COMPARTIDA</text></g>
+          <rect x="585" y="92" width="150" height="145" rx="12" style="fill:rgba(63,214,255,.05);stroke:rgba(63,214,255,.35)"/>
+          <text class="sm" x="660" y="111" text-anchor="middle">Shared Pool</text>
+          <g class="node mem" data-id="lib" tabindex="0" role="button" aria-label="Library cache"><rect x="597" y="122" width="126" height="46" rx="10"/><text x="660" y="150" text-anchor="middle" style="font-size:13px">Library cache</text></g>
+          <g class="node mem" data-id="dict" tabindex="0" role="button" aria-label="Dictionary cache"><rect x="597" y="178" width="126" height="46" rx="10"/><text x="660" y="206" text-anchor="middle" style="font-size:13px">Dictionary cache</text></g>
+          <g class="node mem" data-id="buf" tabindex="0" role="button" aria-label="Buffer de datos"><rect x="750" y="92" width="160" height="64" rx="12"/><text x="830" y="120" text-anchor="middle">Buffer de datos</text><text class="sm" x="830" y="139" text-anchor="middle">últimos registros</text></g>
+          <g class="node mem" data-id="redo" tabindex="0" role="button" aria-label="Buffer redo log"><rect x="750" y="168" width="160" height="64" rx="12"/><text x="830" y="196" text-anchor="middle">Buffer redo log</text><text class="sm" x="830" y="215" text-anchor="middle">modificaciones</text></g>
+          <text class="lab" x="390" y="282">PROCESOS BACKGROUND</text>
+          <g class="node bg" data-id="pmon" tabindex="0" role="button" aria-label="PMON"><rect x="390" y="292" width="80" height="40" rx="10"/><text x="430" y="317" text-anchor="middle" style="font-family:var(--f-mono);font-size:13px">PMON</text></g>
+          <g class="node bg" data-id="smon" tabindex="0" role="button" aria-label="SMON"><rect x="480" y="292" width="80" height="40" rx="10"/><text x="520" y="317" text-anchor="middle" style="font-family:var(--f-mono);font-size:13px">SMON</text></g>
+          <g class="node bg" data-id="dbwn" tabindex="0" role="button" aria-label="DBWn"><rect x="570" y="292" width="80" height="40" rx="10"/><text x="610" y="317" text-anchor="middle" style="font-family:var(--f-mono);font-size:13px">DBWn</text></g>
+          <g class="node bg" data-id="lgwr" tabindex="0" role="button" aria-label="LGWR"><rect x="660" y="292" width="80" height="40" rx="10"/><text x="700" y="317" text-anchor="middle" style="font-family:var(--f-mono);font-size:13px">LGWR</text></g>
+          <g class="node bg" data-id="ckpt" tabindex="0" role="button" aria-label="CKPT"><rect x="750" y="292" width="80" height="40" rx="10"/><text x="790" y="317" text-anchor="middle" style="font-family:var(--f-mono);font-size:13px">CKPT</text></g>
+          <g class="node bg" data-id="arcn" tabindex="0" role="button" aria-label="ARCn"><rect x="840" y="292" width="80" height="40" rx="10"/><text x="880" y="317" text-anchor="middle" style="font-family:var(--f-mono);font-size:13px">ARCn</text></g>
+
+          <rect class="zone disk" x="370" y="395" width="570" height="150" rx="18"/>
+          <text class="lab" x="390" y="420">BASE DE DATOS · FICHEROS EN DISCO</text>
+          <g class="node dk" data-id="dfiles" tabindex="0" role="button" aria-label="Ficheros de datos"><rect x="390" y="435" width="165" height="92" rx="12"/><text x="472" y="465" text-anchor="middle">Datafiles</text><text class="sm" x="472" y="486" text-anchor="middle">SYSTEM01.DBF</text><text class="sm" x="472" y="502" text-anchor="middle">USERS01.DBF · …</text></g>
+          <g class="node dk" data-id="ctl" tabindex="0" role="button" aria-label="Ficheros de control"><rect x="570" y="435" width="125" height="92" rx="12"/><text x="632" y="465" text-anchor="middle">Control files</text><text class="sm" x="632" y="486" text-anchor="middle">CONTROL0n.CTL</text><text class="sm" x="632" y="502" text-anchor="middle">mín. 2 copias</text></g>
+          <g class="node dk" data-id="redof" tabindex="0" role="button" aria-label="Ficheros redo log"><rect x="710" y="435" width="120" height="92" rx="12"/><text x="770" y="465" text-anchor="middle">Redo log</text><text class="sm" x="770" y="486" text-anchor="middle">REDO0n.LOG</text><text class="sm" x="770" y="502" text-anchor="middle">rehacer</text></g>
+          <g class="node dk" data-id="otros" tabindex="0" role="button" aria-label="Otros ficheros"><rect x="845" y="435" width="80" height="92" rx="12"/><text x="885" y="465" text-anchor="middle" style="font-size:13px">Otros</text><text class="sm" x="885" y="486" text-anchor="middle">parámetros</text><text class="sm" x="885" y="502" text-anchor="middle">password</text></g>
+
+          <circle id="token" r="9" cx="95" cy="142" fill="url(#tokg)" opacity="0"/>
+        </svg>
+        </div>
+        <div class="legend"><span><i style="background:var(--violet)"></i>Clientes</span><span><i style="background:var(--cyan)"></i>Memoria (SGA)</span><span><i style="background:var(--pink)"></i>Procesos background</span><span><i style="background:var(--yellow)"></i>Ficheros (disco)</span></div>
+        <div class="sim"><span class="lbl">SIMULAR:</span>
+          <button class="btn cy sm" type="button" data-flow="select">▶ SELECT</button>
+          <button class="btn sm" type="button" data-flow="dml">▶ UPDATE + COMMIT</button>
+          <button class="btn ghost sm" type="button" data-flow="ckpt">▶ Checkpoint</button>
+        </div>
+        <ol class="steps" id="steps"><li class="on">Pulsa un botón de simulación o toca una pieza del esquema.</li></ol>
+      </div>
+      <aside class="panel info" id="info" data-anim aria-live="polite"></aside>
+    </div>
+
+    <h2 class="sec" id="a-proc" data-anim>Procesos de Oracle</h2>
+    <p class="lead" data-anim>El PDF distingue tres tipos. Los nombres de los procesos background salen en el <code>ps -eaf</code> del PDF y en tu Docker (<code>db_pmon_FREE</code>, <code>db_lgwr_FREE</code>…); lo que hace cada uno es ampliación.</p>
+    <div class="grid g3" id="procs"></div>
+
+    <h2 class="sec" id="a-ts" data-anim>Tablespaces que crea Oracle al instalar</h2>
+    <p class="lead" data-anim>Antes de meter datos hay que crear el espacio donde irán las tablas: el tablespace. Cada uno tiene uno o varios ficheros de datos.</p>
+    <div class="grid" id="tbs"></div>
+
+    <h2 class="sec" id="a-est" data-anim>Estructura lógica y física</h2>
+    <p class="lead" data-anim>Toca cada nivel o pulsa «Animar» para recorrerlo de arriba abajo.</p>
+    <div class="panel" data-anim>
+      <div class="scrollx">
+      <svg class="lyr diagram" id="lyr" viewBox="0 0 900 430" role="img" aria-label="Estructura lógica: base de datos, tablespace, segmento, extensión, bloque Oracle. Estructura física: fichero de datos y bloque del sistema operativo">
+        <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#9aa3cf"/></marker>
+        <marker id="ahp" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#ff4f9a"/></marker></defs>
+        <text class="lab" x="190" y="24" text-anchor="middle">ESTRUCTURA LÓGICA</text>
+        <text class="lab" x="710" y="24" text-anchor="middle">ESTRUCTURA FÍSICA</text>
+        <line class="div" x1="450" y1="10" x2="450" y2="420"/>
+        <path class="arrow" d="M190 96 V112" marker-end="url(#ah)"/><path class="arrow" d="M190 176 V192" marker-end="url(#ah)"/>
+        <path class="arrow" d="M190 256 V272" marker-end="url(#ah)"/><path class="arrow" d="M190 336 V352" marker-end="url(#ah)"/>
+        <path class="arrow" d="M710 176 V352" marker-end="url(#ah)" style="stroke-dasharray:4 5"/>
+        <path class="link" id="lk1" d="M320 144 H578" marker-end="url(#ahp)"/>
+        <path class="link" id="lk2" d="M320 384 H578" marker-end="url(#ahp)"/>
+        <g class="lvl lg" data-l="bbdd" tabindex="0" role="button"><rect x="60" y="40" width="260" height="56" rx="12"/><text x="190" y="66" text-anchor="middle">Base de datos</text><text class="sm" x="190" y="84" text-anchor="middle">PDB pruebajcs</text></g>
+        <g class="lvl lg" data-l="ts" tabindex="0" role="button"><rect x="60" y="116" width="260" height="56" rx="12"/><text x="190" y="142" text-anchor="middle">Tablespace</text><text class="sm" x="190" y="160" text-anchor="middle">DATOS</text></g>
+        <g class="lvl lg" data-l="seg" tabindex="0" role="button"><rect x="60" y="196" width="260" height="56" rx="12"/><text x="190" y="222" text-anchor="middle">Segmento</text><text class="sm" x="190" y="240" text-anchor="middle">la tabla PRUEBA</text></g>
+        <g class="lvl lg" data-l="ext" tabindex="0" role="button"><rect x="60" y="276" width="260" height="56" rx="12"/><text x="190" y="302" text-anchor="middle">Extensión</text><text class="sm" x="190" y="320" text-anchor="middle">trozo de espacio del segmento</text></g>
+        <g class="lvl lg" data-l="blk" tabindex="0" role="button"><rect x="60" y="356" width="260" height="56" rx="12"/><text x="190" y="382" text-anchor="middle">Bloque Oracle</text><text class="sm" x="190" y="400" text-anchor="middle">unidad mínima de Oracle</text></g>
+        <g class="lvl ph" data-l="df" tabindex="0" role="button"><rect x="580" y="116" width="260" height="56" rx="12"/><text x="710" y="142" text-anchor="middle">Fichero de datos</text><text class="sm" x="710" y="160" text-anchor="middle">datos01.dbf</text></g>
+        <g class="lvl ph" data-l="os" tabindex="0" role="button"><rect x="580" y="356" width="260" height="56" rx="12"/><text x="710" y="382" text-anchor="middle">Bloque del S.O.</text><text class="sm" x="710" y="400" text-anchor="middle">varios forman un bloque Oracle</text></g>
+      </svg>
+      </div>
+      <div class="lvlinfo" id="lvlinfo" aria-live="polite">Las flechas rosas son los <b>dos enlaces</b> entre lo lógico y lo físico: <b>tablespace ↔ fichero de datos</b> y <b>bloque Oracle ↔ bloques del S.O.</b></div>
+      <div class="actions"><button class="btn cy sm" type="button" id="lyr-play">▶ Animar</button></div>
+    </div>
+    <div class="grid g3" style="margin-top:14px">
+      <div class="panel" data-anim>
+        <h3>Un fichero, un solo tablespace</h3>
+        <p class="hint">Un tablespace puede tener varios ficheros, pero un fichero no se comparte entre dos tablespaces (la ✗ del PDF).</p>
+        <svg class="lyr" viewBox="0 0 420 190" style="width:100%;height:auto" role="img" aria-label="Dos tablespaces con sus ficheros; un fichero compartido está tachado">
+          <g class="lvl lg"><rect x="20" y="10" width="160" height="40" rx="10"/><text x="100" y="36" text-anchor="middle">Tablespace A</text></g>
+          <g class="lvl lg"><rect x="240" y="10" width="160" height="40" rx="10"/><text x="320" y="36" text-anchor="middle">Tablespace B</text></g>
+          <path class="arrow" d="M70 50 L45 128" marker-end="url(#ah)"/><path class="arrow" d="M100 50 L115 128" marker-end="url(#ah)"/>
+          <path class="arrow" d="M300 50 L300 128" marker-end="url(#ah)"/><path class="arrow" d="M350 50 L375 128" marker-end="url(#ah)"/>
+          <path class="link" d="M150 50 L205 128"/><path class="link" d="M270 50 L215 128"/>
+          <path d="M228 78 L250 100 M250 78 L228 100" style="stroke:#ff5b6b;stroke-width:4"/>
+          <g class="lvl ph"><rect x="10" y="130" width="70" height="44" rx="9"/><text x="45" y="157" text-anchor="middle" style="font-size:12px">fich. 1</text></g>
+          <g class="lvl ph"><rect x="85" y="130" width="70" height="44" rx="9"/><text x="120" y="157" text-anchor="middle" style="font-size:12px">fich. 2</text></g>
+          <g class="lvl ph"><rect x="175" y="130" width="70" height="44" rx="9"/><text x="210" y="157" text-anchor="middle" style="font-size:12px">fich. C</text></g>
+          <g class="lvl ph"><rect x="265" y="130" width="70" height="44" rx="9"/><text x="300" y="157" text-anchor="middle" style="font-size:12px">fich. 1</text></g>
+          <g class="lvl ph"><rect x="340" y="130" width="70" height="44" rx="9"/><text x="375" y="157" text-anchor="middle" style="font-size:12px">fich. 2</text></g>
+        </svg>
+      </div>
+      <div class="panel" data-anim>
+        <h3>Esquema y diccionario de datos</h3>
+        <p class="hint">Esquema = usuario: sus objetos (tablas, índices, sinónimos, vistas). El diccionario de datos es la «información de la información».</p>
+        <div class="grid" style="grid-template-columns:repeat(2,minmax(0,1fr));gap:8px">
+          <div class="card"><span class="code">USER_</span><p>Solo lo del propio usuario</p></div>
+          <div class="card"><span class="code">ALL_</span><p>Todo lo que el usuario puede ver</p></div>
+          <div class="card"><span class="code">DBA_</span><p>Todo lo de la BBDD (administrador)</p></div>
+          <div class="card"><span class="code">V$</span><p>Vistas dinámicas del estado de la instancia</p></div>
+        </div>
+      </div>
+    </div>
+
+    <h2 class="sec" id="a-conc" data-anim>Concurrencia y consistencia</h2>
+    <p class="lead" data-anim>Simula dos usuarios a la vez. Así se entiende el segmento de rollback, COMMIT, ROLLBACK y la consistencia de lectura.</p>
+    <div class="panel" data-anim>
+      <div class="conc">
+        <div class="cpanel"><h4>Usuario A <span>modifica</span></h4><div class="csql" id="cA">—</div></div>
+        <div class="cmid">
+          <div class="cbox" id="cBlkBox"><span>Bloque en el buffer de datos</span><b id="cBlk">100</b><small id="cBlkS">saldo confirmado</small></div>
+          <div class="cbox rb" id="cRbBox"><span>Segmento de rollback (imagen antigua)</span><b id="cRb">—</b><small id="cRbS">vacío</small></div>
+        </div>
+        <div class="cpanel"><h4>Usuario B <span>lee</span></h4><div class="csql" id="cB">—</div><div class="cres" id="cBres"></div></div>
+      </div>
+      <div class="cbtns">
+        <button class="btn sm" type="button" data-c="upd">1 · A: UPDATE</button>
+        <button class="btn cy sm" type="button" data-c="sel">B: SELECT</button>
+        <button class="btn g sm" type="button" data-c="commit">A: COMMIT</button>
+        <button class="btn r sm" type="button" data-c="rollback">A: ROLLBACK</button>
+        <button class="btn ghost sm" type="button" data-c="reset">Reiniciar</button>
+      </div>
+      <p class="cexp" id="cExp" aria-live="polite">Empieza con «A: UPDATE». Después prueba «B: SELECT» antes y después de confirmar.</p>
+      <p class="hint" style="margin-top:12px">Problemas del segmento de rollback (PDF): espacio insuficiente para las transacciones, error de consistencia de lectura y bloqueo de transacción.</p>
+    </div>
+
+    <h2 class="sec" id="a-notas" data-anim>Notas rápidas</h2>
+    <p class="lead" data-anim>Tarjetas de repaso: lee el concepto, intenta decir la definición y gírala para comprobarlo.</p>
+    <div class="grid" id="flash"></div>
+
+    <h2 class="sec" id="a-trampas" data-anim>Las trampas del examen</h2>
+    <p class="lead" data-anim>Lo que suena bien pero es falso, al lado de lo correcto.</p>
+    <div class="grid g3" id="traps"></div>
+
+    <div class="cta" data-anim>
+      <div><h3>¿Lo tienes? Ponte a prueba</h3><p>Examen de arquitectura: 17 de test y trampas + 3 preguntas cortas.</p></div>
+      <div class="actions" style="margin:0"><button class="btn" type="button" data-start="arqexam">Examen de arquitectura</button><button class="btn ghost" type="button" data-start="trampa">Solo trampas</button></div>
+    </div>
+  </section>
+
+  <!-- ===================== TESTS ===================== -->
+  <section id="v-tests" class="view" hidden>
+    <span class="eyebrow" data-anim>Elige cómo practicar</span>
+    <h2 class="sec" style="margin-top:6px" data-anim>Arquitectura de Oracle</h2>
+    <p class="lead" data-anim>Lo nuevo: tests de arquitectura a fondo y preguntas trampa.</p>
+    <div class="grid" id="t-arq"></div>
+    <h2 class="sec" data-anim>Modos de juego</h2>
+    <div class="grid" id="t-games"></div>
+    <h2 class="sec" data-anim>Resto del temario</h2>
+    <div class="grid" id="t-blocks"></div>
+    <h2 class="sec" data-anim>Examen y repaso</h2>
+    <div class="grid" id="t-specials"></div>
+    <p class="tip">Teclas 1–4 para responder, Enter para seguir. Puntos, rachas y fallos se guardan en este navegador; el ranking, en la página.</p>
+  </section>
+
+  <!-- ===================== RANKING ===================== -->
+  <section id="v-rank" class="view" hidden>
+    <span class="eyebrow" data-anim>Competición</span>
+    <h2 class="sec" style="margin-top:6px" data-anim>🏆 Ranking</h2>
+    <p class="lead" data-anim>Tus puntos se suben solos al terminar cada partida.</p>
+    <div class="rank" id="rank" data-anim><p class="rnote">Conectando con el ranking…</p></div>
+  </section>
+
+  <!-- ===================== QUIZ ===================== -->
+  <section id="v-quiz" class="view" hidden>
+    <div class="qhead">
+      <button class="link" id="back" type="button">← Salir</button>
+      <span id="qtitle"></span>
+      <span class="mono" id="qcount"></span>
+    </div>
+    <div class="hud" id="hud"></div>
+    <div class="bar" id="pbar"><i id="prog"></i></div>
+    <div class="qcard" id="qcard">
+      <div class="prompt" id="qprompt"></div>
+      <div class="qtext" id="qtext"></div>
+      <div class="opts" id="opts"></div>
+      <div class="fb" id="fb" hidden></div>
+      <div class="actions"><button class="btn" id="next" type="button" hidden>Siguiente</button></div>
+    </div>
+  </section>
+
+  <section id="v-result" class="view result" hidden></section>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+/* Formatos:
+   ["pregunta","correcta",[incorrectas],"explicación"]                      tipo test
+   ["afirmación","Verdadero"|"Falso",[],"explicación",{t:"vf"}]             verdadero/falso
+   ["pregunta","respuesta",[],"explicación",{t:"w",acc:[...]}]               escribir una palabra
+   ["enunciado","comando correcto",[],"explicación",{t:"cmd",re:[...]}]     comando SQL
+   ["pregunta","respuesta modelo",[],"",{t:"s",kw:[[...],...]}]              pregunta corta */
+const V={t:"vf"};
+const B=[
+ {id:"inc", tag:"LO QUE ENTRA", t:"Incidencia y errores", d:"Lo que hay que saber para la parte práctica: errores ORA- y trampas", q:[
+  ["Estás en CDB$ROOT y haces CREATE USER pepe IDENTIFIED BY oracle; ¿qué pasa?","ORA-65096: el nombre de usuario común debe empezar por C##",["Se crea bien","ORA-01950","ORA-01109"],"En la raíz los usuarios son comunes (C##). Antes: ALTER SESSION SET CONTAINER = la_pdb;"],
+  ["Un usuario intenta insertar y sale ORA-01950. ¿Qué le falta?","Cuota en el tablespace",["CREATE SESSION","Que la PDB esté abierta","CREATE TABLE"],"ALTER USER u QUOTA UNLIMITED ON ts;"],
+  ["Un usuario no puede ni conectarse: ORA-01045. ¿Qué le falta?","grant create session",["Cuota","grant create table","Abrir la PDB"],"create session = permiso para conectarse."],
+  ["Un BIGFILE (fichero ts01.dbf) tiene 20 MB y te piden aumentarlo 20 MB. ¿Qué haces?","alter database datafile '.../ts01.dbf' resize 40M;",["ALTER TABLESPACE ts ADD DATAFILE '...' SIZE 20M;","ALTER TABLESPACE ts RESIZE 20M;","DROP TABLESPACE ts;"],"Opción 1 del profe: resize pone el tamaño FINAL, 20 + 20 = 40M. (ALTER TABLESPACE ts RESIZE 40M también vale.)"],
+  ["A un SMALLFILE de 15 MB le piden \"aumentar 20 MB\". ¿Qué vale?","Añadir un fichero de 20M con ADD DATAFILE",["Solo se puede con resize 20M","No se puede","Crear otro tablespace"],"Opción 2 del profe. También vale la opción 1: alter database datafile '...' resize 35M."],
+  ["Según el profe, si me quedo sin espacio en un tablespace, ¿qué dos opciones tengo?","Redimensionar el datafile o añadir un nuevo datafile",["Borrar el tablespace o crear otro usuario","Reiniciar la PDB o hacer COMMIT","Cambiar a TEMP o a UNDO"],"Opción 1: alter database datafile '...' resize 20M; Opción 2: ALTER TABLESPACE datos ADD DATAFILE '...' SIZE 70M;"],
+  ["Para usar la opción 2 (ADD DATAFILE) el tablespace tiene que ser…","SMALLFILE",["BIGFILE","TEMPORARY","De la CDB"],"Un BIGFILE solo admite un datafile (ORA-32771)."],
+  ["Haces DROP TABLESPACE datos; y al crearlo otra vez con el mismo datafile sale ORA-01119 / ORA-27038. ¿Por qué?","El fichero .dbf se quedó en el disco",["La PDB está cerrada","Falta cuota","El tablespace sigue existiendo"],"Sin AND DATAFILES no se borra el fichero. Usa DROP TABLESPACE datos INCLUDING CONTENTS AND DATAFILES; o REUSE."],
+  ["DROP TABLESPACE datos; da ORA-01549. ¿Qué pasa?","El tablespace tiene tablas: hay que poner INCLUDING CONTENTS",["No existe","Es BIGFILE","Falta cuota"],"DROP TABLESPACE datos INCLUDING CONTENTS AND DATAFILES;"],
+  ["Para volver a enchufar en la misma CDB una PDB desconectada (unplug), antes haces…","DROP PLUGGABLE DATABASE nombre KEEP DATAFILES;",["DROP PLUGGABLE DATABASE nombre INCLUDING DATAFILES;","ALTER PLUGGABLE DATABASE nombre OPEN;","Nada, se conecta sola"],"KEEP DATAFILES deja los ficheros; luego CREATE ... USING 'x.xml' NOCOPY, OPEN y SAVE STATE (como el profe, 27 feb)."],
+  ["¿Qué error sale al añadir un fichero a un BIGFILE?","ORA-32771",["ORA-65096","ORA-01950","ORA-01109"],"cannot add file to bigfile tablespace."],
+  ["Te sale ORA-01109 (database not open) trabajando en la PDB. ¿Qué falta?","ALTER PLUGGABLE DATABASE ... OPEN",["Dar cuota","Reiniciar Docker","Crear el listener"],"La PDB está MOUNTED: hay que abrirla."],
+  ["En SQL Developer, para conectar a la PDB pruebajcs, ¿qué marcas?","Nombre del servicio = pruebajcs",["SID = xe","SID = pruebajcs","Rol SYSDBA siempre"],"El diálogo viene con SID = xe, que no sirve."],
+  ["En tu versión de Oracle, CREATE TABLESPACE sin poner SMALLFILE crea un…","BIGFILE",["SMALLFILE","TEMPORARY","UNDO"],"Por eso si piden poder añadir ficheros hay que escribir SMALLFILE."],
+  ["CREATE BIGFILE TABLESPACE ... SIZE 5M da ORA-03214. ¿Por qué?","El BIGFILE es más pequeño del mínimo (unos 7 MB)",["Falta cuota","El nombre ya existe","La PDB está cerrada"],"Pon 10M o más, o usa SMALLFILE."],
+  ["Reduces un tablespace y sale ORA-03297. ¿Qué pasa?","Hay datos más allá del nuevo tamaño",["El tablespace no existe","Es BIGFILE","Falta cuota"],"Reduce menos."],
+  ["\"El tablespace users no debe estar en la bbdd\" y SÍ está. ¿Qué haces?","DROP TABLESPACE users INCLUDING CONTENTS AND DATAFILES;",["ALTER TABLESPACE users OFFLINE;","DROP USER users;","No se puede borrar"],"Borra el tablespace y sus ficheros."],
+  ["Error de SQL Developer \"el listener no conoce el servicio\" (ORA-12514):","Nombre del servicio mal escrito o PDB cerrada",["Contraseña mal","Falta cuota","Puerto 3306"],"Servicio = nombre de la PDB y que esté abierta."],
+  ["Las órdenes de sqlplus terminan en…",";",[".",":","GO"],"Sin ; no se ejecutan (o / en una línea nueva)."],
+  ["En sqlplus de Docker, la flecha ↑ recupera la orden anterior.","Falso",["Verdadero"],"Saca caracteres raros: vuelve a escribirla o pégala.",V],
+  ["Para crear tablespaces y usuarios de una PDB tienes que estar dentro de ella.","Verdadero",["Falso"],"ALTER SESSION SET CONTAINER = la_pdb;",V],
+  ["RESIZE indica lo que se suma al tamaño actual.","Falso",["Verdadero"],"Indica el tamaño FINAL.",V]
+ ]},
+ {id:"cmd", tag:"COMANDOS", t:"Escribe el comando", d:"Te digo qué hacer y escribes el comando (como en el Exec de Docker)", q:[
+  ["Estás en la pestaña Exec de Docker (sh-4.4$). Entra en Oracle como administrador.","sqlplus / as sysdba",[],"",{t:"cmd",re:[/^sqlplus \/ as sysdba$/]}],
+  ["Ver el nombre y el estado (OPEN_MODE) de todas las PDB.","SELECT NAME, OPEN_MODE FROM V$PDBS;",[],"",{t:"cmd",re:[/^select name, ?open_mode from v\$pdbs$/,/^select pdb_name, ?status from dba_pdbs$/]}],
+  ["Ver dónde están los ficheros de la plantilla PDB$SEED.","SELECT name FROM v$datafile WHERE con_id = 2;",[],"",{t:"cmd",re:[/^select name from v\$datafile where con_id = 2$/]}],
+  ["Ver en qué contenedor estás.","SHOW CON_NAME;",[],"",{t:"cmd",re:[/^show con_name$/]}],
+  ["Entra en la PDB pruebajcs para trabajar dentro de ella.","ALTER SESSION SET CONTAINER = pruebajcs;",[],"",{t:"cmd",re:[/^alter session set container = pruebajcs$/]}],
+  ["Abre la PDB pruebajcs.","ALTER PLUGGABLE DATABASE pruebajcs OPEN;",[],"",{t:"cmd",re:[/^alter pluggable database pruebajcs open$/]}],
+  ["Guarda el estado de pruebajcs para que se abra sola al arrancar.","ALTER PLUGGABLE DATABASE pruebajcs SAVE STATE;",[],"",{t:"cmd",re:[/^alter pluggable database pruebajcs save state$/]}],
+  ["Ver los tablespaces de la PDB y su estado.","SELECT tablespace_name, status FROM dba_tablespaces;",[],"",{t:"cmd",re:[/^select tablespace_name, ?status from dba_tablespaces$/,/^select tablespace_name, ?status, ?bigfile from dba_tablespaces$/]}],
+  ["Ver los nombres de los ficheros de datos.","SELECT FILE_NAME FROM DBA_DATA_FILES;",[],"",{t:"cmd",re:[/^select file_name from dba_data_files$/]}],
+  ["Da permiso a vendedorjcs para conectarse.","grant create session to vendedorjcs;",[],"",{t:"cmd",re:[/^grant create session to vendedorjcs$/]}],
+  ["Da permiso a vendedorjcs para crear tablas.","grant create table to vendedorjcs;",[],"",{t:"cmd",re:[/^grant create table to vendedorjcs$/]}],
+  ["vendedorjcs ya existe. Dale cuota ilimitada en historicojcs.","ALTER USER vendedorjcs QUOTA UNLIMITED ON historicojcs;",[],"",{t:"cmd",re:[/^alter user vendedorjcs quota unlimited on historicojcs$/]}],
+  ["El BIGFILE ventasjcs mide 30 MB y su fichero es /opt/oracle/oradata/FREE/EXAMENJCS/ventasjcs01.dbf. Auméntalo 20 MB.","alter database datafile '/opt/oracle/oradata/FREE/EXAMENJCS/ventasjcs01.dbf' resize 50M;",[],"",{t:"cmd",re:[/^alter database datafile '\/opt\/oracle\/oradata\/free\/examenjcs\/ventasjcs01\.dbf' resize 50m$/,/^alter tablespace ventasjcs resize 50m$/]}],
+  ["Redimensiona a 20M el datafile /opt/oracle/oradata/FREE/PDB2/datos01.dbf (opción 1 del profe).","alter database datafile '/opt/oracle/oradata/FREE/PDB2/datos01.dbf' resize 20M;",[],"",{t:"cmd",re:[/^alter database datafile '\/opt\/oracle\/oradata\/free\/pdb2\/datos01\.dbf' resize 20m$/]}],
+  ["Añade al tablespace datos el datafile /opt/oracle/oradata/FREE/PDB2/datos03.dbf de 70M (opción 2 del profe).","ALTER TABLESPACE datos ADD DATAFILE '/opt/oracle/oradata/FREE/PDB2/datos03.dbf' SIZE 70M;",[],"",{t:"cmd",re:[/^alter tablespace datos add datafile '\/opt\/oracle\/oradata\/free\/pdb2\/datos03\.dbf' size 70m$/]}],
+  ["Consulta si el tablespace DATOS es bigfile.","SELECT tablespace_name, bigfile FROM dba_tablespaces WHERE tablespace_name = 'DATOS';",[],"",{t:"cmd",re:[/^select tablespace_name, ?bigfile from dba_tablespaces where tablespace_name = 'datos'$/]}],
+  ["Borra el tablespace datos con todo su contenido y sus ficheros.","DROP TABLESPACE datos INCLUDING CONTENTS AND DATAFILES;",[],"",{t:"cmd",re:[/^drop tablespace datos including contents and datafiles$/]}],
+  ["Quita la PDB FREEPDB2 de la CDB conservando sus ficheros (para volver a enchufarla).","DROP PLUGGABLE DATABASE FREEPDB2 KEEP DATAFILES;",[],"",{t:"cmd",re:[/^drop pluggable database freepdb2 keep datafiles$/]}],
+  ["Dentro de sqlplus, comprueba el nombre y el estado de la instancia.","select instance_name, status from v$instance;",[],"",{t:"cmd",re:[/^select instance_name, ?status from v\$instance$/]}],
+  ["Fuera de sqlplus (sh-4.4$), comprueba el listener.","lsnrctl status",[],"",{t:"cmd",re:[/^lsnrctl status$/]}]
+ ]},
+ {id:"cortas", tag:"PREGUNTAS CORTAS", t:"Preguntas cortas", d:"Como en el examen: respondes con tus palabras, ves la respuesta modelo y te puntúas", q:[
+  ["¿Qué diferencia hay entre instancia y base de datos en Oracle?","La instancia es la parte en memoria: las estructuras de memoria (SGA y PGA) y los procesos. La base de datos son los ficheros físicos en disco (datafiles, ficheros de control y redo log).",[],"",{t:"s",kw:[["memoria"],["proceso"],["fichero","archivo","disco"]]}],
+  ["¿Qué es la SGA y qué partes tiene?","La memoria compartida de la instancia. Partes: Shared Pool (library cache + dictionary cache, sentencias SQL recientes), buffer de datos (últimos registros consultados) y buffer redo log (modificaciones).",[],"",{t:"s",kw:[["compartid"],["shared pool","library","dictionary"],["buffer de datos","datos"],["redo"]]}],
+  ["¿Para qué sirven los ficheros redo log?","Guardan todas las transacciones o modificaciones (insert, update, delete) para poder recuperar la BBDD si hay problemas. Suele haber varios: REDO01.LOG, REDO02.LOG, REDO03.LOG.",[],"",{t:"s",kw:[["modificacion","transaccion","cambio"],["recuperar","recuperacion"],["insert","update","delete"]]}],
+  ["¿Qué información contiene un registro de redo?","Identificación de la transacción, dirección de bloque, número de fila, número de columna, y el valor anterior y el valor nuevo del dato.",[],"",{t:"s",kw:[["transaccion"],["bloque"],["fila"],["columna"],["anterior","antiguo"],["nuevo"]]}],
+  ["¿Qué es un fichero de control y qué guarda?","Guarda la estructura de la BBDD: información de arranque y parada, nombres de los ficheros de datos y redo log, checkpoints, fecha de creación y nombre de la BBDD y estado on-line/off-line. Mínimo 2 copias en discos distintos.",[],"",{t:"s",kw:[["arranque","parada"],["nombre"],["checkpoint","punto de control"],["fecha"],["copia","discos"]]}],
+  ["Nombra los tablespaces que crea Oracle al instalar y para qué sirve cada uno.","SYSTEM: diccionario de datos. SYSAUX: auxiliar. USERS: datos de los usuarios. TEMP: temporales. UNDOTBS1: deshacer (imagen anterior de los datos).",[],"",{t:"s",kw:[["system"],["users"],["temp"],["undo"],["diccionario"]]}],
+  ["Explica la estructura lógica y la física de Oracle.","Lógica: base de datos > tablespace > segmento > extensión > bloque Oracle. Física: ficheros de datos (datafiles) > bloques del S.O. Un tablespace se guarda en uno o varios datafiles.",[],"",{t:"s",kw:[["tablespace"],["segmento"],["extension"],["bloque"],["datafile","fichero"]]}],
+  ["Diferencia entre procesos servidor y procesos background.","Los servidor atienden las peticiones de los clientes (cada uno con su PGA). Los background hacen las tareas internas del gestor.",[],"",{t:"s",kw:[["cliente","peticion"],["tarea","interna","gestor"]]}],
+  ["¿Qué es el diccionario de datos y qué vistas tiene?","Información sobre la propia BBDD (información de la información). Vistas DBA_ (todo), ALL_ (lo que puede ver el usuario), USER_ (lo suyo) y V$ (vistas dinámicas).",[],"",{t:"s",kw:[["informacion"],["dba"],["all"],["user"],["v$"]]}],
+  ["¿Qué es una CDB?","La base de datos contenedora (multitenant): tiene control files, datafiles, undo, temporales y redo, y el diccionario de la raíz y de lo común. Contiene a las PDB. Su raíz es CDB$ROOT; en Docker se llama FREE.",[],"",{t:"s",kw:[["contenedor","container"],["pdb"],["raiz","cdb$root","root"],["control","redo","undo"]]}],
+  ["¿Qué es una PDB?","Una base de datos enchufable (pluggable) dentro de la CDB con la que trabajan los usuarios. Solo tiene sus datafiles y temporales, con su propio diccionario. Por defecto FREEPDB1.",[],"",{t:"s",kw:[["enchufable","pluggable"],["datafile","fichero","archivo"],["diccionario"],["usuario"]]}],
+  ["¿Qué requisitos hay para crear una PDB desde la plantilla?","Privilegios SYSDBA, contenedor raíz abierto, PDB$SEED disponible (sin modificar) y DB_CREATE_FILE_DEST configurado si no usas FILE_NAME_CONVERT.",[],"",{t:"s",kw:[["sysdba"],["raiz","root","abierto"],["seed","plantilla"],["db_create_file_dest","file_name_convert"]]}],
+  ["¿Qué haces para que una PDB recién creada se pueda usar y siga abierta tras reiniciar?","Está MOUNTED: se abre con ALTER PLUGGABLE DATABASE nombre OPEN (pasa a READ WRITE) y se guarda el estado con ... SAVE STATE.",[],"",{t:"s",kw:[["mounted"],["open"],["save state"],["read write"]]}],
+  ["Diferencia entre SMALLFILE y BIGFILE.","SMALLFILE admite varios datafiles de hasta 32 GB (se pueden añadir ficheros). BIGFILE solo uno, pero muy grande (el profe: hasta 8 exabytes; el PDF: 128 TB); no se le pueden añadir. Por defecto Oracle crea BIGFILE.",[],"",{t:"s",kw:[["varios","añadir","anadir"],["uno","un solo","unico"],["32"],["defecto"]]}],
+  ["Si me quedo sin espacio en un tablespace, ¿qué hago?","Opción 1: redimensionar su datafile (alter database datafile '...' resize 20M;). Opción 2: añadirle un nuevo datafile (ALTER TABLESPACE datos ADD DATAFILE '...' SIZE 70M;), pero solo si el tablespace es SMALLFILE. Por defecto Oracle los crea BIGFILE.",[],"",{t:"s",kw:[["redimension","resize"],["añadir","anadir","add datafile","nuevo datafile"],["smallfile"],["bigfile"]]}],
+  ["¿Qué necesita un usuario para conectarse y crear tablas en un tablespace?","CREATE SESSION (conectarse), CREATE TABLE (crear tablas) y cuota en ese tablespace (QUOTA UNLIMITED ON ...).",[],"",{t:"s",kw:[["create session","sesion"],["create table"],["quota","cuota"]]}],
+  ["Explica -p 1521:1521, -e ORACLE_PWD y -v oradata:/opt/oracle/oradata del docker run.","-p enlaza el puerto del host con el del contenedor, donde escucha el listener. ORACLE_PWD es la contraseña de SYS y SYSTEM. -v crea un volumen para que los datos persistan aunque se borre el contenedor.",[],"",{t:"s",kw:[["puerto"],["listener"],["contraseña","contrasena","password"],["volumen"],["persist"]]}],
+  ["¿Cómo compruebas que la base de datos funciona?","Procesos con ps -eaf | grep FREE; sqlplus / as sysdba y select instance_name, status from v$instance (OPEN); y lsnrctl status para el listener.",[],"",{t:"s",kw:[["ps"],["sqlplus"],["v$instance","instance"],["open"],["lsnrctl","listener"]]}]
+ ]},
+ {id:"arq", t:"Arquitectura de Oracle", d:"Instancia, memoria, procesos, ficheros, tablespaces y estructura", q:[
+  ["¿Qué forma la INSTANCIA de Oracle?","La memoria (SGA y PGA) y los procesos",["Los datafiles y los control files","Los tablespaces y los usuarios","El listener y la red"],"La base de datos son los ficheros en disco."],
+  ["Memoria PRIVADA de cada proceso servidor:","PGA",["SGA","Shared Pool","Buffer redo log"],"La SGA es la compartida."],
+  ["¿Qué guarda la Shared Pool?","Las sentencias SQL ejecutadas recientemente",["Los últimos registros consultados","Las modificaciones pendientes","La imagen anterior de los datos"],"Library cache + dictionary cache."],
+  ["¿Qué parte de la SGA guarda los últimos registros consultados?","Buffer de datos",["Buffer redo log","Library cache","PGA"],"El buffer redo log guarda las modificaciones."],
+  ["Ficheros que guardan TODAS las modificaciones para poder recuperar:","Redo log",["Ficheros de control","Datafiles","Fichero de parámetros"],"REDO01.LOG, REDO02.LOG, REDO03.LOG."],
+  ["¿Qué NO se guarda en un fichero de control?","Los datos de las tablas",["Nombres de los ficheros de datos y redo log","Información de checkpoints","Fecha de creación y nombre de la BBDD"],"Los datos van en los datafiles."],
+  ["Copias mínimas recomendadas de los ficheros de control:","Dos, en discos diferentes",["Una sola","Tres en el mismo disco","Ninguna"],"Al instalar: CONTROL01/02/03.CTL."],
+  ["Tablespace del diccionario de datos:","SYSTEM",["USERS","TEMP","UNDOTBS1"],"SYSTEM01.DBF."],
+  ["Tablespace con la imagen anterior de los datos (deshacer):","UNDOTBS1",["TEMP","SYSAUX","USERS"],"Permite deshacer y recuperar transacciones incompletas."],
+  ["Orden correcto de la estructura LÓGICA:","BBDD > Tablespace > Segmento > Extensión > Bloque Oracle",["BBDD > Segmento > Tablespace > Bloque > Extensión","Tablespace > BBDD > Extensión > Segmento > Bloque","Datafile > Tablespace > Segmento > Bloque S.O."],"Física: datafile > bloque del S.O."],
+  ["Un datafile puede pertenecer a dos tablespaces.","Falso",["Verdadero"],"Cada datafile es de un único tablespace.",V],
+  ["Vistas del diccionario con solo los objetos del usuario:","USER_",["DBA_","ALL_","V$"],"ALL_ = lo que puede ver; DBA_ = todo."],
+  ["¿Qué hace COMMIT?","Establece la imagen nueva de los datos",["Vuelve a la imagen antigua","Guarda la imagen antigua en rollback","Cierra la sesión"],"ROLLBACK vuelve a la antigua."],
+  ["Puerto por defecto del listener de Oracle:","1521",[],"Por eso -p 1521:1521.",{t:"w",acc:["1521"]}],
+  ["Un esquema es el conjunto de objetos de un usuario.","Verdadero",["Falso"],"Esquema = usuario: tablas, índices, vistas, sinónimos.",V],
+  ["Los procesos background atienden directamente las peticiones de los clientes.","Falso",["Verdadero"],"Eso lo hacen los procesos servidor.",V]
+ ]},
+ {id:"docker", t:"Instalación en Docker", d:"El docker run, sus opciones, arrancar, parar y la terminal Exec", q:[
+  ["-v oradata:/opt/oracle/oradata sirve para…","Que los datos persistan en un volumen",["Indicar la versión","Abrir el puerto","Poner la contraseña"],"Los datos sobreviven aunque se borre el contenedor."],
+  ["-e ORACLE_PWD=oracle indica…","La contraseña de SYS y SYSTEM",["El nombre de la CDB","El juego de caracteres","El nombre del contenedor"],"Variable de entorno."],
+  ["Mensaje del log que indica que ya se puede usar:","DATABASE IS READY TO USE!",["Container started","Listener started","Pluggable database created"],"En la pestaña Logs del contenedor."],
+  ["-e ENABLE_ARCHIVELOG=true hace que…","Las transacciones de los redo logs se archiven antes de sobrescribirse",["Se borren los redo viejos","Se active el listener","Se cree una PDB"],"Modo archivelog."],
+  ["-e ORACLE_CHARACTERSET=AL32UTF8 indica…","El juego de caracteres de la BBDD",["La contraseña","El puerto","La versión"],"AL32UTF8 = Unicode."],
+  ["-p 1521:1521 enlaza…","Un puerto del host con uno del contenedor",["Dos contenedores","Dos volúmenes","Dos PDB"],"Puerto del listener."],
+  ["Para abrir una terminal del contenedor en Docker Desktop: contenedor > pestaña…","Exec",["Logs","Inspect","Stats"],"Ahí se escribe sqlplus / as sysdba."],
+  ["Si reinicias el PC, el contenedor Oracle arranca solo siempre.","Falso",["Verdadero"],"Comprueba que esté verde en Docker Desktop; si no, Start.",V]
+ ]},
+ {id:"cdb", t:"CDB y PDB", d:"Contenedor, plantilla, crear, abrir, guardar estado, unplug", q:[
+  ["Nombre de la CDB que crea la imagen de Docker:","FREE",["FREEPDB1","PDB$SEED","XE"],"Su raíz es CDB$ROOT."],
+  ["¿Qué es PDB$SEED?","La plantilla de solo lectura para crear PDB",["La PDB de los usuarios","El contenedor raíz","Una copia de seguridad"],"Ficheros en /opt/oracle/oradata/FREE/pdbseed/."],
+  ["con_id de PDB$SEED:","2",[],"SELECT name FROM v$datafile WHERE con_id = 2;",{t:"w",acc:["2"]}],
+  ["Estado de una PDB justo después de crearla:","MOUNTED",["READ WRITE","READ ONLY","OPEN"],"Hay que abrirla con OPEN."],
+  ["ALTER PLUGGABLE DATABASE pdb2 SAVE STATE sirve para…","Que se abra sola al arrancar la instancia",["Hacer un backup","Cerrarla","Desconectarla"],"Guarda el estado abierto."],
+  ["¿Qué comando dice en qué contenedor estás?","SHOW CON_NAME;",["SHOW USER;","SELECT * FROM V$PDBS;","ALTER SESSION SET CONTAINER;"],"En la raíz sale CDB$ROOT."],
+  ["UNPLUG INTO '...' genera…","Un XML para volver a conectar la PDB",["Un .sql con los datos","Un backup .dmp","Nada"],"Para conectarla a esta CDB o a otra."],
+  ["FILE_NAME_CONVERT indica…","De dónde coger los ficheros de la plantilla y a dónde copiarlos",["El usuario administrador","El tamaño","El juego de caracteres"],"('origen/','destino/')."],
+  ["Las PDB tienen su propio diccionario de datos.","Verdadero",["Falso"],"Con la información de sus propios objetos.",V],
+  ["Los control files y redo log son de cada PDB.","Falso",["Verdadero"],"Son de la CDB; la PDB solo tiene datafiles y temporales.",V],
+  ["PDB por defecto que crea la imagen de Docker:","FREEPDB1",["FREE","PDB$SEED","CDB$ROOT"],"Lista con SELECT NAME, OPEN_MODE FROM V$PDBS;"],
+  ["Para volver a conectar una PDB desconectada se usa…","CREATE PLUGGABLE DATABASE ... USING 'fichero.xml' NOCOPY",["ALTER PLUGGABLE DATABASE ... PLUG","IMPORT PDB","ALTER SESSION SET CONTAINER"],"NOCOPY: los datafiles ya están en su sitio."]
+ ]},
+ {id:"esp", t:"Gestión de espacio", d:"Tablespaces, datafiles, SMALLFILE/BIGFILE, cuotas", q:[
+  ["\"Un solo fichero sin posibilidad de añadir ficheros\" →","BIGFILE",["SMALLFILE","TEMPORARY","UNDO"],"BIGFILE: un único datafile, muy grande."],
+  ["Tamaño máximo de cada datafile SMALLFILE:","32 GB",["2 GB","128 TB","Sin límite"],"BIGFILE: uno muy grande (el profe: hasta 8 exabytes; el PDF: 128 TB)."],
+  ["Según el profe, ¿hasta qué tamaño puede llegar un BIGFILE?","8 exabytes",["32 GB","2 GB","1 TB"],"El PDF de Gestión de espacio dice 128 TB; en clase el profe dijo 8 exabytes."],
+  ["Si no pones SMALLFILE ni BIGFILE, Oracle crea el tablespace como…","BIGFILE",["SMALLFILE","TEMPORARY","Da error"],"Lo dice el profe en Classroom. Compruébalo con la columna bigfile de dba_tablespaces."],
+  ["Columna de dba_tablespaces que indica si un tablespace es bigfile:","BIGFILE",[],"YES = bigfile, NO = smallfile.",{t:"w",acc:["bigfile"]}],
+  ["Opción 1 del profe para ganar espacio: alter database datafile '...' resize 20M; vale para…","SMALLFILE y BIGFILE",["Solo SMALLFILE","Solo BIGFILE","Solo la CDB"],"Redimensionar el datafile vale para los dos tipos."],
+  ["Para ESCRIBIR en un tablespace, el usuario necesita…","Cuota (QUOTA) en ese tablespace",["Que sea su TEMPORARY TABLESPACE","Que sea BIGFILE","Ser SYSDBA"],"Más create session y create table."],
+  ["Datafiles de la PDB PRUEBAJCS en Docker:","/opt/oracle/oradata/FREE/PRUEBAJCS",["/opt/oracle/oradata/FREE","/opt/oracle/oradata/FREE/pdbseed","/home/oracle/PRUEBAJCS"],"Los de la CDB en /opt/oracle/oradata/FREE."],
+  ["DEFAULT TABLESPACE de un usuario es…","Donde se crean sus objetos si no se indica otro",["Donde guarda los temporales","Su contraseña","Su cuota"],"Se pone al crear el usuario."],
+  ["Un tablespace SMALLFILE puede tener varios datafiles.","Verdadero",["Falso"],"Por eso se le pueden añadir ficheros.",V],
+  ["Para crear una tabla en un tablespace concreto se añade al CREATE TABLE…","TABLESPACE nombre",["IN nombre","ON nombre","USING nombre"],"CREATE TABLE prueba (...) TABLESPACE datos;"],
+  ["Consulta para ver las tablas de un tablespace:","SELECT * FROM dba_tables WHERE tablespace_name = 'DATOS';",["SHOW TABLES;","SELECT * FROM v$tables;","DESC DATOS;"],"El nombre en MAYÚSCULAS y entre comillas simples."]
+ ]},
+ {id:"ver", t:"Verificar funcionamiento", d:"Procesos, acceso local y acceso por red", q:[
+  ["En v$instance, el estado correcto es…","OPEN",["MOUNTED","STARTED","READ ONLY"],"select instance_name, status from v$instance;"],
+  ["Comando para comprobar el listener:","lsnrctl status",["ps -eaf","SHOW CON_NAME","docker logs"],"Muestra los servicios que escucha."],
+  ["Comando para ver los procesos de la BBDD FREE:","ps -eaf | grep FREE",["lsnrctl status","SHOW PROCESSES","docker ps"],"En el PDF: ps -eaf | grep ds01."],
+  ["Comando para comprobar el acceso desde otra máquina (PDF):","sqlplus system@ds01",["ping ds01","lsnrctl ds01","ssh ds01"],"Acceso desde red."]
+ ]}
+];
+B.push(
+ {id:"arq2", tag:"A FONDO", t:"Arquitectura a fondo", d:"Procesos, memoria, ficheros, estructura, esquemas, diccionario y concurrencia", q:[
+  ["¿Qué tres tipos de procesos distingue el PDF de Arquitectura?","Procesos en el cliente, procesos servidor que atienden a los clientes y procesos background",["Procesos de red, de disco y de memoria","Procesos SGA, PGA y UGA","Procesos SYSTEM, USERS y TEMP"],"Cliente: programa del usuario. Servidor: atiende peticiones. Background: tareas internas del gestor."],
+  ["En tu Docker, ps -eaf | grep FREE muestra db_pmon_FREE, db_lgwr_FREE… Son procesos…","Background",["Cliente","Servidor que atienden a un usuario","Del listener"],"Hacen las tareas internas del gestor. En el PDF salen como ora_pmon_ds01, ora_lgwr_ds01…"],
+  ["¿Cuántas PGA hay?","Una por cada proceso servidor",["Una para toda la instancia","Una por tablespace","Una por base de datos"],"La PGA es privada; la SGA es una sola y compartida."],
+  ["La Shared Pool está formada por…","Library cache + dictionary cache",["Buffer de datos + buffer redo","PGA + SGA","Redo log + control files"],"Guarda las sentencias SQL recientes."],
+  ["¿Qué parte de la memoria tiene la información de las modificaciones antes de pasarla a disco?","Buffer redo log",["Buffer de datos","Library cache","PGA"],"Después se escribe en los ficheros redo log."],
+  ["¿Qué ficheros se crean al instalar para el control de la BBDD?","CONTROL01.CTL, CONTROL02.CTL y CONTROL03.CTL",["REDO01.LOG, REDO02.LOG y REDO03.LOG","SYSTEM01.DBF y USERS01.DBF","init.ora y orapw"],"Son las copias del fichero de control."],
+  ["Fichero de datos del tablespace de deshacer:","UNDOTBS01.DBF",["TEMP01.DBF","USERS01.DBF","REDO01.LOG"],"Tablespace UNDOTBS1."],
+  ["¿Qué contiene un registro de redo?","Transacción, dirección de bloque, nº de fila, nº de columna y valor anterior y nuevo",["Solo la sentencia SQL","El usuario y su contraseña","Una copia completa de la tabla"],"Por eso permite rehacer los cambios."],
+  ["Además de datafiles, control y redo, el PDF menciona otros archivos:","Parámetros y password",["Logs del listener y de Docker","CSS y JS","Backups .dmp"],"Fichero de parámetros y fichero de password."],
+  ["Tablespace dedicado a que los usuarios guarden sus datos:","USERS",["SYSTEM","UNDOTBS1","TEMP"],"USERS01.DBF."],
+  ["Tablespace de las tablas temporales para gestionar transacciones:","TEMP",["UNDOTBS1","SYSTEM","SYSAUX"],"TEMP01.DBF."],
+  ["¿Qué elemento lógico se corresponde con el fichero de datos físico?","Tablespace",["Segmento","Extensión","Esquema"],"Tablespace ↔ datafile; bloque Oracle ↔ bloques del S.O."],
+  ["Un bloque Oracle está formado por…","Varios bloques del sistema operativo",["Varias extensiones","Varios segmentos","Varios datafiles"],"Es la unidad lógica más pequeña."],
+  ["Una extensión está formada por…","Bloques Oracle",["Segmentos","Tablespaces","Datafiles"],"Segmento > extensión > bloque."],
+  ["Una tabla o un índice, dentro de un tablespace, es un…","Segmento",["Bloque","Datafile","Esquema"],"Cada objeto que ocupa espacio es un segmento."],
+  ["¿Cuál de estos NO es un objeto de un esquema?","Tablespace",["Tabla","Índice","Vista"],"Objetos: tablas, índices, sinónimos y vistas. El tablespace es de la BBDD."],
+  ["Vistas del diccionario con TODO lo de la base de datos:","DBA_",["ALL_","USER_","V$"],"Por eso usas dba_tablespaces y dba_data_files."],
+  ["Vistas con lo que el usuario PUEDE VER (lo suyo y lo de otros con permiso):","ALL_",["USER_","DBA_","V$"],"USER_ = solo lo suyo."],
+  ["v$instance y v$pdbs son vistas…","Dinámicas (V$), con el estado de la instancia",["De usuario","Con todos los objetos","Que no existen en Oracle"],"V$ = vistas dinámicas."],
+  ["Cuando un usuario modifica datos, ¿dónde se salva la imagen antigua?","En el segmento de rollback",["En el fichero de control","En la library cache","En el listener"],"COMMIT establece la nueva; ROLLBACK vuelve a la antigua."],
+  ["Un usuario lee datos que otro está modificando sin COMMIT. ¿Qué ve?","La imagen antigua, leída del segmento de rollback",["El dato nuevo","Un error","Nada, se queda bloqueado"],"Lecturas sobre el segmento de rollback."],
+  ["¿Cuál NO es un problema del segmento de rollback según el PDF?","Puerto 1521 ocupado",["Insuficiente espacio para transacciones","Error de consistencia de lectura","Bloqueo de transacción"],"Los tres problemas del PDF son los otros."],
+  ["El procesamiento de una sentencia distingue…","El proceso de una consulta y el de una sentencia DML",["El proceso de red y el de disco","El SELECT y el COMMIT","El listener y la PGA"],"Consulta (SELECT) frente a DML (INSERT, UPDATE, DELETE)."],
+  ["¿Quién recibe las conexiones de red de los clientes y las reparte a las instancias?","El listener",["PMON","La SGA","El fichero de control"],"Un servidor puede tener varias instancias detrás."],
+  ["Un servidor Oracle puede tener varias instancias de BBDD.","Verdadero",["Falso"],"El esquema de red del PDF muestra instancias 1, 2 y 3 con un listener.",V],
+  ["SYSTEM01.DBF es un fichero…","De datos (datafile) del tablespace SYSTEM",["De control","Redo log","De parámetros"],"Los .DBF son datafiles."],
+  ["Versión de Oracle del PDF de Arquitectura:","12cR1",["8i","10g","26ai"],"En tu Docker tienes la Free 26ai (23.26)."],
+  ["(Ampliación) Proceso que escribe el buffer redo log en los ficheros redo log:","LGWR",["DBWn","PMON","SMON"],"Log Writer; como mínimo en cada COMMIT."],
+  ["(Ampliación) Proceso que escribe los bloques modificados del buffer de datos en los datafiles:","DBWn",["LGWR","CKPT","ARCn"],"Database Writer."],
+  ["(Ampliación) Proceso que archiva los redo log llenos en modo archivelog:","ARCn",["SMON","PMON","CKPT"],"Archiver; se activa con ENABLE_ARCHIVELOG=true."],
+  ["(Ampliación) Proceso que recupera la instancia al arrancar tras una caída:","SMON",["PMON","LGWR","ARCn"],"System Monitor."],
+  ["(Ampliación) Proceso que limpia la sesión de un cliente que se ha caído:","PMON",["SMON","DBWn","CKPT"],"Process Monitor."],
+  ["Explica qué es la PGA y qué es la SGA y en qué se diferencian.","La PGA es la zona de memoria privada de cada proceso servidor que atiende a un cliente. La SGA es la memoria compartida de la instancia: Shared Pool (sentencias SQL), buffer de datos (últimos registros) y buffer redo log (modificaciones). PGA privada, SGA compartida.",[],"",{t:"s",kw:[["privad"],["compartid"],["proceso"],["shared pool","buffer"]]}],
+  ["¿Qué ocurre con los datos cuando un usuario hace un UPDATE y luego COMMIT o ROLLBACK?","Al modificar, la imagen antigua se salva en el segmento de rollback. Con COMMIT se establece la imagen nueva; con ROLLBACK se vuelve a la antigua. Mientras tanto, los demás usuarios leen la imagen antigua del segmento de rollback.",[],"",{t:"s",kw:[["rollback"],["antigu"],["nueva","nuevo"],["commit"],["lectura","leen","lee"]]}],
+  ["¿Qué problemas puede dar el segmento de rollback?","Espacio insuficiente para las transacciones, error de consistencia de lectura y bloqueo de transacciones.",[],"",{t:"s",kw:[["espacio"],["consistencia"],["bloqueo"]]}],
+  ["¿Qué es un esquema y qué objetos tiene?","Es el conjunto de objetos de un usuario: tablas, índices, sinónimos y vistas. Esquema = usuario.",[],"",{t:"s",kw:[["usuario"],["tabla"],["indice","índice"],["vista"],["sinonimo","sinónimo"]]}]
+ ]},
+ {id:"trampa", tag:"TRAMPAS", t:"Preguntas trampa", d:"Afirmaciones que suenan bien pero son falsas. Lee despacio", q:[
+  ["La SGA es la memoria privada de cada proceso servidor.","Falso",["Verdadero"],"Esa es la PGA. La SGA es compartida.",V],
+  ["La PGA se comparte entre todos los usuarios conectados.","Falso",["Verdadero"],"La PGA es privada de cada proceso servidor.",V],
+  ["La instancia son los ficheros de la base de datos.","Falso",["Verdadero"],"Instancia = memoria + procesos. Base de datos = ficheros.",V],
+  ["El buffer de datos guarda las sentencias SQL ejecutadas recientemente.","Falso",["Verdadero"],"Eso es la Shared Pool (library cache). El buffer de datos guarda registros.",V],
+  ["Un SELECT queda registrado en los ficheros redo log.","Falso",["Verdadero"],"El redo guarda modificaciones: INSERT, UPDATE y DELETE.",V],
+  ["REDO y UNDO sirven para lo mismo.","Falso",["Verdadero"],"REDO = rehacer cambios para recuperar. UNDO = imagen anterior para deshacer.",V],
+  ["El fichero de control guarda los datos de las tablas.","Falso",["Verdadero"],"Guarda la estructura: ficheros, checkpoints, fecha, nombre…",V],
+  ["Para evitar inconsistencias se recomienda una sola copia del fichero de control.","Falso",["Verdadero"],"Mínimo 2 copias en discos diferentes.",V],
+  ["El diccionario de datos está en el tablespace USERS.","Falso",["Verdadero"],"Está en SYSTEM.",V],
+  ["TEMP guarda la información para deshacer transacciones.","Falso",["Verdadero"],"Eso es UNDOTBS1. TEMP es para temporales.",V],
+  ["Un bloque Oracle es más pequeño que un bloque del sistema operativo.","Falso",["Verdadero"],"Un bloque Oracle está formado por varios bloques del S.O.",V],
+  ["Un segmento contiene tablespaces.","Falso",["Verdadero"],"Al revés: tablespace > segmento > extensión > bloque.",V],
+  ["COMMIT vuelve a la imagen antigua de los datos.","Falso",["Verdadero"],"Eso es ROLLBACK. COMMIT establece la nueva.",V],
+  ["Mientras A modifica una fila sin COMMIT, B ya ve el valor nuevo.","Falso",["Verdadero"],"B lee la imagen antigua del segmento de rollback.",V],
+  ["El listener ejecuta las consultas SQL de los clientes.","Falso",["Verdadero"],"Solo recibe las conexiones y las pasa a la instancia.",V],
+  ["Las vistas V$ guardan los objetos del propio usuario.","Falso",["Verdadero"],"V$ son vistas dinámicas del estado. Lo del usuario es USER_.",V],
+  ["ALL_ muestra absolutamente todo lo de la base de datos.","Falso",["Verdadero"],"Todo es DBA_. ALL_ es lo que el usuario puede ver.",V],
+  ["Los procesos background atienden las peticiones de los clientes.","Falso",["Verdadero"],"Eso son los procesos servidor.",V],
+  ["Un esquema y un tablespace son lo mismo.","Falso",["Verdadero"],"Esquema = objetos de un usuario. Tablespace = espacio de almacenamiento.",V],
+  ["Un tablespace puede tener varios datafiles, pero un datafile solo pertenece a un tablespace.","Verdadero",["Falso"],"Esta sí es verdad (con SMALLFILE).",V],
+  ["¿Qué de esto está en la SGA?","Buffer redo log",["La PGA","Los ficheros redo log","El fichero de control"],"Trampa: los FICHEROS redo log están en disco; el BUFFER redo log está en memoria."],
+  ["¿Dónde está el diccionario de datos y dónde su copia en memoria?","En SYSTEM (disco) y en la dictionary cache (SGA)",["En USERS y en la PGA","En el control file y en el buffer de datos","En TEMP y en la library cache"],"Diccionario en SYSTEM01.DBF; la dictionary cache es parte de la Shared Pool."],
+  ["¿Qué NO forma parte de la instancia?","Los datafiles",["La SGA","La PGA","Los procesos background"],"Los datafiles son la base de datos (disco)."],
+  ["Si se cae la instancia, ¿qué permite recuperar los cambios confirmados?","Los ficheros redo log",["La PGA","El buffer de datos","La library cache"],"La memoria se pierde; el redo log está en disco."],
+  ["¿Qué une la estructura lógica con la física?","Tablespace ↔ datafile y bloque Oracle ↔ bloques del S.O.",["Segmento ↔ datafile y extensión ↔ disco","Esquema ↔ tablespace","Usuario ↔ datafile"],"Son los dos enlaces del PDF."]
+ ]}
+);
+const SHORT={inc:"Incidencia",cmd:"Comandos",cortas:"Cortas",arq:"Arquitectura",arq2:"Arq. a fondo",trampa:"Trampas",docker:"Docker",cdb:"CDB/PDB",esp:"Espacio",ver:"Verificar"};
+const ARQ_IDS=["arq","arq2","trampa"];
+const toQ=([q,a,w,e,o={}])=>({q,a,w,e,key:q,type:o.t||"mc",acc:o.acc||[a],re:o.re||null,kw:o.kw||null});
+const ALL=B.flatMap(b=>b.q.map(q=>({...toQ(q),blk:b.id})));
+const QUICK=ALL.filter(q=>q.type!=="s");
+const HOT=q=>q.blk==="inc"||q.blk==="cmd";
+const norm=s=>s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/\s+/g,"");
+const normTxt=s=>s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"");
+const normCmd=s=>s.trim().replace(/[;\s]+$/,"").replace(/\s+/g," ").replace(/\s*,\s*/g,", ").replace(/\s*=\s*/g," = ").toLowerCase();
+const $=s=>document.getElementById(s);
+const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+let best=store.get("ora-best",{}), wrongs=new Set(store.get("ora-wrong",[]));
+let stats=store.get("ora-stats",{pts:0,streak:0,played:0});
+let topic=store.get("ora-topic",{});
+const saveStats=()=>store.set("ora-stats",stats);
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+const pick=(arr,n)=>shuffle(arr).slice(0,n);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const RM=matchMedia("(prefers-reduced-motion: reduce)").matches;
+const G=()=>(!RM&&window.gsap)?window.gsap:null;
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+
+/* ---------- confeti ---------- */
+const cv=$("fx"),cx=cv.getContext("2d");let parts=[],raf=0;
+function fitCanvas(){cv.width=innerWidth*devicePixelRatio;cv.height=innerHeight*devicePixelRatio}
+fitCanvas();addEventListener("resize",fitCanvas);
+function burst(x,y,n=40,spread=1){
+  if(RM)return;
+  const cols=["#ff4f9a","#ffd447","#3fd6ff","#3ee08f","#9b7bff"],d=devicePixelRatio;
+  for(let i=0;i<n;i++){const a=Math.random()*Math.PI*2,v=(3+Math.random()*6)*spread;
+    parts.push({x:x*d,y:y*d,vx:Math.cos(a)*v*d,vy:(Math.sin(a)*v-5)*d,r:(3+Math.random()*4)*d,c:cols[i%cols.length],l:60+Math.random()*40,rot:Math.random()*6})}
+  if(!raf)raf=requestAnimationFrame(tick);
+}
+function tick(){
+  cx.clearRect(0,0,cv.width,cv.height);
+  parts=parts.filter(p=>p.l-->0);
+  for(const p of parts){p.vy+=.35*devicePixelRatio;p.x+=p.vx;p.y+=p.vy;p.rot+=.2;
+    cx.save();cx.translate(p.x,p.y);cx.rotate(p.rot);cx.globalAlpha=Math.min(1,p.l/30);cx.fillStyle=p.c;cx.fillRect(-p.r,-p.r/2,p.r*2,p.r);cx.restore()}
+  raf=parts.length?requestAnimationFrame(tick):0;
+}
+const rainConfetti=()=>{for(let i=0;i<6;i++)setTimeout(()=>burst(Math.random()*innerWidth,innerHeight*.25,45,1.3),i*140)};
+const big=$("big");
+big.onclick=e=>{big.classList.remove("boing");void big.offsetWidth;big.classList.add("boing");burst(e.clientX,e.clientY,60,1.2)};
+
+/* ---------- navegación ---------- */
+const VIEWS=["inicio","arq","tests","rank","quiz","result"];
+let cur="inicio";
+function go(v,opts={}){
+  if(!VIEWS.includes(v))v="inicio";
+  if(S&&!S.done&&v!=="quiz"&&v!=="result"){clearInterval(S.timer);S.done=true}
+  cur=v;
+  VIEWS.forEach(x=>$("v-"+x).hidden=x!==v);
+  const navKey=(v==="quiz"||v==="result")?"tests":v;
+  document.querySelectorAll(".nav [data-go]").forEach(b=>{b.classList.toggle("on",b.dataset.go===navKey);b.setAttribute("aria-current",b.dataset.go===navKey?"page":"false")});
+  try{history.replaceState(null,"","#"+navKey)}catch(e){}
+  if(!opts.keepScroll)window.scrollTo({top:0});
+  if(v==="inicio")renderHome();
+  if(v==="tests")renderTests();
+  if(v==="rank")renderRank();
+  if(v==="arq")initArq();
+  enter($("v-"+v));
+}
+function enter(sec){
+  const g=G();if(!g||!sec)return;
+  const els=sec.querySelectorAll(":scope > [data-anim], :scope [data-anim], :scope .grid > *, :scope .quick > *");
+  g.fromTo(els,{y:22,opacity:0},{y:0,opacity:1,duration:.55,stagger:.035,ease:"power3.out",clearProps:"transform,opacity"});
+}
+document.addEventListener("click",e=>{
+  const t=e.target.closest("[data-go],[data-start],[data-jump]");if(!t)return;
+  if(t.dataset.go)go(t.dataset.go);
+  else if(t.dataset.start)start(t.dataset.start);
+  else if(t.dataset.jump){const el=$(t.dataset.jump);if(el)el.scrollIntoView({behavior:RM?"auto":"smooth",block:"start"})}
+});
+
+/* ---------- inicio ---------- */
+function countUp(el,to){
+  to=Number(to)||0;const g=G();
+  if(!g){el.textContent=to.toLocaleString("es");return}
+  const o={v:0};g.to(o,{v:to,duration:1.1,ease:"power2.out",onUpdate:()=>el.textContent=Math.round(o.v).toLocaleString("es")});
+}
+const charts={};
+function chartColors(p){return p>=75?"#3ee08f":p>=50?"#ffd447":"#ff5b6b"}
+function renderHome(){
+  countUp($("st-pts"),stats.pts);countUp($("st-streak"),stats.streak);countUp($("st-played"),stats.played);countUp($("st-bank"),ALL.length);
+  $("st-fails").textContent=wrongs.size+" fallos por repasar";
+  $("st-arq").textContent="de arquitectura: "+ALL.filter(q=>ARQ_IDS.includes(q.blk)).length;
+  $("quick").innerHTML=
+    qa("arq","🧠","Estudiar la arquitectura","Esquema animado, simuladores, notas y trampas.",true,"go")+
+    qa("arqexam","🎯","Examen de arquitectura","20 preguntas: test, trampas y cortas.",false,"start")+
+    qa("trampa","🪤","Preguntas trampa","25 afirmaciones que suenan bien… y no.",false,"start")+
+    qa("fallos","🔁","Repasar fallos",wrongs.size?wrongs.size+" preguntas pendientes.":"No tienes fallos guardados.",false,"start",!wrongs.size);
+  drawCharts();
+  renderPodium();
+}
+function qa(id,ic,t,d,feat,kind,dis){return `<button class="qa${feat?" feat":""}" type="button" data-${kind}="${id}" ${dis?"disabled":""}><span class="ic">${ic}</span><strong>${t}</strong><span>${d}</span></button>`}
+function drawCharts(){
+  const C=window.Chart;
+  if(!C){$("ch-empty").hidden=false;$("ch-empty").textContent="No se han podido cargar los gráficos.";return}
+  C.defaults.color="#9aa3cf";C.defaults.borderColor="#283160";C.defaults.font.family='"JetBrains Mono", ui-monospace, monospace';C.defaults.font.size=11;
+  const ids=B.map(b=>b.id),labels=ids.map(i=>SHORT[i]||i);
+  const pct=ids.map(i=>topic[i]&&topic[i][1]?Math.round(100*topic[i][0]/topic[i][1]):0);
+  const any=ids.some(i=>topic[i]&&topic[i][1]);
+  $("ch-empty").hidden=any;
+  const anim=RM?false:{duration:900,easing:"easeOutQuart"};
+  if(charts.topic){charts.topic.data.datasets[0].data=pct;charts.topic.data.datasets[0].backgroundColor=pct.map(chartColors);charts.topic.update()}
+  else charts.topic=new C($("ch-topic"),{type:"bar",data:{labels,datasets:[{data:pct,backgroundColor:pct.map(chartColors),borderRadius:6,maxBarThickness:34}]},
+    options:{maintainAspectRatio:false,animation:anim,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>{const i=ids[c.dataIndex],t=topic[i];return t&&t[1]?`${c.raw}% · ${Math.round(t[0]*10)/10} de ${t[1]}`:"sin jugar"}}}},
+      scales:{y:{min:0,max:100,ticks:{callback:v=>v+"%",stepSize:25},grid:{color:"rgba(255,255,255,.06)"}},x:{grid:{display:false},ticks:{maxRotation:50,minRotation:30}}}}});
+  if(!charts.bank){
+    const counts=B.map(b=>b.q.length);
+    const pal=["#ff4f9a","#3fd6ff","#ffd447","#9b7bff","#3ee08f","#ff8a5b","#5b8cff","#e86bff","#7ee0d0","#c7d36b"];
+    charts.bank=new C($("ch-bank"),{type:"doughnut",data:{labels,datasets:[{data:counts,backgroundColor:pal,borderColor:"#151b36",borderWidth:3,hoverOffset:8}]},
+      options:{maintainAspectRatio:false,cutout:"62%",animation:RM?false:{animateRotate:true,duration:1200},plugins:{legend:{position:"right",labels:{boxWidth:10,boxHeight:10,padding:8,color:"#c9cff0"}}}}});
+  }
+}
+
+/* ---------- tests: menú ---------- */
+function mcard(m,cls,num,title,meta,bestTxt,dis,pct){return `<button class="mcard ${cls}" type="button" data-start="${m}" ${dis?"disabled":""}><span class="num">${num}</span><strong>${title}</strong><span class="meta">${meta}</span><span class="best">${bestTxt}</span>${pct!=null?`<span class="bar2"><i style="width:${pct}%"></i></span>`:""}</button>`}
+const bt=(k,u="nota")=>best[k]!=null?(u==="nota"?"Mejor nota: "+best[k].toFixed(1):"Récord: "+best[k]+" "+u):"Sin jugar";
+const pctOf=k=>best[k]!=null?Math.min(100,best[k]*10):0;
+function blockCard(b,cls){return mcard(b.id,cls,(b.tag||b.t.toUpperCase())+" · "+b.q.length+" preguntas",b.t,b.d,bt(b.id),false,pctOf(b.id))}
+function renderTests(){
+  const byId=id=>B.find(b=>b.id===id);
+  $("t-arq").innerHTML=
+    mcard("arqexam","arqc","EXAMEN · 20","Examen de arquitectura","17 de test y trampas + 3 preguntas cortas, nota sobre 10.",bt("arqexam"),false,pctOf("arqexam"))+
+    blockCard(byId("arq"),"arqc")+blockCard(byId("arq2"),"arqc")+blockCard(byId("trampa"),"hot");
+  $("t-games").innerHTML=
+    mcard("crono","game","CONTRARRELOJ · 90 s","Contra el reloj","Acierto +3 s, fallo −5 s. Responde todas las que puedas.",bt("crono","pts"))+
+    mcard("vidas","game","SUPERVIVENCIA · 3 ❤","Tres vidas","Sigue hasta fallar tres. Las rachas multiplican los puntos.",bt("vidas","pts"))+
+    mcard("practica","game hot","MODO INCIDENCIA · 15","Solo lo práctico","15 al azar de errores, trampas y comandos de la incidencia.",bt("practica"),false,pctOf("practica"));
+  $("t-blocks").innerHTML=B.filter(b=>!ARQ_IDS.includes(b.id)).map(b=>blockCard(b,b.tag?"hot":"")).join("");
+  $("t-specials").innerHTML=
+    mcard("final","","SIMULACRO · 20","Simulacro de examen","10 tipo test + 5 preguntas cortas + 5 comandos, nota sobre 10.",bt("final"),false,pctOf("final"))+
+    mcard("todo","","MARATÓN · "+ALL.length,"Todo el temario","Todas las preguntas en orden aleatorio.",bt("todo"),false,pctOf("todo"))+
+    mcard("fallos","","REPASO · "+wrongs.size+" pendientes","Repasar fallos","Las que has fallado. Al acertarlas, salen de la lista.",wrongs.size?"":"Sin fallos guardados",!wrongs.size);
+}
+
+/* ---------- partida ---------- */
+let S=null;
+function start(m){
+  let qs,title;
+  const A=ALL.filter(q=>ARQ_IDS.includes(q.blk));
+  if(m==="final"){qs=[...pick(ALL.filter(q=>["mc","vf","w"].includes(q.type)),10),...pick(ALL.filter(q=>q.type==="s"),5),...pick(ALL.filter(q=>q.type==="cmd"),5)];title="Simulacro de examen"}
+  else if(m==="arqexam"){qs=[...shuffle([...pick(A.filter(q=>q.type!=="s"&&q.blk!=="trampa"),11),...pick(A.filter(q=>q.blk==="trampa"),6)]),...pick(A.filter(q=>q.type==="s"),3)];title="Examen de arquitectura"}
+  else if(m==="practica"){qs=pick(ALL.filter(HOT),15);title="Modo incidencia"}
+  else if(m==="crono"||m==="vidas"){qs=shuffle(QUICK);title={crono:"Contrarreloj",vidas:"Supervivencia"}[m]}
+  else if(m==="todo"){qs=shuffle(ALL);title="Todo el temario"}
+  else if(m==="fallos"){qs=shuffle(ALL.filter(q=>wrongs.has(q.key)));title="Repaso de fallos";if(!qs.length){go("tests");return}}
+  else{const b=B.find(x=>x.id===m);if(!b)return;qs=shuffle(b.q.map(q=>({...toQ(q),blk:b.id})));title=b.t}
+  S={m,title,qs,i:0,ok:0,missed:[],answered:false,pts:0,streak:0,maxStreak:0,lives:3,time:90,timer:null,done:false};
+  $("pbar").classList.toggle("time",m==="crono");
+  go("quiz");render();
+  if(m==="crono")S.timer=setInterval(()=>{S.time--;hud();if(S.time<=0)finish()},1000);
+}
+function hud(pop){
+  let h=`<span class="chip">⭐ <b id="hp">${S.pts}</b></span><span class="chip streak">🔥 <b id="hs">${S.streak}</b>${S.streak>=3?" ×"+mult().toFixed(1):""}</span>`;
+  if(S.m==="vidas")h+=`<span class="chip">${"❤️".repeat(Math.max(0,S.lives))}${"🖤".repeat(3-Math.max(0,S.lives))}</span>`;
+  if(S.m==="crono")h+=`<span class="chip">⏱ <b>${Math.max(0,S.time)} s</b></span>`;
+  $("hud").innerHTML=h;
+  if(pop&&$(pop))$(pop).classList.add("pop");
+  if(S.m==="crono"){$("prog").style.width=Math.max(0,Math.min(100,S.time/90*100))+"%";$("pbar").classList.toggle("low",S.time<=15)}
+  else $("prog").style.width=(S.i/S.qs.length*100)+"%";
+}
+const mult=()=>1+Math.min(S.streak,10)*.2;
+const LABEL={mc:"",vf:"",w:'<span class="badge c">Escribe</span>',cmd:'<span class="badge c">Comando</span>',s:'<span class="badge s">Pregunta corta</span>'};
+function render(){
+  if(S.i>=S.qs.length){if(S.m==="crono"||S.m==="vidas"){S.qs=S.qs.concat(shuffle(QUICK))}else return finish()}
+  const q=S.qs[S.i];S.answered=false;
+  $("qtitle").textContent=S.title;
+  $("qcount").textContent=(S.m==="crono"||S.m==="vidas")?`#${S.i+1}`:`${S.i+1}/${S.qs.length}`;
+  $("qprompt").textContent="SQL> "+(q.type==="cmd"?"_":"pregunta "+(S.i+1));
+  hud();
+  $("qcard").classList.remove("shake");
+  const tag=q.blk==="trampa"?'<span class="badge t">Trampa</span>':ARQ_IDS.includes(q.blk)?'<span class="badge v">Arquitectura</span>':(HOT(q)&&q.type!=="cmd"?'<span class="badge">Práctica</span>':"");
+  $("qtext").innerHTML=tag+LABEL[q.type]+esc(q.q);
+  S.opts=[];
+  if(q.type==="w"||q.type==="cmd"){
+    $("opts").innerHTML=`<form class="write" id="wf"><input id="win" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="${q.type==="cmd"?"Escribe el comando":"Escribe la respuesta"}"><button class="btn" type="submit">Comprobar</button></form>`;
+    $("wf").onsubmit=e=>{e.preventDefault();if($("win").value.trim())answer(-1,$("win"))};
+    setTimeout(()=>$("win")&&$("win").focus(),0);
+  }else if(q.type==="s"){
+    $("opts").innerHTML=`<form class="write" id="wf"><textarea id="win" placeholder="Responde con tus palabras, como en el examen"></textarea><button class="btn" type="submit">Comprobar</button><button class="btn ghost" type="button" id="dunno">No me la sé</button></form>`;
+    $("wf").onsubmit=e=>{e.preventDefault();if($("win").value.trim())shortCheck(false)};
+    $("dunno").onclick=()=>shortCheck(true);
+    setTimeout(()=>$("win")&&$("win").focus(),0);
+  }else{
+    S.opts=q.type==="vf"?["Verdadero","Falso"]:shuffle([q.a,...q.w]);
+    $("opts").innerHTML=S.opts.map((o,i)=>`<button class="opt" type="button" id="opt${i}" data-i="${i}"><span class="k">${i+1}</span><span>${esc(o)}</span></button>`).join("");
+    document.querySelectorAll(".opt").forEach(b=>b.onclick=()=>answer(+b.dataset.i,b));
+  }
+  $("fb").hidden=true;$("next").hidden=true;
+  const g=G();if(g){g.fromTo("#qcard",{y:14,opacity:0},{y:0,opacity:1,duration:.3,ease:"power2.out",clearProps:"transform,opacity"});g.fromTo("#opts > *",{x:-12,opacity:0},{x:0,opacity:1,duration:.3,stagger:.05,delay:.08,ease:"power2.out",clearProps:"transform,opacity"})}
+}
+function track(q,v){const t=topic[q.blk]||[0,0];t[0]+=v;t[1]+=1;topic[q.blk]=t;store.set("ora-topic",topic)}
+function shortCheck(gaveUp){
+  if(S.answered||S.done)return;
+  const q=S.qs[S.i],inp=$("win");inp.disabled=true;
+  $("wf").querySelectorAll("button").forEach(b=>b.hidden=true);
+  const txt=normTxt(inp.value);let hits=0;
+  const chips=q.kw.map(alts=>{const h=!gaveUp&&alts.some(a=>txt.includes(normTxt(a)));if(h)hits++;return `<span class="kw ${h?"hit":"miss"}">${esc(alts[0])}</span>`}).join("");
+  $("fb").innerHTML=`<div><span class="code mid">DESCRIBE</span>Respuesta modelo:</div><div>${esc(q.a)}</div>`+
+    (gaveUp?"":`<div style="color:var(--muted);font-size:.85rem">Palabras clave que has puesto: ${hits} de ${q.kw.length}</div><div class="kws">${chips}</div><div>¿Cómo te ha salido?</div><div class="selfg"><button class="btn g" type="button" data-v="1">La sabía</button><button class="btn m" type="button" data-v="0.5">Más o menos</button><button class="btn r" type="button" data-v="0">No la sabía</button></div>`);
+  $("fb").hidden=false;
+  if(gaveUp){grade(q,0,null);return}
+  $("fb").querySelectorAll(".selfg .btn").forEach(b=>b.onclick=()=>{$("fb").querySelectorAll(".selfg .btn").forEach(x=>x.disabled=true);grade(q,+b.dataset.v,b)});
+}
+function grade(q,v,el){
+  S.answered=true;track(q,v);
+  let gained=0;
+  if(v>0){S.ok+=v;S.streak=v===1?S.streak+1:S.streak;S.maxStreak=Math.max(S.maxStreak,S.streak);gained=Math.round(100*v*mult());S.pts+=gained}
+  else S.streak=0;
+  if(v<1){S.missed.push(q);wrongs.add(q.key)}else wrongs.delete(q.key);
+  store.set("ora-wrong",[...wrongs]);
+  hud(v>0?"hp":null);
+  if(v===1&&el){const r=el.getBoundingClientRect();burst(r.left+r.width/2,r.top,28,.8)}
+  if(v===0){void $("qcard").offsetWidth;$("qcard").classList.add("shake")}
+  if(gained)$("fb").insertAdjacentHTML("beforeend",`<div class="plus">+${gained}</div>`);
+  nextBtn(false);
+}
+function answer(i,el){
+  if(S.answered||S.done)return;S.answered=true;
+  const q=S.qs[S.i];let right;
+  if(q.type==="w"||q.type==="cmd"){
+    const inp=$("win");
+    right=q.type==="cmd"?q.re.some(r=>r.test(normCmd(inp.value))):q.acc.some(a=>norm(a)===norm(inp.value));
+    inp.disabled=true;inp.classList.add(right?"ok":"bad");$("wf").querySelector("button").hidden=true;
+  }else{
+    right=S.opts[i]===q.a;
+    document.querySelectorAll(".opt").forEach((b,j)=>{b.disabled=true;if(S.opts[j]===q.a)b.classList.add("ok");else if(j===i)b.classList.add("bad")});
+  }
+  track(q,right?1:0);
+  let gained=0;
+  if(right){
+    S.ok++;S.streak++;S.maxStreak=Math.max(S.maxStreak,S.streak);
+    gained=Math.round(100*mult());S.pts+=gained;
+    if(S.m==="crono")S.time+=3;
+    wrongs.delete(q.key);
+    const r=(el||$("qtext")).getBoundingClientRect();
+    burst(r.left+r.width/2,r.top+r.height/2,S.streak%5===0?90:28,S.streak%5===0?1.4:.8);
+  }else{
+    S.streak=0;S.missed.push(q);wrongs.add(q.key);
+    if(S.m==="crono")S.time-=5;
+    if(S.m==="vidas")S.lives--;
+    void $("qcard").offsetWidth;$("qcard").classList.add("shake");
+  }
+  store.set("ora-wrong",[...wrongs]);
+  hud(right?"hp":null);
+  const sol=q.type==="cmd"?`<div class="sql">${esc(q.a)}</div>`:"";
+  $("fb").innerHTML=`<div><span class="code ${right?"ok":"bad"}">${right?"COMMIT":"ROLLBACK"}</span>${right?"":(q.type==="cmd"?"Comando correcto:":"Era: <b>"+esc(q.a)+"</b>. ")}${q.e&&q.type!=="cmd"?esc(q.e):""}${gained?`<span class="plus">+${gained}</span>`:""}${right&&S.streak>=3&&S.streak%5===0?` <b>¡Racha de ${S.streak}! 🔥</b>`:""}</div>${sol}`;
+  $("fb").hidden=false;
+  const g=G();if(g)g.fromTo("#fb",{y:8,opacity:0},{y:0,opacity:1,duration:.25,clearProps:"transform,opacity"});
+  const over=(S.m==="vidas"&&S.lives<=0)||(S.m==="crono"&&S.time<=0);
+  if(S.m==="crono"&&!over){setTimeout(()=>{if(!S.done&&S.answered){S.i++;render()}},right?650:1800);return}
+  nextBtn(over);
+}
+function nextBtn(over){
+  $("next").textContent=over||(S.i+1>=S.qs.length&&S.m!=="vidas"&&S.m!=="crono")?"Ver resultado":"Siguiente";
+  $("next").hidden=false;$("next").focus();
+}
+$("next").onclick=()=>{if(S.m==="vidas"&&S.lives<=0){finish();return}S.i++;render()};
+$("back").onclick=()=>go("tests");
+function finish(){
+  if(S.done)return;S.done=true;clearInterval(S.timer);
+  const game=S.m==="crono"||S.m==="vidas";
+  const n=game?Math.ceil(S.ok)+S.missed.length:S.qs.length,grade=n?Math.min(10,S.ok/n*10):0,pass=game?S.pts>0:grade>=5;
+  let record=false;
+  if(game){if(best[S.m]==null||S.pts>best[S.m]){best[S.m]=S.pts;record=S.pts>0}}
+  else if(S.m!=="fallos"&&(best[S.m]==null||grade>best[S.m])){best[S.m]=grade;record=true}
+  store.set("ora-best",best);
+  stats.pts+=S.pts;stats.played++;stats.streak=Math.max(stats.streak,S.maxStreak);saveStats();
+  pushScore();
+  const msg=game?(record?"¡Nuevo récord!":"Partida terminada"):(grade>=9?"Temario dominado.":grade>=7?"Muy bien, repasa los fallos.":pass?"Aprobado justo, dale otra vuelta.":"Toca repasar.");
+  const okTxt=Number.isInteger(S.ok)?S.ok:S.ok.toFixed(1).replace(".",",");
+  $("v-result").innerHTML=`<div class="sub">${esc(S.title).toUpperCase()}</div>
+  <div class="status ${pass?"ok":"bad"}" id="rstatus" style="margin-top:12px">${game?S.pts.toLocaleString("es")+" pts":pass?"READ WRITE":"MOUNTED"}</div>
+  <p class="score">${game?`${okTxt} aciertos de ${n}`:`<b>${grade.toFixed(1)}</b> / 10 · ${okTxt} de ${n} aciertos`}</p>
+  <p style="color:var(--muted);margin:0">${msg}</p>
+  <div class="rstats"><span class="chip">⭐ <b>${S.pts}</b> puntos</span><span class="chip">Mejor racha <b>🔥 ${S.maxStreak}</b></span></div>
+  <p class="rpos" id="rpos"></p>
+  <div class="actions"><button class="btn" id="again" type="button">Otra vez</button>${S.missed.length?'<button class="btn ghost" id="rf" type="button">Repasar fallos</button>':""}<button class="btn ghost" id="home" type="button">Menú de tests</button></div>
+  ${S.missed.length?`<h2>Tus fallos</h2><div class="review">${S.missed.map(q=>`<div class="it"><b>${esc(q.q)}</b><span class="ans">${esc(q.a)}</span>${q.e?" · "+esc(q.e):""}</div>`).join("")}</div>`:""}`;
+  go("result");
+  rankPos();
+  const g=G();if(g)g.from("#rstatus",{scale:.4,opacity:0,duration:.7,ease:"back.out(2)",clearProps:"transform,opacity"});
+  if(pass&&(record||grade>=7))rainConfetti();
+  $("again").onclick=()=>start(S.m);$("home").onclick=()=>go("tests");
+  if($("rf"))$("rf").onclick=()=>start("fallos");
+}
+document.addEventListener("keydown",e=>{
+  if(cur!=="quiz"||!S||S.answered)return;
+  if(e.target.tagName==="INPUT"||e.target.tagName==="TEXTAREA")return;
+  if(e.key>="1"&&e.key<="4"){const i=+e.key-1;if(i<S.opts.length)answer(i,$("opt"+i))}
+});
+
+/* ---------- arquitectura ---------- */
+const INFO={
+  cliente:{tag:"Proceso en el cliente",t:"Cliente",d:"Cualquier programa que lanza el usuario contra la base de datos: SQL Developer, sqlplus… Se conecta por la red al servidor.",trap:"No lo confundas con el <b>proceso servidor</b>, que es del gestor y atiende a este cliente."},
+  cliente2:{tag:"Proceso en el cliente",t:"Cliente",d:"Cada usuario conectado tiene su propio programa cliente y, en el servidor, su propio proceso servidor con su PGA.",trap:"Dos clientes = dos procesos servidor = <b>dos PGA</b>, pero una sola <b>SGA</b>."},
+  listener:{tag:"Red",t:"Listener",d:"Recibe las conexiones por red en el puerto 1521 y las pasa a la instancia que corresponde. Un servidor puede tener varias instancias detrás del mismo listener. Se comprueba con <code>lsnrctl status</code>.",trap:"El listener <b>no ejecuta</b> las consultas: solo reparte las conexiones."},
+  ps:{tag:"Proceso servidor + PGA",t:"Proceso servidor",d:"Proceso del gestor que atiende las peticiones de un cliente. Cada uno tiene su <b>PGA</b> (Program Global Area): zona de memoria <b>privada</b> reservada para él.",trap:"En el PDF se llaman «procesos cliente» del servidor: están en el <b>servidor</b>, no en el cliente."},
+  ps2:{tag:"Proceso servidor + PGA",t:"Proceso servidor 2",d:"Otro cliente, otro proceso servidor y otra PGA. Hay una PGA por cada proceso servidor.",trap:"La PGA <b>no se comparte</b>. Lo compartido es la SGA."},
+  sga:{tag:"Memoria compartida",t:"SGA (System Global Area)",d:"La memoria <b>compartida</b> de la instancia: Shared Pool (library cache + dictionary cache), buffer de datos y buffer redo log.",trap:"SGA = compartida; PGA = privada. Es lo más preguntado."},
+  lib:{tag:"SGA · Shared Pool",t:"Library cache",d:"Guarda las <b>sentencias SQL</b> ejecutadas recientemente para reutilizarlas sin volver a analizarlas.",trap:"Las sentencias SQL van aquí, <b>no</b> en el buffer de datos."},
+  dict:{tag:"SGA · Shared Pool",t:"Dictionary cache",d:"Copia en memoria de la información del diccionario de datos usada recientemente (tablas, usuarios, permisos).",trap:"El diccionario de datos <b>vive en SYSTEM</b> (disco); la dictionary cache es solo su copia en memoria."},
+  buf:{tag:"SGA",t:"Buffer de datos",d:"Guarda los <b>últimos registros consultados</b>, para no tener que leerlos otra vez del disco.",trap:"No guarda sentencias SQL (eso es la Shared Pool)."},
+  redo:{tag:"SGA",t:"Buffer redo log",d:"Contiene la información de las <b>modificaciones</b> realizadas sobre la base de datos antes de pasarla a los ficheros redo log.",trap:"Un SELECT no genera redo: solo INSERT, UPDATE y DELETE. Y no confundas el <b>buffer</b> (memoria) con los <b>ficheros</b> redo log (disco)."},
+  pmon:{tag:"Proceso background",t:"PMON · Process Monitor",d:"Vigila los procesos: si un cliente se cae, limpia su sesión y libera lo que tenía. En tu Docker aparece como <code>db_pmon_FREE</code>.",amp:true},
+  smon:{tag:"Proceso background",t:"SMON · System Monitor",d:"Hace la recuperación de la instancia al arrancar después de una caída, usando los redo log.",amp:true},
+  dbwn:{tag:"Proceso background",t:"DBWn · Database Writer",d:"Escribe en los datafiles los bloques modificados del buffer de datos.",amp:true},
+  lgwr:{tag:"Proceso background",t:"LGWR · Log Writer",d:"Escribe el buffer redo log en los ficheros redo log. Lo hace, como mínimo, en cada COMMIT.",amp:true},
+  ckpt:{tag:"Proceso background",t:"CKPT · Checkpoint",d:"Marca los puntos de control y los anota en los ficheros de control (y en las cabeceras de los datafiles).",amp:true},
+  arcn:{tag:"Proceso background",t:"ARCn · Archiver",d:"Con el modo archivelog (<code>ENABLE_ARCHIVELOG=true</code> en el docker run) copia los redo log llenos antes de que se reutilicen.",amp:true},
+  dfiles:{tag:"Disco",t:"Ficheros de datos (datafiles)",d:"Donde se guardan los datos. Cada tablespace tiene uno o varios: SYSTEM01.DBF, SYSAUX01.DBF, USERS01.DBF, TEMP01.DBF, UNDOTBS01.DBF…",trap:"Un datafile pertenece a <b>un solo</b> tablespace."},
+  ctl:{tag:"Disco",t:"Ficheros de control",d:"Información de arranque y parada, nombres de los datafiles y redo log, checkpoints, fecha de creación y nombre de la BBDD y estado on-line/off-line. Al instalar: CONTROL01.CTL, CONTROL02.CTL y CONTROL03.CTL.",trap:"<b>No</b> guardan los datos de las tablas. Mínimo <b>2 copias en discos diferentes</b>."},
+  redof:{tag:"Disco",t:"Ficheros redo log (rehacer)",d:"Guardan todas las transacciones (INSERT, UPDATE, DELETE) para poder recuperar la BBDD: REDO01.LOG, REDO02.LOG, REDO03.LOG. Cada registro: transacción, bloque, fila, columna, valor anterior y nuevo.",trap:"REDO = rehacer (recuperar). Deshacer es el <b>UNDO</b> (segmento de rollback)."},
+  otros:{tag:"Disco",t:"Otros ficheros",d:"Fichero de parámetros (configuración de la instancia) y fichero de password (contraseñas de los administradores)."}
+};
+const CENTER={cliente:[95,142],cliente2:[95,242],listener:[280,192],ps:[465,109],ps2:[465,199],lib:[660,145],dict:[660,201],buf:[830,124],redo:[830,200],pmon:[430,312],smon:[520,312],dbwn:[610,312],lgwr:[700,312],ckpt:[790,312],arcn:[880,312],dfiles:[472,481],ctl:[632,481],redof:[770,481],otros:[885,481]};
+const FLOWS={
+  select:[["cliente","El cliente (SQL Developer) lanza <code>SELECT * FROM prueba;</code>"],["listener","La petición viaja por la red al listener (puerto 1521), que la pasa a la instancia."],["ps","Un proceso servidor atiende al cliente, con su PGA (memoria privada)."],["lib","Library cache: ¿esta sentencia SQL se ejecutó hace poco? Si es así, se reutiliza."],["dict","Dictionary cache: comprueba que la tabla existe y los permisos."],["buf","Buffer de datos: ¿están ya en memoria los registros pedidos?"],["dfiles","Si no están, se leen de los datafiles del disco…"],["buf","…y se dejan en el buffer de datos para la próxima vez."],["ps","El proceso servidor monta el resultado."],["cliente","Las filas llegan al cliente. Un SELECT no genera redo."]],
+  dml:[["cliente2","El cliente (sqlplus) lanza <code>UPDATE prueba SET campo2='x';</code>"],["listener","Entra por el listener (1521)."],["ps2","Su proceso servidor (con su PGA) atiende la sentencia."],["lib","Shared Pool: analiza la sentencia SQL."],["buf","Buffer de datos: se modifica el bloque en memoria. La imagen antigua se salva en el segmento de rollback."],["redo","Buffer redo log: se anota el cambio (transacción, bloque, fila, columna, valor anterior y nuevo)."],["cliente2","El cliente hace <code>COMMIT</code>: se establece la imagen nueva."],["lgwr","LGWR escribe el buffer redo log…"],["redof","…en los ficheros redo log. Desde aquí el cambio se puede recuperar aunque se caiga la instancia."],["cliente2","Commit complete. Los datafiles se actualizarán más tarde, en el checkpoint."]],
+  ckpt:[["ckpt","Llega un checkpoint (se llena un redo log, se para la base de datos…)."],["dbwn","DBWn recoge los bloques modificados…"],["buf","…del buffer de datos…"],["dfiles","…y los escribe en los datafiles."],["ckpt","CKPT anota el punto de control…"],["ctl","…en los ficheros de control (información de checkpoints)."],["arcn","Con archivelog activado, ARCn copia el redo log lleno…"],["redof","…para que el REDO0n.LOG se pueda reutilizar sin perder nada."]]
+};
+let arqReady=false,flowRun=0;
+function nodeEl(id){return document.querySelector(`#dg .node[data-id="${id}"]`)}
+function selectNode(id,pulse){
+  document.querySelectorAll("#dg .node.on").forEach(n=>n.classList.remove("on"));
+  const n=nodeEl(id);if(n){n.classList.add("on");if(pulse){n.classList.remove("pulse");void n.getBoundingClientRect();n.classList.add("pulse")}}
+  const i=INFO[id];if(!i)return;
+  $("info").innerHTML=`<span class="tag">${i.tag}</span><h3>${i.t}</h3><p>${i.d}</p>${i.trap?`<div class="trap"><b>Trampa:</b> ${i.trap}</div>`:""}${i.amp?`<p class="amp">Ampliación: el PDF solo muestra su nombre en el <code>ps -eaf</code>.</p>`:""}`;
+  const g=G();if(g)g.fromTo("#info > *",{y:8,opacity:0},{y:0,opacity:1,duration:.3,stagger:.04,clearProps:"transform,opacity"});
+}
+function moveToken(to,ms){
+  const tk=$("token"),x0=+tk.getAttribute("cx"),y0=+tk.getAttribute("cy");
+  if(RM||ms<=0){tk.setAttribute("cx",to[0]);tk.setAttribute("cy",to[1]);return Promise.resolve()}
+  return new Promise(res=>{const t0=performance.now();const step=t=>{const k=Math.min(1,(t-t0)/ms),e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;tk.setAttribute("cx",x0+(to[0]-x0)*e);tk.setAttribute("cy",y0+(to[1]-y0)*e);k<1?requestAnimationFrame(step):res()};requestAnimationFrame(step)});
+}
+async function runFlow(name){
+  const run=++flowRun,f=FLOWS[name],tk=$("token");
+  $("steps").innerHTML=f.map(s=>`<li>${s[1]}</li>`).join("");
+  const lis=[...$("steps").children];
+  document.querySelectorAll("[data-flow]").forEach(b=>b.disabled=true);
+  tk.setAttribute("cx",CENTER[f[0][0]][0]);tk.setAttribute("cy",CENTER[f[0][0]][1]);tk.setAttribute("opacity","1");
+  for(let i=0;i<f.length;i++){
+    if(run!==flowRun)return;
+    await moveToken(CENTER[f[i][0]],i?650:0);
+    if(run!==flowRun)return;
+    lis.forEach((l,j)=>{l.classList.toggle("on",j===i);l.classList.toggle("done",j<i)});
+    selectNode(f[i][0],true);
+    await sleep(RM?900:1250);
+  }
+  lis.forEach(l=>{l.classList.remove("on");l.classList.add("done")});
+  tk.setAttribute("opacity","0");
+  document.querySelectorAll("[data-flow]").forEach(b=>b.disabled=false);
+}
+const PROCS=[
+  {k:"Cliente",t:"Procesos en el cliente",d:"Cualquier programa que lanza el usuario contra la BBDD: SQL Developer, sqlplus…",f:"en el equipo del usuario"},
+  {k:"Servidor",t:"Procesos servidor",d:"Procesos del gestor que atienden las peticiones de los clientes. Cada uno con su PGA privada.",f:"uno por cliente conectado"},
+  {k:"Background",t:"Procesos background",d:"Hacen las tareas que necesita el gestor: escribir a disco, recuperar, checkpoints…",f:"ps -eaf | grep FREE"},
+  {k:"db_pmon_FREE",t:"PMON",d:"Vigila los procesos y limpia las sesiones de clientes caídos.",f:"ampliación"},
+  {k:"db_smon_FREE",t:"SMON",d:"Recupera la instancia al arrancar tras una caída.",f:"ampliación"},
+  {k:"db_dbw0_FREE",t:"DBWn",d:"Escribe los bloques modificados del buffer de datos en los datafiles.",f:"ampliación"},
+  {k:"db_lgwr_FREE",t:"LGWR",d:"Escribe el buffer redo log en los ficheros redo log (en cada COMMIT).",f:"ampliación"},
+  {k:"db_ckpt_FREE",t:"CKPT",d:"Marca los checkpoints en los ficheros de control.",f:"ampliación"},
+  {k:"db_arc0_FREE",t:"ARCn",d:"Archiva los redo log llenos en modo archivelog.",f:"ampliación"}
+];
+const TBS=[
+  {t:"SYSTEM",d:"Información para que Oracle se gestione: el diccionario de datos.",f:"SYSTEM01.DBF"},
+  {t:"SYSAUX",d:"Auxiliar de SYSTEM; aparece en todas las PDB.",f:"SYSAUX01.DBF"},
+  {t:"USERS",d:"Espacio para que los usuarios guarden sus datos.",f:"USERS01.DBF"},
+  {t:"TEMP",d:"Tablas y operaciones temporales para gestionar las transacciones.",f:"TEMP01.DBF"},
+  {t:"UNDOTBS1",d:"Información de deshacer: la imagen anterior de los datos. Permite recuperar si una transacción no se completa.",f:"UNDOTBS01.DBF"}
+];
+const LVL={
+  bbdd:"<b>Base de datos</b>: el nivel más alto de la estructura lógica. En la práctica, tu PDB pruebajcs.",
+  ts:"<b>Tablespace</b>: espacio donde se ubican las tablas; sirve para organizar la información. Es el enlace con lo físico: se guarda en <b>uno o varios ficheros de datos</b>.",
+  seg:"<b>Segmento</b>: cada objeto que ocupa espacio dentro del tablespace, por ejemplo la tabla PRUEBA o un índice.",
+  ext:"<b>Extensión</b>: un trozo de espacio que se reserva al segmento; está formada por bloques Oracle.",
+  blk:"<b>Bloque Oracle</b>: la unidad más pequeña de la estructura lógica. Es el otro enlace con lo físico: está formado por <b>varios bloques del S.O.</b>",
+  df:"<b>Fichero de datos (datafile)</b>: el fichero real en disco, como datos01.dbf. Pertenece a un solo tablespace.",
+  os:"<b>Bloque del sistema operativo</b>: la unidad física del disco. Varios forman un bloque Oracle."
+};
+const FLASH=[
+  ["Concepto","Instancia","Memoria (SGA + PGA) + procesos. Es lo que se pierde si se apaga."],
+  ["Concepto","Base de datos","Los ficheros en disco: datafiles, ficheros de control y redo log."],
+  ["Memoria","SGA","Memoria COMPARTIDA: Shared Pool + buffer de datos + buffer redo log."],
+  ["Memoria","PGA","Memoria PRIVADA de cada proceso servidor que atiende a un cliente."],
+  ["Memoria","Shared Pool","Library cache + dictionary cache. Guarda las sentencias SQL recientes."],
+  ["Memoria","Buffer de datos","Los últimos registros consultados."],
+  ["Memoria","Buffer redo log","Información de las modificaciones hechas sobre la BBDD."],
+  ["Fichero","Redo log","Todas las transacciones (insert, update, delete) para recuperar. REDO01/02/03.LOG."],
+  ["Fichero","Fichero de control","Arranque/parada, nombres de ficheros, checkpoints, fecha y nombre de la BBDD, estado on/off-line. Mínimo 2 copias en discos distintos."],
+  ["Tablespace","SYSTEM","El diccionario de datos. SYSTEM01.DBF."],
+  ["Tablespace","UNDOTBS1","Deshacer: imagen anterior de los datos."],
+  ["Tablespace","TEMP","Tablas temporales para gestionar transacciones."],
+  ["Estructura","Lógica","Base de datos > tablespace > segmento > extensión > bloque Oracle."],
+  ["Estructura","Física","Ficheros de datos > bloques del S.O."],
+  ["Modelo","Esquema","Los objetos de un usuario: tablas, índices, sinónimos y vistas."],
+  ["Modelo","Diccionario de datos","Información de la información. Vistas DBA_, ALL_, USER_ y V$."],
+  ["Concurrencia","Segmento de rollback","Guarda la imagen antigua. COMMIT establece la nueva; ROLLBACK vuelve a la antigua."],
+  ["Concurrencia","Problemas del rollback","Espacio insuficiente, error de consistencia de lectura y bloqueo de transacción."],
+  ["Procesos","Tres tipos","En el cliente (programa del usuario), servidor (atienden peticiones) y background (tareas del gestor)."],
+  ["Red","Listener","Recibe las conexiones por red (1521) y las pasa a la instancia."]
+];
+const TRAPS=[
+  ["La SGA es privada de cada proceso","La SGA es compartida; la privada es la PGA"],
+  ["El buffer de datos guarda las sentencias SQL","Las sentencias SQL van en la Shared Pool (library cache)"],
+  ["Un SELECT se guarda en el redo log","El redo solo guarda modificaciones: INSERT, UPDATE, DELETE"],
+  ["REDO y UNDO son lo mismo","REDO rehace (recuperar); UNDO deshace (imagen antigua)"],
+  ["El control file guarda los datos","Guarda la estructura; los datos van en los datafiles"],
+  ["Con una copia del control file basta","Mínimo 2 copias en discos diferentes"],
+  ["El diccionario está en USERS","El diccionario de datos está en SYSTEM"],
+  ["Un datafile puede ser de dos tablespaces","Cada datafile es de un único tablespace"],
+  ["Un bloque Oracle es menor que uno del S.O.","Un bloque Oracle está formado por varios bloques del S.O."],
+  ["COMMIT recupera la imagen antigua","COMMIT establece la nueva; ROLLBACK vuelve a la antigua"],
+  ["B ve el cambio de A antes del COMMIT","B lee la imagen antigua del segmento de rollback"],
+  ["El listener ejecuta las consultas","El listener solo recibe conexiones; las atiende el proceso servidor"]
+];
+function initArq(){
+  if(arqReady)return;arqReady=true;
+  document.querySelectorAll("#dg .node").forEach(n=>{
+    n.addEventListener("click",()=>{flowRun++;document.querySelectorAll("[data-flow]").forEach(b=>b.disabled=false);$("token").setAttribute("opacity","0");selectNode(n.dataset.id,true)});
+    n.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();n.dispatchEvent(new Event("click"))}});
+  });
+  $("info").innerHTML=`<span class="tag">Cómo usarlo</span><h3>Toca una pieza</h3><p>Cada caja del esquema es una parte de la arquitectura. Al tocarla verás qué es y la trampa típica del examen.</p><div class="trap"><b>Clave:</b> instancia = memoria + procesos (arriba). Base de datos = ficheros en disco (abajo).</div>`;
+  document.querySelectorAll("[data-flow]").forEach(b=>b.onclick=()=>runFlow(b.dataset.flow));
+  $("procs").innerHTML=PROCS.map(p=>`<div class="card proc"><span class="code">${p.k}</span><strong>${p.t}</strong><p>${p.d}</p><span class="f">${p.f}</span></div>`).join("");
+  $("tbs").innerHTML=TBS.map(t=>`<div class="card ts"><strong>${t.t}</strong><p>${t.d}</p><span class="f">${t.f}</span></div>`).join("");
+  document.querySelectorAll("#lyr .lvl").forEach(l=>{
+    const f=()=>{document.querySelectorAll("#lyr .lvl.on").forEach(x=>x.classList.remove("on"));l.classList.add("on");$("lvlinfo").innerHTML=LVL[l.dataset.l]};
+    l.addEventListener("click",f);l.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();f()}});
+  });
+  $("lyr-play").onclick=playLayers;
+  $("flash").innerHTML=FLASH.map((c,i)=>`<button class="flip" type="button" aria-label="${esc(c[1])}: girar tarjeta"><span class="in"><span class="fc"><small>${c[0]}</small><strong>${c[1]}</strong><em>Toca para girar</em></span><span class="bc">${c[2]}</span></span></button>`).join("");
+  $("flash").querySelectorAll(".flip").forEach(f=>f.onclick=()=>f.classList.toggle("on"));
+  $("traps").innerHTML=TRAPS.map(t=>`<div class="trapc"><span class="no">${t[0]}</span><span class="si">${t[1]}</span></div>`).join("");
+  initConc();
+}
+async function playLayers(){
+  const order=["bbdd","ts","df","seg","ext","blk","os"],btn=$("lyr-play");btn.disabled=true;
+  const g=G();
+  ["lk1","lk2"].forEach(id=>{const p=$(id),L=p.getTotalLength();if(g)g.fromTo(p,{strokeDasharray:L,strokeDashoffset:L},{strokeDashoffset:0,duration:1.2,delay:id==="lk1"?.9:4.6,ease:"power2.inOut",onComplete:()=>{p.style.strokeDasharray="";p.style.strokeDashoffset=""}})});
+  for(const k of order){
+    const el=document.querySelector(`#lyr .lvl[data-l="${k}"]`);
+    document.querySelectorAll("#lyr .lvl.on").forEach(x=>x.classList.remove("on"));el.classList.add("on");$("lvlinfo").innerHTML=LVL[k];
+    if(g)g.fromTo(el,{scale:.94,transformOrigin:"50% 50%"},{scale:1,duration:.5,ease:"back.out(3)",clearProps:"transform"});
+    await sleep(RM?900:1400);
+  }
+  btn.disabled=false;
+}
+const CS={blk:100,rb:null,pending:false,committed:100};
+function initConc(){
+  document.querySelectorAll("[data-c]").forEach(b=>b.onclick=()=>conc(b.dataset.c));
+  concPaint();
+}
+function flash(id){const e=$(id);e.classList.remove("flash");void e.offsetWidth;e.classList.add("flash")}
+function conc(a){
+  const ex=$("cExp");
+  if(a==="reset"){Object.assign(CS,{blk:100,rb:null,pending:false,committed:100});$("cA").textContent="—";$("cB").textContent="—";$("cBres").textContent="";ex.innerHTML="Empieza con «A: UPDATE». Después prueba «B: SELECT» antes y después de confirmar.";flash("cBlkBox");flash("cRbBox")}
+  else if(a==="upd"&&!CS.pending){CS.rb=CS.committed;CS.blk=CS.committed+100;CS.pending=true;$("cA").textContent=`UPDATE cuenta SET saldo = ${CS.blk};`;ex.innerHTML=`A modifica el dato. La <b>imagen antigua (${CS.rb})</b> se salva en el <b>segmento de rollback</b> y el bloque pasa a ${CS.blk}, todavía sin confirmar.`;flash("cBlkBox");flash("cRbBox")}
+  else if(a==="sel"){const v=CS.pending?CS.rb:CS.committed;$("cB").textContent="SELECT saldo FROM cuenta;";$("cBres").textContent=v;ex.innerHTML=CS.pending?`B ve <b>${v}</b>, la imagen antigua: lee del <b>segmento de rollback</b> porque A no ha hecho COMMIT (consistencia de lectura).`:`B ve <b>${v}</b>: el valor confirmado.`;flash("cBres")}
+  else if(a==="commit"&&CS.pending){CS.committed=CS.blk;CS.rb=null;CS.pending=false;$("cA").textContent="COMMIT;";ex.innerHTML=`<b>COMMIT</b>: se establece la imagen nueva (${CS.committed}). Ya la ven todos.`;flash("cBlkBox");flash("cRbBox")}
+  else if(a==="rollback"&&CS.pending){CS.blk=CS.rb;CS.rb=null;CS.pending=false;$("cA").textContent="ROLLBACK;";ex.innerHTML=`<b>ROLLBACK</b>: se vuelve a la imagen antigua (${CS.blk}) usando el segmento de rollback.`;flash("cBlkBox");flash("cRbBox")}
+  concPaint();
+}
+function concPaint(){
+  $("cBlk").textContent=CS.blk;$("cBlkS").textContent=CS.pending?"modificado, SIN confirmar":"saldo confirmado";
+  $("cRb").textContent=CS.rb==null?"—":CS.rb;$("cRbS").textContent=CS.rb==null?"vacío":"imagen antigua guardada";
+  document.querySelector('[data-c="upd"]').disabled=CS.pending;
+  document.querySelector('[data-c="commit"]').disabled=!CS.pending;
+  document.querySelector('[data-c="rollback"]').disabled=!CS.pending;
+}
+
+/* ---------- ranking compartido (db) ---------- */
+const RT=[["pts","Puntos totales",v=>v.toLocaleString("es")+" pts"],["crono","Contrarreloj",v=>v.toLocaleString("es")+" pts"],["vidas","Supervivencia",v=>v.toLocaleString("es")+" pts"],["final","Simulacro",v=>Number(v).toFixed(1).replace(".",",")+" / 10"]];
+const RK={db:null,uid:null,canWrite:null,rows:[],tab:"pts",alias:store.get("ora-alias",""),state:"loading",merged:false,editing:false};
+function sortedRows(k){return RK.rows.filter(r=>Number(r[k])>0).sort((a,b)=>Number(b[k])-Number(a[k])||String(a.alias).localeCompare(String(b.alias)))}
+function renderPodium(){
+  const el=$("podium");if(!el)return;
+  if(RK.state==="loading"){el.innerHTML='<p class="rnote">Conectando con el ranking…</p>';return}
+  if(RK.state==="off"){el.innerHTML='<p class="rnote">El ranking funciona al abrir esta página en claude.ai con tu cuenta.</p>';return}
+  const r=sortedRows("pts").slice(0,3);
+  if(!r.length){el.innerHTML='<p class="rnote">Todavía no hay nadie en el podio. ¡Juega una partida y estrénalo!</p>';return}
+  const slot=(x,i)=>x?`<div class="pod p${i+1}"><div class="m">${["🥇","🥈","🥉"][i]}</div><div class="n">${esc(x.alias||"Anónimo")}</div><div class="p">${Number(x.pts).toLocaleString("es")} pts</div></div>`:`<div class="pod"><div class="m">·</div><div class="n" style="color:var(--dim)">libre</div></div>`;
+  el.innerHTML=`<div class="podium">${slot(r[1],1)}${slot(r[0],0)}${slot(r[2],2)}</div>`;
+}
+function renderRank(){
+  const el=$("rank");if(!el)return;
+  if(RK.state==="loading"){el.innerHTML='<p class="rnote">Conectando con el ranking…</p>';return}
+  if(RK.state==="off"){el.innerHTML='<p class="rnote">El ranking compartido funciona al abrir esta página en claude.ai con tu cuenta. Tus récords se siguen guardando en este navegador.</p>';return}
+  const k=RK.tab,fmt=RT.find(t=>t[0]===k)[2],rows=sortedRows(k);
+  const myIdx=rows.findIndex(r=>r.id===RK.uid);
+  let list=rows.slice(0,15).map((r,i)=>row(r,i,fmt)).join("");
+  if(myIdx>=15)list+=row(rows[myIdx],myIdx,fmt);
+  if(!rows.length)list='<li class="rnote">Todavía no hay nadie en esta categoría. ¡Juega una partida y estrénala!</li>';
+  let me="";
+  if(RK.state==="readonly")me='<p class="rnote">Puedes ver el ranking, pero no apuntarte: pide al dueño de la página que te invite como Editor.</p>';
+  else if(!RK.alias||RK.editing)me=`<form class="rme" id="rform"><input id="ralias" maxlength="20" placeholder="Tu nombre en el ranking" value="${esc(RK.alias||"")}" autocomplete="off"><button class="btn sm" type="submit">Guardar</button></form><p class="rnote">Pon un nombre para salir en el ranking. Tus puntos se suben al terminar cada partida.</p>`;
+  else me=`<div class="rme"><span class="rnote">Juegas como <b style="color:var(--ink)">${esc(RK.alias)}</b>${myIdx>=0?` · puesto <b style="color:var(--yellow)">#${myIdx+1}</b> de ${rows.length}`:""}</span><button class="link" id="redit" type="button">Cambiar nombre</button></div>`;
+  el.innerHTML=`<div class="rtabs">${RT.map(t=>`<button class="rtab${t[0]===k?" on":""}" data-rt="${t[0]}" type="button">${t[1]}</button>`).join("")}</div><ol class="rlist">${list}</ol>${me}`;
+  el.querySelectorAll("[data-rt]").forEach(b=>b.onclick=()=>{RK.tab=b.dataset.rt;renderRank();const g=G();if(g)g.fromTo("#rank .rrow",{x:-14,opacity:0},{x:0,opacity:1,duration:.3,stagger:.03,clearProps:"transform,opacity"})});
+  if($("rform"))$("rform").onsubmit=e=>{e.preventDefault();saveAlias($("ralias").value)};
+  if($("redit"))$("redit").onclick=()=>{RK.editing=true;renderRank();$("ralias")&&$("ralias").focus()};
+  rankPos();
+}
+function row(r,i,fmt){const medal=["🥇","🥈","🥉"][i]||"#"+(i+1);return `<li class="rrow p${i+1}${r.id===RK.uid?" me":""}"><span class="pos">${medal}</span><span class="nm">${esc(r.alias||"Anónimo")}${r.id===RK.uid?"<small>TÚ</small>":""}</span><span class="sc">${fmt(Number(r[RK.tab])||0)}</span></li>`}
+function rankPos(){
+  const el=$("rpos");if(!el)return;
+  if(RK.state!=="ok"||!RK.alias||!RK.uid){el.textContent=RK.state==="ok"&&!RK.alias?"Pon tu nombre en Ranking para salir en la clasificación.":"";return}
+  const rows=sortedRows("pts"),i=rows.findIndex(r=>r.id===RK.uid);
+  el.textContent=i>=0?`🏆 Ranking de puntos totales: puesto #${i+1} de ${rows.length}`:"Subiendo tus puntos al ranking…";
+}
+function saveAlias(v){
+  v=String(v||"").trim().replace(/\s+/g," ").slice(0,20);if(!v)return;
+  RK.alias=v;RK.editing=false;store.set("ora-alias",v);pushScore();renderRank();
+}
+let pushing=false,pushAgain=false;
+async function pushScore(){
+  if(!RK.db||!RK.uid||RK.canWrite===false||!RK.alias)return;
+  if(pushing){pushAgain=true;return}
+  pushing=true;
+  const body={alias:RK.alias,pts:stats.pts,crono:best.crono||0,vidas:best.vidas||0,final:best.final!=null?Math.round(best.final*10)/10:0,partidas:stats.played,racha:stats.streak,at:Date.now()};
+  try{await RK.db.doc("ranking/"+RK.uid).set(body)}
+  catch(e){if(e&&(e.code==="invalid_argument"||e.code==="revoked"||e.code==="not_granted")){RK.canWrite=false;RK.state="readonly";renderRank()}}
+  pushing=false;
+  if(pushAgain){pushAgain=false;pushScore()}
+}
+function mergeMine(){
+  if(RK.merged||!RK.uid)return;
+  RK.merged=true;
+  const r=RK.rows.find(x=>x.id===RK.uid);if(!r)return;
+  stats.pts=Math.max(stats.pts,Number(r.pts)||0);stats.played=Math.max(stats.played,Number(r.partidas)||0);stats.streak=Math.max(stats.streak,Number(r.racha)||0);saveStats();
+  ["crono","vidas","final"].forEach(k=>{const v=Number(r[k])||0;if(v>0&&(best[k]==null||v>best[k]))best[k]=v});store.set("ora-best",best);
+  if(r.alias&&!RK.alias)RK.alias=String(r.alias).slice(0,20);
+  if(cur==="tests")renderTests();
+  if(cur==="inicio"){$("st-pts").textContent=stats.pts.toLocaleString("es");$("st-streak").textContent=stats.streak;$("st-played").textContent=stats.played}
+}
+async function initRank(){
+  const c=window.claude;
+  if(!c||typeof c.use!=="function"){RK.state="off";renderRank();renderPodium();return}
+  const [db,user]=await Promise.all([c.use("db"),c.use("user")]);
+  if(!db){RK.state="off";renderRank();renderPodium();return}
+  RK.db=db;
+  RK.uid=user?await user.id():null;
+  const cw=user?await user.can("data.write"):null;
+  RK.canWrite=RK.uid?cw:false;
+  if(!RK.alias&&user){const me=await user.me();if(me.name)RK.alias=me.name.slice(0,20)}
+  RK.state=RK.canWrite===false?"readonly":"ok";
+  renderRank();renderPodium();
+  db.collection("ranking").onSnapshot(s=>{RK.rows=s.docs.map(d=>({id:d.id,...d.data()}));mergeMine();renderRank();renderPodium()},()=>{RK.state="off";renderRank();renderPodium()});
+}
+
+/* ---------- arranque ---------- */
+const h0=(location.hash||"").slice(1);
+go(["inicio","arq","tests","rank"].includes(h0)?h0:"inicio");
+initRank().catch(()=>{RK.state="off";renderRank();renderPodium()});
+</script>
+
+<a id="asir-back" href="../../asignatura.html?s=asgbd" aria-label="Volver a ASGBD" style="--c:#F2A900;bottom:14px"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg><span>ASGBD</span></a><link rel="stylesheet" href="../../assets/back.css"></body></html>
