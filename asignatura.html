@@ -20,6 +20,7 @@
   document.title=s.code+' · ASIR 2';
   var time=P.rd('asir.time',{});
   function mins(t){var v=time[s.slug+'/'+t.id];return v?Math.round(v.total/60000):0}
+  var EMO={Apuntes:'📘',Test:'📝',Examen:'🎯','Práctica':'🛠️',Herramienta:'🧰'};
   var items=[];s.topics.forEach(function(tm){items=items.concat(tm.items)});
   var total=items.reduce(function(a,t){return a+mins(t)},0);
   main.innerHTML=
@@ -29,7 +30,7 @@
     (s.teacher?'<span>👤 '+P.esc(s.teacher)+'</span>':'')+'<span>📚 '+s.topics.length+(s.topics.length===1?' tema':' temas')+' · '+items.length+(items.length===1?' material':' materiales')+'</span>'+(total?'<span>⏱ '+total+' min estudiados</span>':'')+'</div></section>'+
     '<div id="temas">'+(s.topics.length?s.topics.map(function(tm){return '<div class="sec-title"><span>'+P.esc(tm.title)+'</span><span>'+tm.items.length+(tm.items.length===1?' material':' materiales')+'</span></div><div class="topics">'+tm.items.map(function(t,i){
       var m=mins(t);
-      return '<a class="topic" style="--c:'+s.color+'" href="'+t.file+'"><div class="num">'+(i+1)+'</div><div class="tx"><h3>'+P.esc(t.title)+'</h3><p>'+P.esc(t.desc)+(m?' · ⏱ '+m+' min':'')+'</p></div><span class="tp">'+P.esc(t.type)+'</span>'+P.ARROW.replace('<svg','<svg class="arr"')+'</a>';
+      return '<a class="topic" style="--c:'+s.color+'" href="'+t.file+'"><div class="num">'+(EMO[t.type]||'📄')+'</div><div class="tx"><h3>'+P.esc(t.title)+'</h3><p>'+P.esc(t.desc)+(m?' · ⏱ '+m+' min':'')+'</p></div><span class="tp">'+P.esc(t.type)+'</span>'+P.ARROW.replace('<svg','<svg class="arr"')+'</a>';
     }).join('')+'</div>'}).join(''):'<div class="sec-title"><span>Temas</span></div><div class="empty-box"><b>Próximamente</b>Aún no hay temas publicados en esta asignatura.</div>')+'</div>'+
     '<div class="sec-title"><span>Otras asignaturas</span></div><div class="others">'+
     P.subjects.filter(function(x){return x.slug!==s.slug}).map(function(x){return '<a style="--c:'+x.color+'" href="asignatura.html?s='+x.slug+'"><i></i>'+P.esc(x.code)+'</a>'}).join('')+'</div>';
