@@ -86,13 +86,21 @@
       onSnapshot:function(cb,err){
         var dead=false,l={col:col,fire:function(){if(!dead)load().then(function(r){if(!dead)cb(toSnap(r))},function(e){err&&err(e)})}};
         listeners.push(l);setTimeout(l.fire,0);
-        var timer=base?setInterval(l.fire,8000):null;
+        var timer=base?setInterval(function(){if(document.visibilityState==='visible')l.fire()},45000):null;
         return function(){dead=true;if(timer)clearInterval(timer);listeners=listeners.filter(function(x){return x!==l})};
       }
     };
     return q;
   }
   var db={collection:collection,doc:docRef};
+  /* sube mis puntuaciones guardadas en este navegador para aparecer en el ranking aunque jugara antes de activarlo */
+  if(base){try{
+    var last=+(localStorage.getItem('asir.synced')||0);
+    if(Date.now()-last>6*3600*1000){
+      var jobs=[];Object.keys(all).forEach(function(c){var d=all[c]&&all[c][user.id];if(d)jobs.push(remote.set(c+'/'+user.id,d))});
+      if(jobs.length)Promise.all(jobs).then(function(){localStorage.setItem('asir.synced',String(Date.now()))}).catch(function(){});
+    }
+  }catch(e){}}
   var userApi={
     id:function(){return Promise.resolve(user.id)},
     can:function(){return Promise.resolve(true)},
