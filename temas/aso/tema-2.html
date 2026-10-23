@@ -1,0 +1,1226 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0e13">
+<title>ASO · Tema 2 · Shell Script</title>
+<meta name="description" content="Tema 2 de ASO: Shell Script en Bash. Teoría con esquemas, práctica de red y SSH, y test con rachas.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;600;700&family=Caveat:wght@600;700&display=swap">
+<style>
+:root{
+  --bg:#f4f2ec;--bg2:#ebe8df;--panel:#ffffff;--panel2:#faf9f5;--ink:#16181d;--muted:#5c6270;--line:#e0dcd1;
+  --acc:#0c9a6a;--acc-soft:#dcf3e9;--amber:#c76a05;--amber-soft:#fdefd9;--violet:#6a48d6;--violet-soft:#ece6fd;
+  --rose:#d93b55;--rose-soft:#fde3e8;--sky:#1a6fd6;--sky-soft:#e1ecfc;
+  --code-bg:#0e1217;--code-fg:#d7dee8;--code-line:#1d242e;
+  --shadow:0 1px 2px rgba(20,20,30,.05),0 8px 28px rgba(20,20,30,.07);
+  --f-d:"Bricolage Grotesque",system-ui,sans-serif;--f-b:"Atkinson Hyperlegible",system-ui,sans-serif;--f-m:"JetBrains Mono",ui-monospace,Consolas,monospace;--f-h:"Caveat",cursive;
+  --r:16px;color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0b0e13;--bg2:#10151c;--panel:#141a22;--panel2:#18202a;--ink:#e8ecf2;--muted:#97a1b2;--line:#252e3a;
+  --acc:#34d399;--acc-soft:#10291f;--amber:#fbbf24;--amber-soft:#2d2210;--violet:#a78bfa;--violet-soft:#221b3b;
+  --rose:#fb7185;--rose-soft:#341720;--sky:#60a5fa;--sky-soft:#13233b;
+  --code-bg:#080b0f;--code-line:#161c24;--shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.35);color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0b0e13;--bg2:#10151c;--panel:#141a22;--panel2:#18202a;--ink:#e8ecf2;--muted:#97a1b2;--line:#252e3a;
+  --acc:#34d399;--acc-soft:#10291f;--amber:#fbbf24;--amber-soft:#2d2210;--violet:#a78bfa;--violet-soft:#221b3b;
+  --rose:#fb7185;--rose-soft:#341720;--sky:#60a5fa;--sky-soft:#13233b;
+  --code-bg:#080b0f;--code-line:#161c24;--shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.35);color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:84px;-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:16.5px/1.65 var(--f-b);overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;
+  background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:44px 44px;opacity:.35;
+  mask-image:radial-gradient(ellipse at 50% 0%,#000 0%,transparent 70%);-webkit-mask-image:radial-gradient(ellipse at 50% 0%,#000 0%,transparent 70%)}
+a{color:var(--acc)}
+code,kbd{font-family:var(--f-m);font-size:.86em}
+:not(pre)>code{background:var(--bg2);border:1px solid var(--line);padding:1px 6px;border-radius:6px;white-space:nowrap}
+:focus-visible{outline:2.5px solid var(--acc);outline-offset:2px;border-radius:6px}
+button{font:inherit;color:inherit;cursor:pointer}
+h1,h2,h3,h4{font-family:var(--f-d);line-height:1.12;letter-spacing:-.01em;margin:0}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+
+/* ── barra superior ── */
+.top{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:12px;padding:10px max(16px,env(safe-area-inset-left));
+  background:color-mix(in srgb,var(--bg) 82%,transparent);backdrop-filter:blur(14px) saturate(1.4);-webkit-backdrop-filter:blur(14px) saturate(1.4);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:10px;font:800 1rem/1 var(--f-d);white-space:nowrap;text-decoration:none;color:var(--ink)}
+.brand .logo{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:var(--code-bg);color:#34d399;font:700 .8rem var(--f-m);box-shadow:0 0 0 1px var(--line),0 6px 18px color-mix(in srgb,var(--acc) 35%,transparent)}
+.brand small{display:block;font:600 .7rem var(--f-m);color:var(--muted);letter-spacing:.06em;margin-top:3px}
+.tabs{display:flex;gap:4px;margin:0 auto;padding:4px;background:var(--bg2);border:1px solid var(--line);border-radius:14px;position:relative}
+.tabs a{position:relative;z-index:1;display:flex;align-items:center;gap:7px;padding:8px 16px;border-radius:10px;text-decoration:none;color:var(--muted);font:700 .92rem var(--f-d);transition:color .25s}
+.tabs a svg{width:17px;height:17px}
+.tabs a[aria-current="page"]{color:var(--ink)}
+.tabs .pill{position:absolute;z-index:0;top:4px;bottom:4px;border-radius:10px;background:var(--panel);box-shadow:var(--shadow);transition:left .35s cubic-bezier(.3,1.3,.5,1),width .35s cubic-bezier(.3,1.3,.5,1)}
+.tools{display:flex;gap:8px;align-items:center}
+.chip-streak{display:flex;align-items:center;gap:6px;padding:6px 11px;border-radius:999px;background:var(--amber-soft);color:var(--amber);font:700 .85rem var(--f-m);border:1px solid color-mix(in srgb,var(--amber) 30%,transparent)}
+.icon-btn{width:38px;height:38px;border-radius:11px;border:1px solid var(--line);background:var(--panel);display:grid;place-items:center}
+.icon-btn svg{width:18px;height:18px}
+@media (max-width:760px){.brand small,.brand .t{display:none}.tabs a span{display:none}.tabs a{padding:8px 14px}.chip-streak b{display:none}}
+
+.view{display:none;animation:viewIn .5s cubic-bezier(.2,.8,.2,1)}
+.view.on{display:block}
+@keyframes viewIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.container{max-width:1240px;margin:0 auto;padding:0 max(16px,env(safe-area-inset-left)) 120px}
+
+/* ── hero ── */
+.hero{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:40px;align-items:center;padding:56px 0 40px}
+.eyebrow{display:inline-flex;gap:8px;align-items:center;font:700 .76rem var(--f-m);letter-spacing:.1em;text-transform:uppercase;color:var(--acc);background:var(--acc-soft);padding:6px 12px;border-radius:999px}
+.eyebrow i{width:7px;height:7px;border-radius:50%;background:var(--acc);box-shadow:0 0 0 0 var(--acc);animation:ping 2s infinite}
+@keyframes ping{70%{box-shadow:0 0 0 9px transparent}100%{box-shadow:0 0 0 0 transparent}}
+.hero h1{font-size:clamp(2.3rem,5.4vw,4.1rem);font-weight:800;margin:18px 0 16px;text-wrap:balance}
+.hero h1 .grad{background:linear-gradient(100deg,var(--acc),var(--sky) 55%,var(--violet));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p.lead{color:var(--muted);font-size:1.12rem;max-width:56ch;margin:0 0 24px}
+.hero-stats{display:flex;gap:10px;flex-wrap:wrap}
+.hero-stats div{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px 16px;box-shadow:var(--shadow)}
+.hero-stats b{display:block;font:800 1.5rem/1 var(--f-d)}
+.hero-stats span{font-size:.8rem;color:var(--muted)}
+.termwin{background:var(--code-bg);border-radius:18px;box-shadow:0 30px 80px -20px rgba(0,0,0,.45),0 0 0 1px rgba(255,255,255,.06);overflow:hidden;transform:perspective(1200px) rotateY(-7deg) rotateX(3deg);transition:transform .6s}
+.termwin:hover{transform:none}
+.termwin .bar{display:flex;gap:7px;align-items:center;padding:12px 14px;background:#151b23;border-bottom:1px solid #222a35}
+.termwin .bar i{width:12px;height:12px;border-radius:50%;background:#ff5f57}.termwin .bar i:nth-child(2){background:#febc2e}.termwin .bar i:nth-child(3){background:#28c840}
+.termwin .bar span{margin-left:8px;font:600 .75rem var(--f-m);color:#7d8796}
+.termwin pre{margin:0;padding:18px 20px 22px;min-height:290px;font:500 .86rem/1.7 var(--f-m);color:#cfd8e3;white-space:pre-wrap}
+.termwin .p{color:#34d399}.termwin .c{color:#7d8796}.termwin .o{color:#fbbf24}
+.cursor{display:inline-block;width:8px;height:1.05em;background:#34d399;vertical-align:-2px;animation:blink 1s steps(2) infinite}
+@keyframes blink{50%{opacity:0}}
+@media (max-width:900px){.hero{grid-template-columns:minmax(0,1fr);padding-top:32px}.termwin{transform:none}}
+
+/* ── layout teoría ── */
+.layout{display:grid;grid-template-columns:250px minmax(0,1fr);gap:40px}
+.toc{position:sticky;top:78px;align-self:start;max-height:calc(100vh - 96px);overflow:auto;padding:8px 6px 20px 0}
+.toc h4{font:700 .72rem var(--f-m);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:6px 10px 10px}
+.toc a{display:flex;gap:10px;align-items:center;padding:7px 10px;border-radius:10px;text-decoration:none;color:var(--muted);font-size:.92rem;transition:background .2s,color .2s}
+.toc a b{font:700 .7rem var(--f-m);width:24px;height:24px;border-radius:7px;display:grid;place-items:center;background:var(--bg2);border:1px solid var(--line);flex:none;transition:all .25s}
+.toc a:hover{background:var(--panel);color:var(--ink)}
+.toc a.active{color:var(--ink);background:var(--panel);box-shadow:var(--shadow)}
+.toc a.active b{background:var(--acc);color:#fff;border-color:var(--acc)}
+.toc a.read b::after{content:"✓"}.toc a.read b span{display:none}
+.toc .prog{margin:16px 10px 0;font-size:.8rem;color:var(--muted)}
+.toc .prog .bar{height:7px;border-radius:9px;background:var(--bg2);overflow:hidden;margin-top:7px;border:1px solid var(--line)}
+.toc .prog .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--acc),var(--sky));transition:width .5s}
+@media (max-width:1020px){.layout{grid-template-columns:minmax(0,1fr)}.toc{display:none}}
+.mobile-toc{display:none;gap:8px;overflow-x:auto;padding:4px 0 14px;scrollbar-width:none}
+.mobile-toc a{flex:none;padding:7px 12px;border-radius:999px;background:var(--panel);border:1px solid var(--line);text-decoration:none;color:var(--ink);font-size:.85rem}
+@media (max-width:1020px){.mobile-toc{display:flex}}
+
+.sec{padding:36px 0 18px;border-top:1px dashed var(--line)}
+.sec:first-child{border-top:0;padding-top:4px}
+.sec-head{display:flex;gap:16px;align-items:flex-start;margin-bottom:20px}
+.sec-num{flex:none;width:52px;height:52px;border-radius:16px;display:grid;place-items:center;font:800 1.2rem var(--f-d);color:#fff;background:linear-gradient(135deg,var(--c,var(--acc)),color-mix(in srgb,var(--c,var(--acc)) 55%,#000));box-shadow:0 10px 24px -8px var(--c,var(--acc))}
+.sec-head h2{font-size:clamp(1.6rem,3vw,2.15rem);font-weight:800}
+.sec-head p{margin:6px 0 0;color:var(--muted)}
+.sec h3{font-size:1.25rem;margin:30px 0 12px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.sec h3::before{content:"";width:6px;height:22px;border-radius:4px;background:var(--c,var(--acc))}
+.sec p{margin:0 0 14px}
+.muted{color:var(--muted)}
+
+/* revelar al hacer scroll */
+.rv{opacity:0;transform:translateY(22px);transition:opacity .7s cubic-bezier(.2,.8,.2,1),transform .7s cubic-bezier(.2,.8,.2,1)}
+.rv.in{opacity:1;transform:none}
+
+/* tarjetas */
+.grid{display:grid;gap:14px}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}.g3{grid-template-columns:repeat(3,minmax(0,1fr))}.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media (max-width:860px){.g3,.g4{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:560px){.g2,.g3,.g4{grid-template-columns:minmax(0,1fr)}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:18px 18px 16px;box-shadow:var(--shadow);position:relative;transition:transform .3s cubic-bezier(.2,.8,.2,1),box-shadow .3s,border-color .3s}
+.card.hov:hover{transform:translateY(-4px);border-color:color-mix(in srgb,var(--c,var(--acc)) 45%,var(--line));box-shadow:0 18px 40px -16px color-mix(in srgb,var(--c,var(--acc)) 50%,transparent)}
+.card h4{font-size:1.05rem;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.card p{margin:0;color:var(--muted);font-size:.95rem}
+.card .ic{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-size:1.25rem;background:color-mix(in srgb,var(--c,var(--acc)) 14%,transparent);margin-bottom:12px}
+.tag{display:inline-block;font:700 .7rem var(--f-m);letter-spacing:.05em;padding:3px 8px;border-radius:7px;background:color-mix(in srgb,var(--c,var(--acc)) 15%,transparent);color:var(--c,var(--acc))}
+
+/* posits */
+.postits{display:flex;flex-wrap:wrap;gap:22px;padding:10px 4px}
+.postit{--pc:#ffe98a;position:relative;width:min(100%,250px);padding:26px 18px 18px;background:var(--pc);color:#2a2410;font:700 1.32rem/1.25 var(--f-h);
+  box-shadow:0 2px 0 rgba(0,0,0,.05),0 16px 24px -10px rgba(0,0,0,.35);transform:rotate(var(--rot,-2deg));transition:transform .35s cubic-bezier(.3,1.4,.5,1)}
+.postit:hover{transform:rotate(0) scale(1.05);z-index:2}
+.postit::before{content:"";position:absolute;top:-11px;left:50%;width:84px;height:24px;transform:translateX(-50%) rotate(-3deg);background:rgba(255,255,255,.55);border:1px solid rgba(0,0,0,.06);backdrop-filter:blur(2px)}
+.postit code{white-space:normal;word-break:break-word;font-size:.6em;background:rgba(0,0,0,.08);border:0;color:#2a2410}
+.postit small{display:block;font:400 .9rem/1.4 var(--f-b);margin-top:8px;color:#4a4020}
+.postit.pink{--pc:#ffc8dc;--rot:2deg}.postit.blue{--pc:#c7e2ff;--rot:-1deg}.postit.green{--pc:#caf3d2;--rot:1.5deg}.postit.orange{--pc:#ffd6a8;--rot:-2.5deg}
+
+/* notas */
+.note{display:flex;gap:14px;padding:14px 16px;border-radius:14px;border:1px solid color-mix(in srgb,var(--c) 30%,transparent);background:color-mix(in srgb,var(--c) 9%,var(--panel));margin:16px 0}
+.note .ni{flex:none;width:30px;height:30px;border-radius:9px;display:grid;place-items:center;background:var(--c);color:#fff;font-weight:700}
+.note p{margin:0}.note p+p{margin-top:6px}
+.note.tip{--c:var(--acc)}.note.warn{--c:var(--amber)}.note.info{--c:var(--sky)}.note.bad{--c:var(--rose)}.note.vio{--c:var(--violet)}
+.note b.t{display:block;font-family:var(--f-d);margin-bottom:2px}
+
+/* código */
+.code{position:relative;margin:14px 0;border-radius:14px;background:var(--code-bg);border:1px solid #1c232d;overflow:hidden;box-shadow:var(--shadow)}
+.code .ch{display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid #1c232d;background:#11161d;font:600 .74rem var(--f-m);color:#7d8796}
+.code .ch .dots{display:flex;gap:5px}.code .ch .dots i{width:9px;height:9px;border-radius:50%;background:#2a313c}
+.code .ch .fn{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.code pre{font-variant-ligatures:none;margin:0;padding:14px 16px;overflow:auto;font:500 .84rem/1.65 var(--f-m);color:var(--code-fg);tab-size:4}
+.code pre .ln{display:inline-block;width:2.2em;color:#3c4654;user-select:none;text-align:right;margin-right:14px}
+.copy{border:1px solid #2a323d;background:#1a212b;color:#c7d0dc;border-radius:8px;padding:4px 10px;font:600 .72rem var(--f-m);transition:all .2s}
+.copy:hover{background:#243040}.copy.ok{background:#0f5132;border-color:#198754;color:#b9f6ca}
+.k-kw{color:#ff8fc6}.k-str{color:#a7e17a}.k-var{color:#7dd3fc}.k-com{color:#6b7785;font-style:italic}.k-num{color:#fcc96b}.k-op{color:#f9a8d4}.k-sb{color:#c4b5fd}
+.out{margin:-6px 0 14px;border-radius:0 0 12px 12px;padding:10px 16px;background:color-mix(in srgb,var(--acc) 10%,var(--panel));border:1px dashed color-mix(in srgb,var(--acc) 40%,transparent);font:500 .82rem/1.6 var(--f-m);white-space:pre-wrap}
+.out::before{content:"SALIDA";display:block;font:700 .65rem var(--f-m);letter-spacing:.12em;color:var(--acc);margin-bottom:4px}
+
+/* tablas */
+.tbl{width:100%;border-collapse:separate;border-spacing:0;background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;font-size:.94rem;box-shadow:var(--shadow);margin:12px 0}
+.tbl th,.tbl td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+.tbl th{font:700 .74rem var(--f-m);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);background:var(--panel2)}
+.tbl tr:last-child td{border-bottom:0}
+.tbl tbody tr{transition:background .2s}.tbl tbody tr:hover{background:var(--panel2)}
+.tbl td:first-child code{font-weight:700;color:var(--c,var(--acc));background:color-mix(in srgb,var(--c,var(--acc)) 10%,transparent)}
+.tscroll{overflow-x:auto}
+
+/* comparativa sí/no */
+.vs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.vs>div{border-radius:14px;padding:14px 16px;border:1px solid var(--line);background:var(--panel)}
+.vs .ok{border-color:color-mix(in srgb,var(--acc) 40%,transparent);background:color-mix(in srgb,var(--acc) 7%,var(--panel))}
+.vs .ko{border-color:color-mix(in srgb,var(--rose) 40%,transparent);background:color-mix(in srgb,var(--rose) 7%,var(--panel))}
+.vs h5{margin:0 0 8px;font:800 .82rem var(--f-m);letter-spacing:.06em}
+.vs .ok h5{color:var(--acc)}.vs .ko h5{color:var(--rose)}
+.vs code{display:block;white-space:pre;margin:4px 0;padding:6px 10px;background:var(--code-bg);color:var(--code-fg);border:0;border-radius:8px;overflow:auto}
+@media (max-width:560px){.vs{grid-template-columns:minmax(0,1fr)}}
+
+/* tarjetas giratorias (caracteres) */
+.flips{overflow:hidden;padding:4px;margin:-4px;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.flip{perspective:900px;height:150px;border:0;background:none;padding:0;text-align:left}
+.flip .in{position:relative;width:100%;height:100%;transition:transform .6s cubic-bezier(.3,1.3,.5,1);transform-style:preserve-3d}
+.flip.on .in,.flip:focus-visible .in{transform:rotateY(180deg)}
+@media (hover:hover){.flip:hover .in{transform:rotateY(180deg)}}
+.flip .fa,.flip .fb{position:absolute;inset:0;border-radius:16px;backface-visibility:hidden;-webkit-backface-visibility:hidden;padding:14px;display:flex;flex-direction:column;justify-content:center;border:1px solid var(--line)}
+.flip .fa{background:var(--panel);box-shadow:var(--shadow);align-items:center;text-align:center}
+.flip .fa b{font:800 2.2rem var(--f-m);color:var(--c,var(--acc))}
+.flip .fa span{font-size:.8rem;color:var(--muted);margin-top:4px}
+.flip .fb{transform:rotateY(180deg);background:var(--code-bg);color:#d7dee8;font-size:.84rem;line-height:1.45}
+.flip .fb strong{color:#34d399;font-family:var(--f-d);font-size:.95rem;margin-bottom:4px}
+.flip .fb code{background:#1a212b;border:0;color:#fcc96b;white-space:normal}
+
+/* diagramas */
+.diagram{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:var(--shadow);margin:14px 0;overflow-x:auto}
+.diagram svg{display:block;width:100%;height:auto;min-width:520px}
+.diagram .cap{font-size:.84rem;color:var(--muted);margin-top:8px;text-align:center}
+.flow{stroke-dasharray:6 6;animation:flow 1.2s linear infinite}
+@keyframes flow{to{stroke-dashoffset:-24}}
+.svg-t{font-family:var(--f-d);font-weight:700}
+.svg-m{font-family:var(--f-m)}
+.node rect{transition:transform .3s}
+.pulse{animation:pulse 2.4s ease-in-out infinite;transform-origin:center;transform-box:fill-box}
+@keyframes pulse{50%{transform:scale(1.06)}}
+
+/* widgets interactivos */
+.lab{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:var(--shadow);margin:18px 0;position:relative}
+.lab::before{content:"🧪 PRUÉBALO";position:absolute;top:-10px;left:16px;font:800 .66rem var(--f-m);letter-spacing:.12em;background:var(--violet);color:#fff;padding:3px 9px;border-radius:7px}
+.lab h4{font-size:1.02rem;margin:4px 0 12px}
+.lab .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+.lab input[type=text],.lab select{font:500 .92rem var(--f-m);padding:9px 12px;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--ink);min-width:0;flex:1}
+.lab label{font-size:.85rem;color:var(--muted)}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:9px 16px;border-radius:11px;border:1px solid var(--line);background:var(--panel);font:700 .9rem var(--f-d);transition:transform .15s,background .2s,box-shadow .2s}
+.btn:hover{transform:translateY(-1px);box-shadow:var(--shadow)}
+.btn:active{transform:translateY(1px) scale(.98)}
+.btn.pri{background:var(--acc);border-color:var(--acc);color:#fff}
+.btn.pri:hover{box-shadow:0 10px 24px -8px var(--acc)}
+.btn.sm{padding:6px 11px;font-size:.82rem}
+.btn[disabled]{opacity:.45;pointer-events:none}
+.term-out{background:var(--code-bg);color:#d7dee8;border-radius:12px;padding:12px 14px;font:500 .84rem/1.6 var(--f-m);white-space:pre-wrap;min-height:46px}
+.term-out .p{color:#34d399}.term-out .e{color:#fb7185}.term-out .y{color:#fbbf24}.term-out .d{color:#6b7785}
+.params{display:flex;gap:8px;flex-wrap:wrap;min-height:56px;align-items:center;padding:8px;border-radius:12px;background:var(--bg2);border:1px dashed var(--line)}
+.param{display:flex;flex-direction:column;align-items:center;padding:6px 12px;border-radius:10px;background:var(--panel);border:1px solid var(--line);font:600 .88rem var(--f-m);box-shadow:var(--shadow);transition:all .45s cubic-bezier(.3,1.3,.5,1)}
+.param small{font:700 .66rem var(--f-m);color:var(--violet)}
+.param.out-l{transform:translateX(-40px) scale(.6);opacity:0}
+.cells{display:flex;gap:6px;flex-wrap:wrap}
+.cell{width:44px;height:44px;border-radius:11px;display:grid;place-items:center;font:700 1rem var(--f-m);background:var(--bg2);border:1px solid var(--line);transition:all .3s}
+.cell.on{background:var(--acc);color:#fff;border-color:var(--acc);transform:translateY(-4px) scale(1.06);box-shadow:0 10px 20px -8px var(--acc)}
+.cell.skip{background:var(--amber-soft);color:var(--amber);border-color:var(--amber);text-decoration:line-through}
+.cell.stop{background:var(--rose-soft);color:var(--rose);border-color:var(--rose)}
+.cell.cur{outline:3px solid var(--sky);outline-offset:2px}
+.seg{display:inline-flex;padding:3px;background:var(--bg2);border:1px solid var(--line);border-radius:11px;gap:2px;flex-wrap:wrap}
+.seg button{border:0;background:none;padding:6px 12px;border-radius:8px;font:700 .82rem var(--f-d);color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--panel);color:var(--ink);box-shadow:var(--shadow)}
+.tf{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px}
+.tf div{padding:10px;border-radius:11px;border:1px solid var(--line);background:var(--panel);text-align:center;font:700 .88rem var(--f-m);transition:all .3s}
+.tf div small{display:block;font:400 .74rem var(--f-b);color:var(--muted)}
+.tf div.y{background:var(--acc-soft);border-color:var(--acc);color:var(--acc)}
+.tf div.n{opacity:.5}
+
+/* canales E/S */
+.chan{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.chan div{border-radius:16px;padding:16px;color:#fff;position:relative;overflow:hidden}
+.chan div b{font:800 2.4rem var(--f-m);opacity:.9;display:block;line-height:1}
+.chan div strong{font-family:var(--f-d);font-size:1.1rem}
+.chan div span{display:block;font-size:.86rem;opacity:.9}
+.chan div::after{content:"";position:absolute;right:-20px;bottom:-20px;width:90px;height:90px;border-radius:50%;background:rgba(255,255,255,.12)}
+@media (max-width:620px){.chan{grid-template-columns:minmax(0,1fr)}}
+
+/* árbol de shells */
+.tree{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.fam{border-radius:18px;padding:16px;border:1px solid var(--line);background:var(--panel)}
+.fam h4{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.fam ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.fam li{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-radius:12px;background:var(--panel2);border:1px solid var(--line);transition:transform .25s}
+.fam li:hover{transform:translateX(4px)}
+.fam li code{flex:none;font-weight:700;color:var(--c);background:color-mix(in srgb,var(--c) 12%,transparent);border:0}
+.fam li span{font-size:.9rem;color:var(--muted)}
+@media (max-width:700px){.tree{grid-template-columns:minmax(0,1fr)}}
+
+/* anatomía script */
+.anat{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:16px;align-items:center}
+.anat .code pre div{padding:2px 6px;border-radius:6px;transition:background .25s}
+.anat .code pre div.hl{background:#1f2a37}
+.anat ol{margin:0;padding:0;list-style:none;display:grid;gap:10px}
+.anat li{padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:var(--panel);cursor:default;transition:all .25s}
+.anat li b{font-family:var(--f-m);color:var(--acc)}
+.anat li.hl{border-color:var(--acc);transform:translateX(-4px);box-shadow:var(--shadow)}
+@media (max-width:760px){.anat{grid-template-columns:minmax(0,1fr)}}
+
+/* ── práctica ── */
+.p-hero{padding:44px 0 26px}
+.p-hero h1{font-size:clamp(2rem,4.5vw,3.2rem);font-weight:800;margin:14px 0 10px}
+.datos{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;margin:18px 0}
+.dato{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;gap:8px;box-shadow:var(--shadow)}
+.dato span{font-size:.76rem;color:var(--muted);display:block}
+.dato b{font:700 .92rem var(--f-m);word-break:break-all}
+.dato button{flex:none;border:1px solid var(--line);background:var(--panel2);border-radius:8px;width:32px;height:32px;display:grid;place-items:center}
+.phase{margin:30px 0}
+.phase-h{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+.phase-h .pn{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;font:800 1.1rem var(--f-d);color:#fff;background:var(--c)}
+.phase-h h2{font-size:1.45rem}
+.phase-h .pp{margin-left:auto;font:700 .8rem var(--f-m);color:var(--muted)}
+.step{display:grid;grid-template-columns:auto minmax(0,1fr);gap:14px;padding:14px 16px;border-radius:16px;background:var(--panel);border:1px solid var(--line);margin-bottom:10px;box-shadow:var(--shadow);transition:border-color .3s,background .3s}
+.step.done{border-color:color-mix(in srgb,var(--acc) 45%,transparent);background:color-mix(in srgb,var(--acc) 5%,var(--panel))}
+.step .chk{width:28px;height:28px;border-radius:9px;border:2px solid var(--line);background:var(--panel2);display:grid;place-items:center;margin-top:2px;transition:all .25s}
+.step .chk svg{width:16px;height:16px;stroke:#fff;stroke-width:3.2;fill:none;stroke-dasharray:24;stroke-dashoffset:24;transition:stroke-dashoffset .35s .05s}
+.step.done .chk{background:var(--acc);border-color:var(--acc)}
+.step.done .chk svg{stroke-dashoffset:0}
+.step h4{font-size:1rem;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.step.done h4{text-decoration:line-through;text-decoration-color:color-mix(in srgb,var(--acc) 60%,transparent)}
+.step p{margin:4px 0 0;color:var(--muted);font-size:.93rem}
+.step .code{margin:10px 0 2px}
+.where{font:700 .66rem var(--f-m);letter-spacing:.06em;padding:3px 8px;border-radius:7px;color:#fff;text-decoration:none}
+.w-vb{background:#7a4cc2}.w-win{background:#1a6fd6}.w-xu{background:#0c9a6a}.w-vs{background:#0e7bbd}.w-gh{background:#24292f}
+.ring{width:66px;height:66px;flex:none}
+.ring circle{fill:none;stroke-width:7}
+.ring .bg{stroke:var(--bg2)}.ring .fg{stroke:var(--acc);stroke-linecap:round;transform:rotate(-90deg);transform-origin:center;transition:stroke-dashoffset .6s cubic-bezier(.2,.8,.2,1)}
+.ex-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px}
+.ex{display:flex;flex-direction:column;gap:8px}
+.ex .exn{font:800 .8rem var(--f-m);color:var(--c,var(--acc))}
+.ex h4{font-size:1.02rem;margin:0}
+.ex .cat{position:absolute;top:16px;right:16px}
+.ex .actions{display:flex;gap:8px;margin-top:auto;padding-top:6px;flex-wrap:wrap}
+.filter-row{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 18px}
+.modal{position:fixed;inset:0;z-index:100;display:none;place-items:center;padding:16px;background:rgba(5,8,12,.55);backdrop-filter:blur(6px)}
+.modal.on{display:grid;animation:fade .25s}
+@keyframes fade{from{opacity:0}}
+.modal .box{width:min(860px,100%);max-height:calc(100vh - 32px);overflow:auto;background:var(--panel);border-radius:20px;border:1px solid var(--line);padding:20px;animation:pop .35s cubic-bezier(.3,1.3,.5,1)}
+@keyframes pop{from{transform:scale(.94) translateY(10px);opacity:0}}
+.modal .box h3{font-size:1.3rem;margin-bottom:6px}
+.modal .close{float:right}
+details.qa{background:var(--panel);border:1px solid var(--line);border-radius:14px;margin-bottom:10px;box-shadow:var(--shadow);overflow:hidden}
+details.qa summary{cursor:pointer;padding:14px 16px;font-weight:700;list-style:none;display:flex;gap:10px;align-items:center}
+details.qa summary::-webkit-details-marker{display:none}
+details.qa summary::before{content:"+";width:24px;height:24px;flex:none;border-radius:8px;display:grid;place-items:center;background:var(--acc-soft);color:var(--acc);font:800 1rem var(--f-m);transition:transform .3s}
+details.qa[open] summary::before{transform:rotate(45deg)}
+details.qa .ans{padding:0 16px 14px 50px;color:var(--muted)}
+details.qa .ans p{margin:0 0 8px}
+
+/* ── test ── */
+.t-hero{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:20px;align-items:end;padding:40px 0 20px}
+.t-hero h1{font-size:clamp(2rem,4.5vw,3.2rem);font-weight:800;margin:14px 0 8px}
+.lvlcard{display:flex;gap:14px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:14px 18px;box-shadow:var(--shadow);min-width:280px}
+.lvlcard .badge{width:56px;height:56px;border-radius:16px;display:grid;place-items:center;font-size:1.7rem;background:linear-gradient(135deg,var(--violet),var(--sky));box-shadow:0 10px 24px -10px var(--violet)}
+.lvlcard b{font:800 1.05rem var(--f-d)}
+.lvlcard .xp{height:8px;border-radius:9px;background:var(--bg2);overflow:hidden;margin-top:7px;width:180px}
+.lvlcard .xp i{display:block;height:100%;background:linear-gradient(90deg,var(--violet),var(--sky));transition:width .8s}
+.lvlcard small{color:var(--muted);font-size:.78rem}
+@media (max-width:760px){.t-hero{grid-template-columns:minmax(0,1fr)}}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:8px 0 26px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px 16px;box-shadow:var(--shadow)}
+.kpi b{display:block;font:800 1.7rem/1.1 var(--f-d)}
+.kpi span{font-size:.8rem;color:var(--muted)}
+@media (max-width:700px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.modes{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+.mode{text-align:left;border:1px solid var(--line);background:var(--panel);border-radius:18px;padding:18px;box-shadow:var(--shadow);position:relative;overflow:hidden;transition:transform .3s cubic-bezier(.2,.8,.2,1),box-shadow .3s,border-color .3s}
+.mode::after{content:"";position:absolute;right:-30px;top:-30px;width:110px;height:110px;border-radius:50%;background:color-mix(in srgb,var(--c) 14%,transparent);transition:transform .5s}
+.mode:hover{transform:translateY(-5px);border-color:var(--c);box-shadow:0 20px 40px -18px var(--c)}
+.mode:hover::after{transform:scale(1.6)}
+.mode .mi{font-size:1.7rem}
+.mode h4{font-size:1.1rem;margin:8px 0 4px}
+.mode p{margin:0;font-size:.88rem;color:var(--muted)}
+.mode .mt{display:inline-block;margin-top:10px;font:700 .7rem var(--f-m);color:var(--c)}
+.cfg{display:flex;flex-wrap:wrap;gap:14px;align-items:center;margin:18px 0 8px;padding:14px;border-radius:16px;background:var(--panel);border:1px solid var(--line)}
+.cfg .lbl{font:700 .74rem var(--f-m);letter-spacing:.08em;color:var(--muted);text-transform:uppercase}
+.topics{display:flex;flex-wrap:wrap;gap:8px}
+.tchip{border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:6px 12px;font-size:.84rem;display:flex;gap:7px;align-items:center;transition:all .2s}
+.tchip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.tchip i{font-style:normal;font:700 .7rem var(--f-m);opacity:.65}
+.mastery{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px;margin-top:12px}
+.mrow{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.mrow div{display:flex;justify-content:space-between;font-size:.86rem}
+.mrow .mb{height:7px;border-radius:9px;background:var(--bg2);overflow:hidden;margin-top:6px}
+.mrow .mb i{display:block;height:100%;border-radius:9px;transition:width .8s}
+.qwrap{max-width:820px;margin:26px auto 0}
+.qtop{display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+.qtop .qprog{flex:1;min-width:120px;height:10px;border-radius:9px;background:var(--bg2);overflow:hidden;border:1px solid var(--line)}
+.qtop .qprog i{display:block;height:100%;background:linear-gradient(90deg,var(--acc),var(--sky));transition:width .45s cubic-bezier(.2,.8,.2,1)}
+.qtop .qn{font:700 .85rem var(--f-m);color:var(--muted)}
+.flame{display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;background:var(--panel);border:1px solid var(--line);font:800 .95rem var(--f-m);transition:all .3s}
+.flame .f{display:inline-block;transform-origin:bottom center}
+.flame.hot{background:linear-gradient(135deg,#ff9a3c,#ff3d6e);color:#fff;border-color:transparent;box-shadow:0 8px 24px -8px #ff3d6e}
+.flame.hot .f{animation:flick .5s ease-in-out infinite alternate}
+@keyframes flick{from{transform:scale(1) rotate(-4deg)}to{transform:scale(1.18) rotate(4deg)}}
+.flame.bump{animation:bump .45s cubic-bezier(.3,1.6,.5,1)}
+@keyframes bump{40%{transform:scale(1.3)}}
+.mult{font:800 .8rem var(--f-m);padding:5px 9px;border-radius:9px;background:var(--violet-soft);color:var(--violet)}
+.lives{font-size:1.05rem;letter-spacing:2px}
+.timer{font:800 .95rem var(--f-m);padding:5px 10px;border-radius:9px;background:var(--sky-soft);color:var(--sky)}
+.timer.low{background:var(--rose-soft);color:var(--rose);animation:bump 1s infinite}
+.qcard{background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:24px;box-shadow:0 30px 60px -30px rgba(0,0,0,.35);animation:qin .45s cubic-bezier(.2,.8,.2,1)}
+@keyframes qin{from{opacity:0;transform:translateX(30px) scale(.98)}}
+.qcard.shake{animation:shake .45s}
+@keyframes shake{20%,60%{transform:translateX(-9px)}40%,80%{transform:translateX(9px)}}
+.qmeta{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.lv1{--c:var(--acc)}.lv2{--c:var(--amber)}.lv3{--c:var(--rose)}
+.qcard h3{font-size:clamp(1.15rem,2.4vw,1.45rem);font-weight:700;line-height:1.3}
+.qcard .code{margin:14px 0 0}
+.opts{display:grid;gap:10px;margin-top:18px}
+.opt{display:flex;gap:12px;align-items:center;text-align:left;width:100%;padding:13px 14px;border-radius:14px;border:1.5px solid var(--line);background:var(--panel2);font-size:.98rem;transition:transform .15s,border-color .2s,background .2s}
+.opt:hover:not([disabled]){border-color:var(--sky);transform:translateX(3px)}
+.opt kbd{flex:none;width:28px;height:28px;border-radius:8px;display:grid;place-items:center;background:var(--panel);border:1px solid var(--line);font-weight:700}
+.opt.ok{border-color:var(--acc);background:var(--acc-soft)}
+.opt.ok kbd{background:var(--acc);color:#fff;border-color:var(--acc)}
+.opt.ko{border-color:var(--rose);background:var(--rose-soft)}
+.opt.ko kbd{background:var(--rose);color:#fff;border-color:var(--rose)}
+.opt[disabled]{cursor:default}
+.opt.dim{opacity:.55}
+.fb{margin-top:16px;padding:14px 16px;border-radius:14px;display:flex;gap:12px;animation:qin .35s}
+.fb.ok{background:var(--acc-soft);border:1px solid color-mix(in srgb,var(--acc) 40%,transparent)}
+.fb.ko{background:var(--rose-soft);border:1px solid color-mix(in srgb,var(--rose) 40%,transparent)}
+.fb .fi{font-size:1.4rem}
+.fb b{font-family:var(--f-d)}
+.fb p{margin:2px 0 0}
+.qbar{display:flex;justify-content:space-between;align-items:center;margin-top:16px;gap:10px;flex-wrap:wrap}
+.hint{font-size:.8rem;color:var(--muted)}
+.xpfloat{position:fixed;z-index:200;font:800 1.1rem var(--f-d);color:var(--violet);pointer-events:none;animation:xpf 1s ease-out forwards}
+@keyframes xpf{to{transform:translateY(-60px);opacity:0}}
+.res{max-width:820px;margin:26px auto 0;text-align:center}
+.res .big{position:relative;width:200px;height:200px;margin:0 auto 12px}
+.res .big svg{width:100%;height:100%;transform:rotate(-90deg)}
+.res .big circle{fill:none;stroke-width:14}
+.res .big .bg{stroke:var(--bg2)}
+.res .big .fg{stroke:url(#gradRes);stroke-linecap:round;transition:stroke-dashoffset 1.4s cubic-bezier(.2,.8,.2,1)}
+.res .big div{position:absolute;inset:0;display:grid;place-items:center;align-content:center}
+.res .big b{font:800 3.3rem/1 var(--f-d)}
+.res .big span{font-size:.85rem;color:var(--muted)}
+.res h2{font-size:1.9rem;margin:6px 0}
+.res .kpis{margin:20px 0}
+.rev{text-align:left;margin-top:20px}
+.rev .ri{background:var(--panel);border:1px solid var(--line);border-left:5px solid var(--rose);border-radius:12px;padding:12px 14px;margin-bottom:8px}
+.rev .ri.c{border-left-color:var(--acc)}
+.rev .ri p{margin:4px 0 0;font-size:.9rem;color:var(--muted)}
+.rank{width:100%;border-collapse:collapse;font-size:.92rem}
+.rank td,.rank th{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left}
+.rank tr.me{background:var(--acc-soft)}
+.confetti{position:fixed;top:-12px;z-index:300;width:10px;height:14px;pointer-events:none;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(105vh) rotate(720deg)}}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(120px);z-index:400;background:var(--ink);color:var(--bg);padding:12px 18px;border-radius:14px;font-weight:700;box-shadow:0 20px 40px -10px rgba(0,0,0,.5);transition:transform .45s cubic-bezier(.3,1.4,.5,1);max-width:calc(100vw - 32px)}
+.toast.on{transform:translateX(-50%) translateY(0)}
+.footer{text-align:center;color:var(--muted);font-size:.84rem;padding:40px 16px 90px;border-top:1px solid var(--line);margin-top:40px}
+</style>
+</head>
+<body>
+<script src="../../assets/config.js"></script>
+<script src="../../assets/claude-shim.js"></script>
+
+<header class="top">
+  <a class="brand" href="#teoria"><span class="logo">&gt;_</span><span class="t">ASO · Tema 2<small>SHELL SCRIPT · BASH</small></span></a>
+  <nav class="tabs" aria-label="Secciones">
+    <span class="pill" id="pill"></span>
+    <a href="#teoria" data-v="teoria"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"/><path d="M8 7h8M8 11h6"/></svg><span>Teoría</span></a>
+    <a href="#practica" data-v="practica"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M7 9l3 3-3 3M13 15h4"/></svg><span>Práctica</span></a>
+    <a href="#test" data-v="test"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9"/></svg><span>Test</span></a>
+  </nav>
+  <div class="tools">
+    <span class="chip-streak" id="dayStreak" title="Días seguidos estudiando">🔥 <span id="dsN">0</span> <b>días</b></span>
+    <button class="icon-btn" id="themeBtn" aria-label="Cambiar tema claro/oscuro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
+  </div>
+</header>
+
+<!-- ═════════════════════════ TEORÍA ═════════════════════════ -->
+<section class="view" id="v-teoria">
+<div class="container">
+  <div class="hero">
+    <div>
+      <span class="eyebrow"><i></i> RA7 · Lenguajes de guiones</span>
+      <h1>Automatiza el sistema con <span class="grad">Shell Script</span></h1>
+      <p class="lead">Todo el Tema 2 de ASO explicado con esquemas, tarjetas, posits y laboratorios interactivos: desde el primer <code>#!/bin/bash</code> hasta funciones, arrays y menús.</p>
+      <div class="hero-stats">
+        <div><b>15</b><span>bloques de teoría</span></div>
+        <div><b>23</b><span>ejercicios resueltos</span></div>
+        <div><b id="nQ">0</b><span>preguntas de test</span></div>
+      </div>
+    </div>
+    <div class="termwin" aria-hidden="true">
+      <div class="bar"><i></i><i></i><i></i><span>profesoru@SHELLMV5XU2440: ~/aso_sh_40_clemente_j</span></div>
+      <pre id="typer"></pre>
+    </div>
+  </div>
+
+  <div class="mobile-toc" id="mtoc"></div>
+  <div class="layout">
+    <aside class="toc" id="toc"><h4>Índice</h4><nav id="tocNav"></nav><div class="prog">Has leído <b id="readN">0</b> de 15<div class="bar"><i id="readBar"></i></div></div></aside>
+    <div id="theory">
+
+<!-- 1 · SHELLS -->
+<section class="sec" id="t-shells" data-title="Intérpretes de comandos" style="--c:#0c9a6a">
+  <div class="sec-head rv"><div class="sec-num">01</div><div><h2>Intérpretes de comandos (shells)</h2><p>Qué es una shell, qué familias existen y por qué trabajamos con Bash.</p></div></div>
+  <p class="rv">Una <b>shell</b> o intérprete de comandos es el programa que lee lo que escribes, lo interpreta y le pide al sistema operativo que lo ejecute. El <b>terminal</b> es solo la ventana: le pasa las órdenes a la shell.</p>
+  <div class="diagram rv">
+    <svg viewBox="0 0 760 250" role="img" aria-label="Usuario, terminal, shell, comandos y scripts, sistema operativo">
+      <defs><marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="var(--muted)"/></marker></defs>
+      <g class="node"><rect x="10" y="95" width="110" height="60" rx="14" fill="var(--sky-soft)" stroke="var(--sky)"/><text x="65" y="122" text-anchor="middle" class="svg-t" fill="var(--sky)" font-size="15">USUARIO</text><text x="65" y="142" text-anchor="middle" font-size="18">🧑‍💻</text></g>
+      <path d="M122 125H160" stroke="var(--muted)" stroke-width="2" class="flow" marker-end="url(#ar)"/>
+      <g><rect x="165" y="80" width="140" height="90" rx="14" fill="var(--panel2)" stroke="var(--line)"/><text x="235" y="113" text-anchor="middle" class="svg-t" fill="var(--ink)" font-size="15">TERMINAL</text><text x="235" y="135" text-anchor="middle" class="svg-m" fill="var(--muted)" font-size="10.5">Xfce Terminal</text><text x="235" y="151" text-anchor="middle" class="svg-m" fill="var(--muted)" font-size="10.5">Windows Terminal…</text></g>
+      <path d="M307 125H345" stroke="var(--muted)" stroke-width="2" class="flow" marker-end="url(#ar)"/>
+      <g class="pulse"><rect x="350" y="70" width="150" height="110" rx="16" fill="var(--acc-soft)" stroke="var(--acc)" stroke-width="2"/><text x="425" y="108" text-anchor="middle" class="svg-t" fill="var(--acc)" font-size="16">SHELL</text><text x="425" y="128" text-anchor="middle" class="svg-m" fill="var(--ink)" font-size="11">intérprete</text><text x="425" y="152" text-anchor="middle" class="svg-m" fill="var(--muted)" font-size="11">sh · bash · zsh</text></g>
+      <path d="M502 105L560 60" stroke="var(--muted)" stroke-width="2" class="flow" marker-end="url(#ar)"/>
+      <path d="M502 145L560 190" stroke="var(--muted)" stroke-width="2" class="flow" marker-end="url(#ar)"/>
+      <rect x="563" y="30" width="110" height="56" rx="12" fill="var(--amber-soft)" stroke="var(--amber)"/><text x="618" y="55" text-anchor="middle" class="svg-t" fill="var(--amber)" font-size="13">COMANDOS</text><text x="618" y="73" text-anchor="middle" class="svg-m" fill="var(--muted)" font-size="10">ls · cd · mkdir</text>
+      <rect x="563" y="165" width="110" height="56" rx="12" fill="var(--violet-soft)" stroke="var(--violet)"/><text x="618" y="190" text-anchor="middle" class="svg-t" fill="var(--violet)" font-size="13">SCRIPTS</text><text x="618" y="208" text-anchor="middle" class="svg-m" fill="var(--muted)" font-size="10">ficheros .sh</text>
+      <path d="M675 58Q740 58 740 110" stroke="var(--muted)" stroke-width="2" fill="none" class="flow"/>
+      <path d="M675 193Q740 193 740 140" stroke="var(--muted)" stroke-width="2" fill="none" class="flow"/>
+      <rect x="700" y="110" width="56" height="30" rx="8" fill="var(--ink)"/><text x="728" y="130" text-anchor="middle" class="svg-t" fill="var(--bg)" font-size="12">S.O.</text>
+    </svg>
+    <div class="cap">El terminal no ejecuta nada: le pasa las órdenes a la shell, que habla con el sistema operativo.</div>
+  </div>
+
+  <h3 class="rv">Dos familias de shells</h3>
+  <div class="tree rv">
+    <div class="fam" style="--c:var(--acc)"><h4>Tipo Bourne <span class="tag">la base de todo</span></h4><ul>
+      <li><code>sh</code><span><b>Bourne Shell</b>: la shell original de Unix.</span></li>
+      <li><code>dash</code><span><b>Debian Almquist Shell</b>: ligera y rápida. Es <code>/bin/sh</code> en Ubuntu.</span></li>
+      <li><code>bash</code><span><b>Bourne Again Shell</b> (GNU): la que usamos, con muchas extensiones.</span></li>
+      <li><code>ksh</code><span><b>Korn Shell</b>: amplía la Bourne Shell.</span></li>
+      <li><code>zsh</code><span><b>Z Shell</b>: autocompletado avanzado y mucha personalización.</span></li></ul></div>
+    <div class="fam" style="--c:var(--violet)"><h4>Tipo C <span class="tag" style="--c:var(--violet)">sintaxis tipo C</span></h4><ul>
+      <li><code>csh</code><span><b>C Shell</b>: su sintaxis se parece al lenguaje C.</span></li>
+      <li><code>tcsh</code><span><b>TENEX C Shell</b>: csh con mejor edición de la línea de comandos.</span></li></ul>
+      <div class="note info" style="margin-top:14px"><div class="ni">i</div><p><b>POSIX</b> es el estándar que unifica cómo deben comportarse las shells. Se basa en la sintaxis de la Bourne Shell.</p></div></div>
+  </div>
+
+  <div class="postits rv" style="margin-top:22px">
+    <div class="postit">Zsh es la shell por defecto en macOS desde Catalina (2019) 🍎<small>Curiosidad de los apuntes.</small></div>
+    <div class="postit pink">¡sh NO es siempre Bash!<small>En Ubuntu <code>/bin/sh</code> apunta a <b>dash</b>.</small></div>
+    <div class="postit blue">Bash: Brian Fox, proyecto GNU, licencia GPL<small>Bourne-Again SHell, compatible con sh.</small></div>
+  </div>
+
+  <h3 class="rv">Comandos para investigar tu sistema</h3>
+  <div class="grid g2 rv">
+    <div><div class="code" data-fn="terminal"><pre>ls -l /bin/sh
+# lrwxrwxrwx ... /bin/sh -&gt; dash</pre></div></div>
+    <div><div class="code" data-fn="terminal"><pre>cat /etc/shells
+# /bin/sh /bin/bash /bin/rbash /bin/dash ...</pre></div></div>
+  </div>
+</section>
+
+<!-- 2 · BASH VS SH -->
+<section class="sec" id="t-bash" data-title="Bash frente a sh" style="--c:#1a6fd6">
+  <div class="sec-head rv"><div class="sec-num">02</div><div><h2>Bash frente a sh</h2><p>Bash ≈ sh + muchas extensiones. Más cómoda, pero menos portable.</p></div></div>
+  <div class="grid g2 rv">
+    <div class="card" style="--c:var(--acc)"><div class="ic">🚀</div><h4>Bash</h4><p>Tiene más funciones: arrays, <code>[[ ]]</code>, <code>for (( ))</code>, <code>{1..10}</code>, <code>read -p</code>, historial, autocompletado y control de trabajos. Facilita los scripts avanzados.</p></div>
+    <div class="card" style="--c:var(--sky)"><div class="ic">📦</div><h4>sh (POSIX)</h4><p>Su sintaxis está más estandarizada y es más portable entre sistemas POSIX. En Ubuntu es <b>dash</b>, que es más rápida pero no tiene las extensiones de Bash.</p></div>
+  </div>
+  <div class="note warn rv"><div class="ni">!</div><p><b class="t">Regla de oro</b>Un script POSIX funciona en Bash, pero un script con extensiones de Bash <b>puede fallar</b> en sh.</p></div>
+  <div class="grid g2 rv">
+    <div class="code" data-fn="solo Bash · for aritmético"><pre>for ((i=0; i&lt;4; i++))
+do
+    echo "$i"
+done</pre></div>
+    <div class="code" data-fn="solo Bash · array asociativo"><pre>#!/bin/bash
+declare -A notas=([Ana]=10 [Alberto]=9)
+echo "${notas[Ana]}"</pre></div>
+  </div>
+  <p class="rv">Bash ofrece edición de la línea de comandos, historial, control de trabajos, funciones y alias, variables y estructuras de control, arrays y operaciones aritméticas. Manual oficial: <a href="https://www.gnu.org/software/bash/manual/html_node/index.html" target="_blank" rel="noopener">gnu.org/software/bash/manual</a>.</p>
+</section>
+
+<!-- 3 · VENTAJAS -->
+<section class="sec" id="t-ventajas" data-title="Ventajas de los scripts" style="--c:#c76a05">
+  <div class="sec-head rv"><div class="sec-num">03</div><div><h2>¿Por qué usar Shell Scripts?</h2><p>Un script es un fichero de texto con una secuencia de órdenes que la shell ejecuta una tras otra.</p></div></div>
+  <div class="grid g3 rv" id="ventajas"></div>
+</section>
+
+<!-- 4 · PRIMER SCRIPT -->
+<section class="sec" id="t-primer" data-title="Primer script" style="--c:#6a48d6">
+  <div class="sec-head rv"><div class="sec-num">04</div><div><h2>Crear y ejecutar tu primer script</h2><p>Anatomía de un script, permisos y las dos formas de ejecutarlo.</p></div></div>
+  <div class="anat rv">
+    <div class="code" data-fn="ej00a_saludo.sh" data-nohl><pre><div data-a="0"><span class="k-sb">#!/bin/bash</span></div><div data-a="1"><span class="k-kw">echo</span> <span class="k-str">"Hola a todos y a todas!"</span></div><div data-a="2"><span class="k-kw">exit</span> <span class="k-num">0</span></div></pre></div>
+    <ol>
+      <li data-a="0"><b>#!/bin/bash</b> · el <b>shebang</b>: indica qué intérprete ejecuta el fichero cuando lo lanzas con <code>./</code>.</li>
+      <li data-a="1"><b>echo</b> · muestra el mensaje por la salida estándar.</li>
+      <li data-a="2"><b>exit 0</b> · termina el script indicando que todo ha ido bien.</li>
+    </ol>
+  </div>
+  <h3 class="rv">Paso a paso</h3>
+  <div class="code rv" data-fn="terminal Xubuntu"><pre>mkdir -p ~/aso_sh_40_clemente_j/      # 1. carpeta de trabajo
+cd ~/aso_sh_40_clemente_j/
+geany ej00a_saludo.sh &amp;               # 2. editar (&amp; = segundo plano)
+ls -l ej00a_saludo.sh                 # 3. -rw-rw-r--  (sin x)
+bash ej00a_saludo.sh                  # 4. funciona: solo necesita permiso r
+./ej00a_saludo.sh                     #    Permiso denegado
+chmod +x ej00a_saludo.sh              # 5. dar permiso de ejecución
+./ej00a_saludo.sh                     # 6. ahora sí</pre></div>
+
+  <div class="lab rv" id="labExec">
+    <h4>Simulador: ¿qué pasa al ejecutar?</h4>
+    <div class="row"><span class="seg" id="exPerm"><button aria-pressed="true" data-v="0">Sin permiso x</button><button aria-pressed="false" data-v="1">Con chmod +x</button></span>
+      <span class="seg" id="exSheb"><button aria-pressed="true" data-v="bash">#!/bin/bash</button><button aria-pressed="false" data-v="sh">#!/bin/sh</button></span>
+      <span class="seg" id="exBody"><button aria-pressed="true" data-v="echo">echo simple</button><button aria-pressed="false" data-v="for">for ((…))</button></span></div>
+    <div class="row"><button class="btn sm" data-run="bash">bash script.sh</button><button class="btn sm" data-run="sh">sh script.sh</button><button class="btn sm" data-run="name">script.sh</button><button class="btn sm" data-run="dot">./script.sh</button></div>
+    <div class="term-out" id="exOut"><span class="d"># Elige permisos, shebang y contenido, y pulsa una forma de ejecutar</span></div>
+  </div>
+
+  <div class="vs rv">
+    <div class="ok"><h5>bash script.sh</h5><p style="margin:0;font-size:.92rem">Tú eliges el intérprete. Solo hace falta permiso de <b>lectura</b>. El shebang no se tiene en cuenta.</p></div>
+    <div class="ok" style="--acc:var(--violet)"><h5 style="color:var(--violet)">./script.sh</h5><p style="margin:0;font-size:.92rem">Se ejecuta como un programa: hace falta permiso <b>x</b> y usa el intérprete del <b>shebang</b>.</p></div>
+  </div>
+  <div class="note info rv"><div class="ni">$</div><p><b class="t">¿Por qué no basta con «script.sh»?</b>La shell busca los comandos en los directorios de <code>$PATH</code> (<code>/usr/bin</code>, <code>/bin</code>…). El directorio actual no está en el PATH por seguridad, así que hay que escribir <code>./</code>. Si copiaras el script a <code>/usr/bin</code>, funcionaría escribiendo solo su nombre.</p></div>
+
+  <h3 class="rv">Los 3 experimentos de los apuntes</h3>
+  <div class="grid g3 rv">
+    <div class="card hov" style="--c:var(--acc)"><span class="tag">ej00b</span><h4 style="margin-top:8px">#!/bin/sh + echo</h4><p>Funciona: el echo es compatible con dash.</p></div>
+    <div class="card hov" style="--c:var(--rose)"><span class="tag">ej00c</span><h4 style="margin-top:8px">#!/bin/sh + for ((…))</h4><p><b>Falla</b>: dash no entiende el for aritmético. Sale <code>Syntax error: Bad for loop variable</code>.</p></div>
+    <div class="card hov" style="--c:var(--acc)"><span class="tag">ej00d</span><h4 style="margin-top:8px">#!/bin/bash + for ((…))</h4><p>Funciona: muestra 0 1 2 3.</p></div>
+  </div>
+
+  <h3 class="rv">Mi primer Bash con parámetro</h3>
+  <div class="code rv" data-fn="ej01_miPrimerBash.sh"><pre>#!/bin/bash
+clear
+echo "¡Hola! Soy un script que solo limpia la pantalla."
+echo "Bueno, también voy a hacer un ls de tu directorio personal."
+echo "--- Empieza el ls ---"
+ls ~
+echo "--- Termina el ls ---"
+echo "Terminando... by $1."
+exit 0</pre></div>
+  <div class="out rv">$ ./ej01_miPrimerBash.sh Alberto
+...
+Terminando... by Alberto.</div>
+  <div class="postits rv"><div class="postit orange">CRLF ≠ LF<small>Si editas en Windows y sale <code>/bin/bash^M: intérprete erróneo</code>, cambia el fin de línea a <b>LF</b> y la codificación a <b>UTF-8</b>.</small></div><div class="postit green">No edites en carpetas compartidas<small>Trabaja directamente sobre ficheros de la MV.</small></div></div>
+</section>
+
+<!-- 5 · SINTAXIS -->
+<section class="sec" id="t-sintaxis" data-title="Sintaxis y exit" style="--c:#d93b55">
+  <div class="sec-head rv"><div class="sec-num">05</div><div><h2>Sintaxis: mayúsculas, espacios y códigos de salida</h2><p>Los fallos más típicos del principio.</p></div></div>
+  <div class="grid g3 rv">
+    <div class="card" style="--c:var(--rose)"><div class="ic">Aa</div><h4>Distingue mayúsculas</h4><p><code>miPrimerBash.sh</code> y <code>miprimerbash.sh</code> son ficheros distintos, y <code>nombre</code>, <code>Nombre</code> y <code>NOMBRE</code> son tres variables distintas.</p></div>
+    <div class="card" style="--c:var(--amber)"><div class="ic">␣</div><h4>Los espacios importan</h4><p>Nada de espacios alrededor del <code>=</code> al asignar, y siempre espacios dentro de <code>[ ]</code>.</p></div>
+    <div class="card" style="--c:var(--sky)"><div class="ic">↺</div><h4>Los errores no paran el script</h4><p>Bash muestra el error y <b>sigue</b> con la orden siguiente. Comprueba siempre los resultados.</p></div>
+  </div>
+  <div class="vs rv" style="margin-top:14px">
+    <div class="ok"><h5>✓ BIEN</h5><code>miVar="fichero1.txt"</code><code>if [ "$miVar" == "directorio1" ]</code></div>
+    <div class="ko"><h5>✗ MAL</h5><code>miVar = "fichero2.txt"   # miVar: orden no encontrada</code><code>if ["$miVar" == "directorio1" ]</code></div>
+  </div>
+  <h3 class="rv">Códigos de salida y <code>$?</code></h3>
+  <div class="grid g2 rv">
+    <div><p>Todo comando devuelve un número al terminar:</p>
+      <div class="tf"><div class="y">0<small>éxito</small></div><div style="border-color:var(--rose);color:var(--rose)">≠ 0<small>error u otra situación</small></div></div>
+      <p style="margin-top:12px"><code>exit 0</code> termina el script bien y <code>exit 1</code> indica un error genérico. <code>$?</code> guarda el código del <b>último</b> comando, así que hay que consultarlo justo después.</p></div>
+    <div class="lab" style="margin:0"><h4>Prueba $?</h4>
+      <div class="row"><button class="btn sm" data-ec="ls ~|0">ls ~</button><button class="btn sm" data-ec="ls directorio_inventado|2">ls directorio_inventado</button><button class="btn sm" data-ec="true|0">true</button><button class="btn sm" data-ec="false|1">false</button><button class="btn sm" data-ec="noexiste|127">noexiste</button></div>
+      <div class="term-out" id="ecOut"><span class="p">$</span> echo $?</div></div>
+  </div>
+  <div class="code rv" data-fn="ej05i_comandos.sh"><pre>#!/bin/bash
+ls directorio_inventado
+resultado=$?            # ¡guardarlo enseguida!
+if [ "$resultado" -eq 0 ]
+then
+    echo "La operación ha terminado correctamente."
+else
+    echo "Se ha producido un error."
+fi
+exit 0</pre></div>
+</section>
+
+<!-- 6 · CARACTERES ESPECIALES -->
+<section class="sec" id="t-especiales" data-title="Caracteres especiales" style="--c:#0e7bbd">
+  <div class="sec-head rv"><div class="sec-num">06</div><div><h2>Caracteres especiales</h2><p>Pasa el ratón (o toca) cada tarjeta para darle la vuelta.</p></div></div>
+  <div class="flips rv" id="flips"></div>
+  <div class="note bad rv"><div class="ni">!</div><p><b class="t">No confundas</b><code>. funciones.sh</code> <b>incluye</b> el código en la shell actual (como un import), mientras que <code>./funciones.sh</code> lo <b>ejecuta</b> en otro proceso. Lo verás en el e04.</p></div>
+  <div class="grid g2 rv">
+    <div class="code" data-fn="sustitución de comandos"><pre>fecha=$(date)     # recomendada
+fecha=`date`      # antigua, también vale
+echo "$fecha"</pre></div>
+    <div class="code" data-fn="aritmética y llaves"><pre>echo $((5+1))           # 6
+num=5; echo $((num+1))  # 6
+echo fichero{1..5}.txt  # fichero1.txt ... fichero5.txt</pre></div>
+  </div>
+</section>
+
+<!-- 7 · VARIABLES -->
+<section class="sec" id="t-variables" data-title="Variables" style="--c:#0c9a6a">
+  <div class="sec-head rv"><div class="sec-num">07</div><div><h2>Variables</h2><p>Sin tipos, sin declarar y sin espacios alrededor del <code>=</code>.</p></div></div>
+  <div class="grid g2 rv">
+    <div class="code" data-fn="crear y usar"><pre>nombre="Alberto"
+num=10
+mensaje="Hola a todos"   # con espacios → comillas
+echo "$nombre"
+fecha=$(date)            # salida de un comando
+otroNombre=$nombre       # copiar otra variable
+miVariable1=             # vacía
+miVariable2=""           # vacía
+unset miVariable1        # eliminar</pre></div>
+    <div><div class="tf" style="grid-template-columns:repeat(2,minmax(0,1fr))">
+      <div class="y">Cadenas<small>por defecto todo es texto</small></div><div class="y">Enteros<small>con $(( ))</small></div>
+      <div class="n">Reales<small>no nativos → usa bc</small></div><div class="n">Booleanos<small>no existen: true y false son comandos</small></div></div>
+      <div class="note warn" style="margin-top:12px"><div class="ni">!</div><p>Bash no tiene constantes clásicas. <code>readonly VAR=valor</code> impide modificarla después. <code>set</code> sin argumentos lista todas las variables y funciones.</p></div></div>
+  </div>
+
+  <h3 class="rv">Ámbito: global, <code>local</code> y <code>export</code> <span class="tag" style="--c:var(--rose)">MUY IMPORTANTE</span></h3>
+  <div class="diagram rv">
+    <svg viewBox="0 0 760 230" role="img" aria-label="Ámbito de variables">
+      <rect x="10" y="10" width="740" height="210" rx="18" fill="var(--sky-soft)" stroke="var(--sky)" stroke-dasharray="6 5"/>
+      <text x="30" y="38" class="svg-t" fill="var(--sky)" font-size="14">PROCESO PADRE (tu script)</text>
+      <text x="30" y="60" class="svg-m" fill="var(--ink)" font-size="12">x="hola"        → global en el script</text>
+      <text x="30" y="80" class="svg-m" fill="var(--ink)" font-size="12">export G="valor" → también la ven los hijos</text>
+      <rect x="30" y="100" width="320" height="104" rx="14" fill="var(--panel)" stroke="var(--violet)"/>
+      <text x="48" y="126" class="svg-t" fill="var(--violet)" font-size="13">function miFuncion()</text>
+      <text x="48" y="150" class="svg-m" fill="var(--ink)" font-size="12">local l="solo aquí"</text>
+      <text x="48" y="172" class="svg-m" fill="var(--ink)" font-size="12">y="sin local → GLOBAL"</text>
+      <text x="48" y="192" class="svg-m" fill="var(--muted)" font-size="11">fuera: $l vacía · $y visible</text>
+      <path d="M352 150H420" stroke="var(--acc)" stroke-width="2.5" class="flow"/>
+      <rect x="425" y="100" width="305" height="104" rx="14" fill="var(--acc-soft)" stroke="var(--acc)"/>
+      <text x="443" y="126" class="svg-t" fill="var(--acc)" font-size="13">PROCESO HIJO (./otro.sh)</text>
+      <text x="443" y="150" class="svg-m" fill="var(--ink)" font-size="12">$G → "valor" ✓ (exportada)</text>
+      <text x="443" y="172" class="svg-m" fill="var(--ink)" font-size="12">$x → vacía ✗ (no exportada)</text>
+      <text x="443" y="192" class="svg-m" fill="var(--muted)" font-size="11">los hijos solo heredan lo exportado</text>
+    </svg>
+  </div>
+  <div class="postits rv"><div class="postit">local solo vale dentro de funciones<small>Fuera, Bash da el error «local: sólo se puede usar en una función».</small></div><div class="postit pink">Sin local = GLOBAL<small>Una variable creada dentro de una función se ve fuera (ejercicio e21).</small></div></div>
+
+  <h3 class="rv">Variables de entorno y especiales</h3>
+  <div class="tscroll rv"><table class="tbl"><thead><tr><th>Variable</th><th>Contenido</th><th>Ejemplo</th></tr></thead><tbody>
+    <tr><td><code>$HOME</code></td><td>Directorio personal</td><td><code>/home/profesoru</code></td></tr>
+    <tr><td><code>$PATH</code></td><td>Directorios donde se buscan los ejecutables</td><td><code>/usr/local/bin:/usr/bin:/bin…</code></td></tr>
+    <tr><td><code>$PWD</code></td><td>Directorio de trabajo actual</td><td><code>/home/profesoru/aso_sh_40_clemente_j</code></td></tr>
+    <tr><td><code>$UID</code></td><td>Identificador numérico del usuario</td><td><code>1000</code></td></tr>
+    <tr><td><code>$USER</code> / <code>$LOGNAME</code></td><td>Nombre de usuario / de inicio de sesión</td><td><code>profesoru</code></td></tr>
+    <tr><td><code>$HOSTNAME</code></td><td>Nombre del equipo</td><td><code>SHELLMV5XU2440</code></td></tr>
+    <tr><td><code>$?</code></td><td>Código de salida del último comando</td><td><code>0</code></td></tr>
+    <tr><td><code>$!</code></td><td>PID del último proceso en segundo plano</td><td><code>4321</code></td></tr>
+  </tbody></table></div>
+  <div class="note info rv"><div class="ni">i</div><p><code>$?</code> y <code>$!</code> no son variables de entorno: son <b>parámetros especiales</b> de Bash. Las variables de entorno solo las heredan los hijos si están exportadas.</p></div>
+
+  <h3 class="rv">Expansión de llaves y de parámetros</h3>
+  <div class="grid g2 rv">
+    <div class="code" data-fn="expansión de llaves"><pre>echo {2..8}          # 2 3 4 5 6 7 8
+echo {a..d}          # a b c d
+echo fichero{1..3}.txt
+echo "{f..a}"        # con comillas NO se expande</pre></div>
+    <div class="code" data-fn="expansión de parámetros"><pre>nombre="Alberto"
+echo "${nombre}"         # Alberto
+echo "${nombre}Montoro"  # AlbertoMontoro
+echo "$nombreMontoro"    # (vacío: otra variable)</pre></div>
+  </div>
+</section>
+
+<!-- 8 · E/S -->
+<section class="sec" id="t-es" data-title="Entrada, salida y comillas" style="--c:#c76a05">
+  <div class="sec-head rv"><div class="sec-num">08</div><div><h2>Entrada, salida y comillas</h2><p>echo, printf, read y los tres canales estándar.</p></div></div>
+  <div class="chan rv">
+    <div style="background:linear-gradient(135deg,#1a6fd6,#0e4a94)"><b>0</b><strong>STDIN</strong><span>Entrada estándar (teclado, un fichero u otro comando)</span></div>
+    <div style="background:linear-gradient(135deg,#0c9a6a,#086245)"><b>1</b><strong>STDOUT</strong><span>Salida estándar (el terminal)</span></div>
+    <div style="background:linear-gradient(135deg,#d93b55,#951f33)"><b>2</b><strong>STDERR</strong><span>Salida de error (también el terminal)</span></div>
+  </div>
+  <div class="grid g2 rv" style="margin-top:14px">
+    <div class="code" data-fn="salida: echo y printf"><pre>echo mensaje con espacios
+echo "Mensaje con $variable"
+echo -n "Sin salto de línea"
+echo -e "Línea1\nLínea2"     # interpreta \n
+printf "Hola, %s\n" "$nombre"
+printf "Nombre: %s | Edad: %d\n" "$nombre" "$edad"</pre></div>
+    <div class="code" data-fn="entrada: read"><pre>read variable                # espera a Intro
+read v1 v2                   # la última se queda el resto
+read -p "Dame tu edad: " edad   # con mensaje (Bash)
+
+# ej02a_ent_sal.sh
+echo "¿Cómo te llamas?"
+read nombre
+echo "Hola, $nombre"</pre></div>
+  </div>
+
+  <div class="lab rv" id="labQuotes">
+    <h4>Laboratorio de comillas</h4>
+    <div class="row"><label for="qVal">nombre=</label><input type="text" id="qVal" value="Ana López"></div>
+    <div class="term-out" id="qOut"></div>
+  </div>
+
+  <div class="lab rv" id="labRead">
+    <h4>¿Cómo reparte read las palabras?</h4>
+    <div class="row"><label>El usuario escribe:</label><input type="text" id="rIn" value="uno dos tres cuatro"></div>
+    <div class="row"><span class="seg" id="rVars"><button aria-pressed="false" data-v="1">read a</button><button aria-pressed="true" data-v="2">read a b</button><button aria-pressed="false" data-v="3">read a b c</button><button aria-pressed="false" data-v="4">read a b c d e</button></span></div>
+    <div class="params" id="rOut"></div>
+  </div>
+  <div class="tscroll rv"><table class="tbl"><thead><tr><th>Comillas</th><th>¿Expande $var?</th><th>¿Ejecuta $(cmd)?</th><th>Uso</th></tr></thead><tbody>
+    <tr><td><code>"dobles"</code></td><td>✅ Sí</td><td>✅ Sí</td><td>Agrupan los espacios y expanden. Las que más se usan.</td></tr>
+    <tr><td><code>'simples'</code></td><td>❌ No</td><td>❌ No</td><td>Texto literal, tal cual.</td></tr>
+    <tr><td><code>`invertidas`</code></td><td>—</td><td>✅ Ejecutan</td><td>Sustitución de comandos antigua → mejor <code>$( )</code>.</td></tr>
+  </tbody></table></div>
+</section>
+
+<!-- 9 · PARÁMETROS -->
+<section class="sec" id="t-param" data-title="Parámetros" style="--c:#6a48d6">
+  <div class="sec-head rv"><div class="sec-num">09</div><div><h2>Parámetros de entrada</h2><p>Datos que se pasan al <b>lanzar</b> el script, no mientras se ejecuta.</p></div></div>
+  <div class="tscroll rv"><table class="tbl" style="--c:var(--violet)"><thead><tr><th>Variable</th><th>Significado</th></tr></thead><tbody>
+    <tr><td><code>$0</code></td><td>Nombre o ruta con la que se ejecutó el script</td></tr>
+    <tr><td><code>$1 … $9</code></td><td>Parámetros 1 al 9</td></tr>
+    <tr><td><code>${10}</code></td><td>Del décimo en adelante, con llaves (<code>$10</code> sería <code>$1</code> seguido de un 0)</td></tr>
+    <tr><td><code>$#</code></td><td>Número de parámetros, sin contar <code>$0</code></td></tr>
+    <tr><td><code>"$*"</code></td><td>Todos los parámetros en <b>una sola</b> cadena</td></tr>
+    <tr><td><code>"$@"</code></td><td>Todos, pero cada uno como argumento <b>independiente</b></td></tr>
+    <tr><td><code>$$</code></td><td>PID de la shell que ejecuta el script</td></tr>
+  </tbody></table></div>
+  <div class="lab rv" id="labShift">
+    <h4>Simulador de <code>shift</code></h4>
+    <div class="row"><label>./ej03b_parametros.sh</label><input type="text" id="shIn" value='aa bb cc dd "e e" &apos;f f&apos;'><button class="btn sm" id="shLoad">Cargar</button></div>
+    <div class="params" id="shParams"></div>
+    <div class="row" style="margin-top:10px"><button class="btn pri sm" id="shBtn">shift</button><span class="term-out" id="shInfo" style="flex:1"></span></div>
+  </div>
+  <div class="code rv" data-fn="ej03b_parametros.sh"><pre>#!/bin/bash
+echo "Parámetros uno a uno:"
+while [ "$#" -gt 0 ]
+do
+    echo "$1"
+    shift          # $2→$1, $3→$2 ... y $# baja en 1
+done
+echo "Ya no quedan parámetros."
+exit 0</pre></div>
+  <div class="postits rv"><div class="postit blue">"a b" = 1 parámetro<small><code>./s.sh "esto es un parametro"</code> → $# = 1<br><code>./s.sh esto son 4 parametros</code> → $# = 4</small></div><div class="postit">$1 ≠ read<small>Un parámetro se pasa al lanzar el script; read pide el dato por teclado.</small></div></div>
+</section>
+
+<!-- 10 · ARITMÉTICA -->
+<section class="sec" id="t-arit" data-title="Aritmética y bc" style="--c:#c76a05">
+  <div class="sec-head rv"><div class="sec-num">10</div><div><h2>Operaciones aritméticas</h2><p>Bash opera con <b>enteros</b>; para los decimales se usa <b>bc</b>.</p></div></div>
+  <div class="grid g2 rv">
+    <div class="code" data-fn="ej04a_enteros.sh"><pre>num1=10; num2=3
+suma=$((num1 + num2))            # 13
+resta=$((num1 - num2))           # 7
+multiplicacion=$((num1 * num2))  # 30
+division=$((num1 / num2))        # 3  (entera)
+resto=$((num1 % num2))           # 1
+miContador=$((miContador + 1))</pre></div>
+    <div class="code" data-fn="ej04b_reales.sh"><pre>num1=10.5; num2=3.2
+suma=$(echo "$num1 + $num2" | bc)
+division=$(echo "scale=2; $num1 / $num2" | bc)  # 3.28
+pi=$(echo "4*a(1)" | bc -l)      # -l: biblioteca matemática
+echo "scale=2; $pi * 2 * 2 / 1" | bc -l   # 12.56</pre></div>
+  </div>
+  <div class="lab rv" id="labCalc">
+    <h4>Calculadora: Bash $(( )) frente a bc</h4>
+    <div class="row"><input type="text" id="cA" value="10" style="max-width:110px" aria-label="Número A"><select id="cOp" style="max-width:80px" aria-label="Operador"><option>/</option><option>+</option><option>-</option><option>*</option><option>%</option></select><input type="text" id="cB" value="3" style="max-width:110px" aria-label="Número B"><label>scale=</label><input type="text" id="cS" value="2" style="max-width:60px" aria-label="scale"></div>
+    <div class="term-out" id="cOut"></div>
+  </div>
+  <div class="postits rv">
+    <div class="postit">Punto, nunca coma<small><code>10.5</code> ✓ · <code>10,5</code> ✗</small></div>
+    <div class="postit pink">No dividas entre 0<small>Bash: «división por 0». bc: «Divide by zero».</small></div>
+    <div class="postit green">scale = decimales<small>Afecta a la división; con <code>bc -l</code> el valor por defecto es 20.</small></div>
+    <div class="postit orange">% con reales = sin sentido<small>El resto se usa solo con enteros.</small></div>
+  </div>
+  <p class="muted rv">También existen <code>let</code> y <code>expr</code>, pero se recomienda <code>$(( ))</code> porque es más claro.</p>
+</section>
+
+<!-- 11 · CONDICIONALES -->
+<section class="sec" id="t-if" data-title="if y test" style="--c:#1a6fd6">
+  <div class="sec-head rv"><div class="sec-num">11</div><div><h2>Condicionales: test e if</h2><p>Tomar decisiones según valores, cadenas o ficheros.</p></div></div>
+  <div class="grid g3 rv">
+    <div class="card hov" style="--c:var(--sky)"><span class="tag">POSIX</span><h4 style="margin-top:8px"><code>test cond</code></h4><p>La forma clásica.</p></div>
+    <div class="card hov" style="--c:var(--sky)"><span class="tag">POSIX</span><h4 style="margin-top:8px"><code>[ cond ]</code></h4><p>Hacen falta espacios después de <code>[</code> y antes de <code>]</code>.</p></div>
+    <div class="card hov" style="--c:var(--violet)"><span class="tag">BASH</span><h4 style="margin-top:8px"><code>[[ cond ]]</code></h4><p>Con extras: <code>&lt;</code> sin escapar y expresiones regulares con <code>=~</code>.</p></div>
+  </div>
+  <div class="diagram rv">
+    <svg viewBox="0 0 760 210" role="img" aria-label="Flujo if elif else">
+      <defs><marker id="ar2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="var(--muted)"/></marker></defs>
+      <polygon points="95,20 170,65 95,110 20,65" fill="var(--sky-soft)" stroke="var(--sky)" stroke-width="2"/><text x="95" y="70" text-anchor="middle" class="svg-m" font-size="12" fill="var(--ink)">cond1</text>
+      <polygon points="335,20 410,65 335,110 260,65" fill="var(--sky-soft)" stroke="var(--sky)" stroke-width="2"/><text x="335" y="70" text-anchor="middle" class="svg-m" font-size="12" fill="var(--ink)">cond2</text>
+      <path d="M170 65H255" stroke="var(--rose)" stroke-width="2" class="flow" marker-end="url(#ar2)"/><text x="212" y="57" text-anchor="middle" class="svg-m" font-size="11" fill="var(--rose)">no · elif</text>
+      <path d="M410 65H495" stroke="var(--rose)" stroke-width="2" class="flow" marker-end="url(#ar2)"/><text x="452" y="57" text-anchor="middle" class="svg-m" font-size="11" fill="var(--rose)">no · else</text>
+      <rect x="500" y="40" width="130" height="50" rx="12" fill="var(--amber-soft)" stroke="var(--amber)"/><text x="565" y="70" text-anchor="middle" class="svg-m" font-size="12" fill="var(--ink)">comandos_defecto</text>
+      <path d="M95 110V145" stroke="var(--acc)" stroke-width="2" class="flow" marker-end="url(#ar2)"/><text x="105" y="133" class="svg-m" font-size="11" fill="var(--acc)">sí</text>
+      <path d="M335 110V145" stroke="var(--acc)" stroke-width="2" class="flow" marker-end="url(#ar2)"/><text x="345" y="133" class="svg-m" font-size="11" fill="var(--acc)">sí</text>
+      <rect x="35" y="150" width="120" height="42" rx="12" fill="var(--acc-soft)" stroke="var(--acc)"/><text x="95" y="176" text-anchor="middle" class="svg-m" font-size="12" fill="var(--ink)">comandos1</text>
+      <rect x="275" y="150" width="120" height="42" rx="12" fill="var(--acc-soft)" stroke="var(--acc)"/><text x="335" y="176" text-anchor="middle" class="svg-m" font-size="12" fill="var(--ink)">comandos2</text>
+      <path d="M155 171H260M395 171H690V90M630 65H690" stroke="var(--muted)" stroke-width="1.5" fill="none" stroke-dasharray="4 4"/>
+      <rect x="650" y="150" width="90" height="42" rx="12" fill="var(--ink)"/><text x="695" y="176" text-anchor="middle" class="svg-t" font-size="14" fill="var(--bg)">fi</text>
+    </svg>
+    <div class="cap">Se ejecuta el bloque de la <b>primera</b> condición que se cumpla; si no se cumple ninguna, el else.</div>
+  </div>
+  <div class="grid g2 rv">
+    <div class="code" data-fn="estructura"><pre>if [ condicion1 ]
+then
+    comandos1
+elif [ condicion2 ]
+then
+    comandos2
+else
+    comandos_por_defecto
+fi</pre></div>
+    <div class="code" data-fn="ej05a_comp_enteros.sh"><pre>read -p "Dame tu edad: " edad
+if [ "$edad" -ge 18 ]; then
+    echo "Puedes votar. Así que hazlo."
+else
+    echo "Aún, pero pronto podrás cambiar el mundo."
+fi</pre></div>
+  </div>
+  <h3 class="rv">Tabla de operadores</h3>
+  <div class="grid g3 rv">
+    <div><table class="tbl" style="--c:var(--sky)"><thead><tr><th colspan="2">Enteros</th></tr></thead><tbody>
+      <tr><td><code>-eq</code></td><td>igual</td></tr><tr><td><code>-ne</code></td><td>distinto</td></tr><tr><td><code>-gt</code></td><td>mayor</td></tr><tr><td><code>-ge</code></td><td>mayor o igual</td></tr><tr><td><code>-lt</code></td><td>menor</td></tr><tr><td><code>-le</code></td><td>menor o igual</td></tr></tbody></table></div>
+    <div><table class="tbl" style="--c:var(--amber)"><thead><tr><th colspan="2">Cadenas</th></tr></thead><tbody>
+      <tr><td><code>=</code> <code>==</code></td><td>iguales</td></tr><tr><td><code>!=</code></td><td>distintas</td></tr><tr><td><code>\&lt;</code> <code>\&gt;</code></td><td>orden alfabético (escapados en <code>[ ]</code>)</td></tr><tr><td><code>-z</code></td><td>vacía</td></tr><tr><td><code>-n</code></td><td>no vacía</td></tr></tbody></table></div>
+    <div><table class="tbl" style="--c:var(--acc)"><thead><tr><th colspan="2">Ficheros</th></tr></thead><tbody>
+      <tr><td><code>-e</code></td><td>existe</td></tr><tr><td><code>-f</code></td><td>fichero regular</td></tr><tr><td><code>-d</code></td><td>directorio</td></tr><tr><td><code>-h</code></td><td>enlace simbólico</td></tr><tr><td><code>-r</code> <code>-w</code> <code>-x</code></td><td>lectura / escritura / ejecución</td></tr></tbody></table></div>
+  </div>
+  <div class="lab rv" id="labFile">
+    <h4>Explorador de tests de ficheros</h4>
+    <div class="row"><span class="seg" id="fSel"><button aria-pressed="true" data-v="f">notas.txt (rw-)</button><button aria-pressed="false" data-v="x">script.sh (rwx)</button><button aria-pressed="false" data-v="d">prueba1/</button><button aria-pressed="false" data-v="l">enlace → notas.txt</button><button aria-pressed="false" data-v="n">noexiste</button></span></div>
+    <div class="tf" id="fOut"></div>
+  </div>
+  <h3 class="rv">Reales: compara con bc</h3>
+  <div class="code rv" data-fn="ej05b_comp_reales.sh"><pre>n1=2.3456; n2=9.875
+if [ "$(echo "$n1 == $n2" | bc)" -ne 0 ]; then
+    echo "$n1 es igual a $n2"
+elif [ "$(echo "$n1 &lt; $n2" | bc)" -ne 0 ]; then
+    echo "$n1 es menor que $n2"
+else
+    echo "$n1 es mayor que $n2"
+fi</pre></div>
+  <div class="note tip rv"><div class="ni">✓</div><p>bc devuelve <b>1</b> si la comparación es cierta y <b>0</b> si es falsa. <code>-eq</code>, <code>-lt</code> y el resto solo funcionan con <b>enteros</b>.</p></div>
+  <h3 class="rv">Cadenas: el orden es alfabético, no numérico</h3>
+  <div class="grid g2 rv">
+    <div class="code" data-fn="escapar en [ ] frente a [[ ]]"><pre>if [ "$n1" \&lt; "$n2" ]; then ...   # [ ]: hay que escapar
+if [[ "$n1" &lt; "$n2" ]]; then ...   # [[ ]]: no hace falta</pre></div>
+    <div class="code" data-fn="ej05d_ordenar_cadenas.sh"><pre>n1=2; n2=10
+if [[ "$n1" &lt; "$n2" ]]; then
+    echo "menor"
+else
+    echo "mayor"     # ← sale esto: "2" va después de "1"
+fi</pre></div>
+  </div>
+  <div class="note warn rv"><div class="ni">"</div><p><b class="t">Pon siempre las variables entre comillas</b>Si <code>$nombre</code> está vacía o tiene espacios, <code>[ $nombre = "x" ]</code> falla. Con <code>"$nombre"</code> siempre se compara la cadena completa.</p></div>
+  <h3 class="rv">Operadores lógicos</h3>
+  <div class="grid g3 rv">
+    <div class="card" style="--c:var(--rose)"><h4><code>!</code> NO</h4><p><code>[ ! -d "$dir" ]</code> → la ruta NO es un directorio.</p></div>
+    <div class="card" style="--c:var(--acc)"><h4><code>&amp;&amp;</code> Y</h4><p><code>[ -d "$a" ] &amp;&amp; [ -d "$b" ]</code> → los dos.</p></div>
+    <div class="card" style="--c:var(--amber)"><h4><code>||</code> O</h4><p><code>[ -d "$a" ] || [ -d "$b" ]</code> → al menos uno.</p></div>
+  </div>
+  <div class="note info rv"><div class="ni">⚡</div><p><b class="t">Cortocircuito</b>Se evalúa de izquierda a derecha: si el resultado ya está decidido, el resto no se ejecuta. Dentro de <code>[ ]</code> existen <code>-a</code> y <code>-o</code>, pero es más claro usar <code>&amp;&amp;</code> y <code>||</code>.</p></div>
+  <h3 class="rv">El bug del ej05h y su solución</h3>
+  <div class="vs rv">
+    <div class="ko"><h5>✗ ORIGINAL</h5><code>while [ $n1 != "s" ] &amp;&amp; [ $n1 != "S" ]
+do
+  read -p "Número: " n1
+  if [ $n1 -ge 0 ]   # ← con "s" revienta
+  ...</code><p style="margin:6px 0 0;font-size:.88rem">Cuando el usuario escribe «s», el <code>if</code> numérico se ejecuta igualmente y da error: <code>se esperaba una expresión entera</code>.</p></div>
+    <div class="ok"><h5>✓ SOLUCIÓN</h5><code>while [ "$n1" != "s" ] &amp;&amp; [ "$n1" != "S" ]
+do
+  read -p "Número: " n1
+  if [ "$n1" != "s" ] &amp;&amp; [ "$n1" != "S" ]
+  then
+    if [ "$n1" -gt 0 ] ...</code><p style="margin:6px 0 0;font-size:.88rem">Primero se comprueba que no sea la letra de salida, y además se ponen comillas.</p></div>
+  </div>
+</section>
+
+<!-- 12 · CASE -->
+<section class="sec" id="t-case" data-title="case y validación" style="--c:#d93b55">
+  <div class="sec-head rv"><div class="sec-num">12</div><div><h2>case y validación de datos</h2><p>Menús con case y comprobación de lo que escribe el usuario.</p></div></div>
+  <div class="grid g2 rv">
+    <div class="code" data-fn="ej05j_case.sh"><pre>case "$opc" in
+    1)
+        echo "El mejor sabor del mundo." ;;
+    2)
+        echo "Ojalá todo fuese de chocolate." ;;
+    3|4)
+        echo "También muy buenos." ;;
+    [sS])
+        echo "Adiós" ;;
+    *)
+        echo "Opción no válida" ;;
+esac</pre></div>
+    <div><table class="tbl" style="--c:var(--rose)"><thead><tr><th>Patrón</th><th>Coincide con</th></tr></thead><tbody>
+      <tr><td><code>?</code></td><td>exactamente un carácter</td></tr><tr><td><code>*</code></td><td>cero o más caracteres</td></tr><tr><td><code>[abc]</code></td><td>uno de esos caracteres</td></tr><tr><td><code>[!abc]</code></td><td>uno que NO sea esos</td></tr><tr><td><code>[a-z]</code></td><td>un carácter del rango</td></tr><tr><td><code>a|b</code></td><td>a o b</td></tr></tbody></table>
+      <p class="muted" style="font-size:.88rem">Son comodines, <b>no</b> expresiones regulares. Cada opción termina en <code>;;</code> y el case se cierra con <code>esac</code>.</p></div>
+  </div>
+  <div class="lab rv" id="labCase">
+    <h4>Probador de patrones de case</h4>
+    <div class="row"><label>Patrón</label><input type="text" id="csP" value="[sS]*" style="max-width:180px"><label>Valor</label><input type="text" id="csV" value="Salir" style="max-width:180px"></div>
+    <div class="term-out" id="csOut"></div>
+  </div>
+  <div class="grid g2 rv">
+    <div class="card" style="--c:var(--sky)"><h4>Usa <code>if</code> para…</h4><p>condiciones lógicas, comparar números o cadenas, comprobar ficheros y combinar varias condiciones.</p></div>
+    <div class="card" style="--c:var(--rose)"><h4>Usa <code>case</code> para…</h4><p>elegir una opción entre varios valores o patrones, como en un menú (dentro de un <code>while</code> para que se repita).</p></div>
+  </div>
+  <h3 class="rv">Validar lo que se lee con read</h3>
+  <div class="tscroll rv"><table class="tbl" style="--c:var(--violet)"><thead><tr><th>Regex con <code>=~</code></th><th>Valida</th></tr></thead><tbody>
+    <tr><td><code>^-?[0-9]+$</code></td><td>Entero, positivo o negativo</td></tr>
+    <tr><td><code>^[0-9]+$</code></td><td>Entero ≥ 0</td></tr>
+    <tr><td><code>^-?[0-9]+([.][0-9]+)?$</code></td><td>Real con punto (no vale <code>.5</code> ni <code>5.</code>, ni la notación científica)</td></tr>
+    <tr><td><code>-z "$x"</code></td><td>Cadena vacía (no es regex, es un test)</td></tr>
+  </tbody></table></div>
+  <div class="lab rv" id="labRegex">
+    <h4>Validador en directo</h4>
+    <div class="row"><label for="rxIn">Introduce un valor:</label><input type="text" id="rxIn" value="-42"></div>
+    <div class="tf" id="rxOut"></div>
+  </div>
+  <div class="code rv" data-fn="validar entero"><pre>read -p "Introduce un número entero: " num
+if [[ "$num" =~ ^-?[0-9]+$ ]]; then
+    echo "Es un número entero."
+else
+    echo "No es un número entero."
+fi</pre></div>
+  <div class="note warn rv"><div class="ni">!</div><p><code>[[ ]]</code> y <code>=~</code> son propios de Bash: no funcionan con <code>#!/bin/sh</code>.</p></div>
+</section>
+
+<!-- 13 · BUCLES -->
+<section class="sec" id="t-bucles" data-title="Bucles" style="--c:#0c9a6a">
+  <div class="sec-head rv"><div class="sec-num">13</div><div><h2>Estructuras iterativas</h2><p>while, until, for, break y continue.</p></div></div>
+  <div class="grid g3 rv">
+    <div class="card hov" style="--c:var(--acc)"><div class="ic">⟳</div><h4>while</h4><p>Repite <b>mientras</b> la condición sea verdadera. Se comprueba antes de cada vuelta.</p></div>
+    <div class="card hov" style="--c:var(--amber)"><div class="ic">⤼</div><h4>until</h4><p>Repite <b>hasta que</b> la condición sea verdadera: es el inverso de while.</p></div>
+    <div class="card hov" style="--c:var(--violet)"><div class="ic">≡</div><h4>for</h4><p>Recorre una lista, o usa un contador con <code>for (( ; ; ))</code>.</p></div>
+  </div>
+  <div class="grid g3 rv">
+    <div class="code" data-fn="while"><pre>i=0
+while [ "$i" -lt 5 ]
+do
+    echo "$i"
+    i=$((i+1))
+done</pre></div>
+    <div class="code" data-fn="until"><pre>i=0
+until [ "$i" -eq 5 ]
+do
+    echo "$i"
+    i=$((i+1))
+done</pre></div>
+    <div class="code" data-fn="for aritmético"><pre>for (( i=0; i&lt;5; i++ ))
+do
+    echo "$i"
+done</pre></div>
+  </div>
+  <div class="lab rv" id="labLoop">
+    <h4>Visualizador de break y continue</h4>
+    <div class="row"><span class="seg" id="lpMode"><button aria-pressed="true" data-v="none">sin nada</button><button aria-pressed="false" data-v="break">if i==5 → break</button><button aria-pressed="false" data-v="continue">if i==5 → continue</button></span><button class="btn pri sm" id="lpRun">▶ Ejecutar for ((i=0;i&lt;10;i++))</button></div>
+    <div class="cells" id="lpCells"></div>
+    <div class="term-out" id="lpOut" style="margin-top:10px"><span class="d"># salida…</span></div>
+  </div>
+  <h3 class="rv">Formas de generar listas</h3>
+  <div class="grid g2 rv">
+    <div class="code" data-fn="listas"><pre>for i in 0 1 2 3 4; do echo "$i"; done
+listaNum="0 1 2 3 4"; for i in $listaNum; do ...
+for i in {0..4}; do ...          # expansión de llaves
+for i in $(seq 0 4); do ...      # comando seq
+seq 2 2 10                        # 2 4 6 8 10 (inicio incremento fin)</pre></div>
+    <div class="code" data-fn="recorrer ficheros"><pre>for fichero in *            # el directorio actual
+do
+    echo "$fichero"         # ¡con comillas!
+done
+
+directorio="/home/usuario/Mis documentos"
+for fichero in "$directorio"/*
+do ...</pre></div>
+  </div>
+  <div class="postits rv">
+    <div class="postit">* no ve los ocultos<small>Los ficheros que empiezan por punto no aparecen.</small></div>
+    <div class="postit pink">for i in $(ls) = mala idea<small>«mis notas.txt» se partiría en dos elementos.</small></div>
+    <div class="postit blue">Directorio vacío<small>En <code>"$dir"/*</code> el patrón se queda sin expandir: compruébalo con <code>-f</code> o <code>-d</code>.</small></div>
+    <div class="postit green">for ((…)) sin $<small>Dentro de <code>(( ))</code> vale <code>i&lt;=max</code> sin <code>$</code>.</small></div>
+  </div>
+  <div class="code rv" data-fn="ej06b_contar_fich.sh"><pre>#!/bin/bash
+if [ "$#" -ne 1 ]; then echo "Uso: $0 directorio"; exit 1; fi
+directorio=$1
+if [ ! -d "$directorio" ]; then echo "Error: '$directorio' no es un directorio."; exit 1; fi
+numArchivos=0; numDirectorios=0
+for entrada in "$directorio"/*
+do
+    if [ -f "$entrada" ]; then
+        numArchivos=$((numArchivos+1))
+    elif [ -d "$entrada" ]; then
+        numDirectorios=$((numDirectorios+1))
+    fi
+done
+echo "Archivos regulares: $numArchivos"
+echo "Directorios: $numDirectorios"
+exit 0</pre></div>
+  <h3 class="rv">Bucles infinitos</h3>
+  <div class="grid g2 rv">
+    <div class="code" data-fn="infinitos"><pre>while true          # true siempre devuelve 0
+do
+   echo "El bucle se repite"
+done
+
+for (( ; ; ))       # solo Bash
+do ... done</pre></div>
+    <div><div class="note tip" style="margin-top:0"><div class="ni">⌃C</div><p>Se paran con <code>break</code> desde el propio script o con <b>Ctrl+C</b> desde el terminal. Son útiles para menús y servicios.</p></div>
+      <div class="note vio"><div class="ni">?</div><p><b class="t">¿Son buena práctica break y continue?</b>Sí, cuando aclaran una salida (por ejemplo, «Salir» en un menú) o descartan un elemento. Si hay demasiadas salidas intermedias, el código se lee peor. En bucles anidados actúan sobre el <b>más interno</b>.</p></div></div>
+  </div>
+</section>
+
+<!-- 14 · ARRAYS -->
+<section class="sec" id="t-arrays" data-title="Arrays" style="--c:#6a48d6">
+  <div class="sec-head rv"><div class="sec-num">14</div><div><h2>Arrays</h2><p>Listas de valores con índice. El primero es el <b>0</b>.</p></div></div>
+  <div class="diagram rv" style="overflow:visible">
+    <div class="cells" id="arrCells" style="justify-content:center"></div>
+    <div class="cap">meses=(Enero Febrero Marzo …) · <code>${meses[1]}</code> → Febrero · <code>${#meses[@]}</code> → 12</div>
+  </div>
+  <div class="grid g2 rv">
+    <div class="code" data-fn="arrays"><pre>miArray=(0 1 2 3 4)            # definir
+echo "${miArray[2]}"           # elemento 2 → 2
+miArray[2]=99                  # asignar
+echo "${miArray[@]}"           # todos
+echo "${#miArray[@]}"          # cuántos → 5
+read -p "Ventas: " ventas[$i]  # leer en una posición
+arr=($cadena)                  # cadena "3 6 9" → array</pre></div>
+    <div class="code" data-fn="recorrer un array"><pre>#!/bin/bash
+miArray=(0 1 2 3 4)
+for i in "${miArray[@]}"
+do
+    echo "$i"
+done
+exit 0</pre></div>
+  </div>
+  <div class="note tip rv"><div class="ni">@</div><p><code>"${miArray[@]}"</code> recorre los elementos sin mezclarlos, aunque tengan espacios. <code>$miArray</code> sin índice es solo el primero. <code>declare -A</code> crea arrays <b>asociativos</b> (claves de texto), que son propios de Bash.</p></div>
+  <div class="postits rv"><div class="postit">mes 2 → índice 1<small>En el e19: <code>indice=$((mes - 1))</code>.</small></div><div class="postit green">Bisiesto<small>Divisible entre 4 y no entre 100, <b>o</b> divisible entre 400.</small></div></div>
+</section>
+
+<!-- 15 · FUNCIONES -->
+<section class="sec" id="t-func" data-title="Funciones" style="--c:#0e7bbd">
+  <div class="sec-head rv"><div class="sec-num">15</div><div><h2>Funciones</h2><p>Bloques de código reutilizables, con sus propios parámetros.</p></div></div>
+  <div class="grid g2 rv">
+    <div class="code" data-fn="definir y llamar"><pre>function saludar(){
+    local nombre="$1"        # $1 de la FUNCIÓN
+    echo "Hola, $nombre ($# args)"
+}
+saludar Ana                  # sin paréntesis</pre></div>
+    <div class="code" data-fn="«devolver» valores"><pre>function validar(){
+    if [ "$1" -lt 1 ]; then echo 1
+    elif [ "$2" -lt 1 ]; then echo 2
+    else echo 0; fi
+}
+resultado=$(validar "$NUM" "$LIM")   # se recoge con $( )</pre></div>
+  </div>
+  <div class="grid g3 rv">
+    <div class="card" style="--c:var(--sky)"><h4><code>echo</code> + <code>$( )</code></h4><p>Es la forma de devolver datos (números o cadenas).</p></div>
+    <div class="card" style="--c:var(--amber)"><h4><code>return n</code></h4><p>Sale de la función con un código de estado de 0 a 255 (se lee con <code>$?</code>).</p></div>
+    <div class="card" style="--c:var(--rose)"><h4><code>exit n</code></h4><p>¡Termina <b>todo</b> el script, no solo la función!</p></div>
+  </div>
+  <h3 class="rv">Separar funciones y main (e20)</h3>
+  <div class="diagram rv">
+    <svg viewBox="0 0 760 170" role="img" aria-label="Include con punto">
+      <defs><marker id="ar3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="var(--acc)"/></marker></defs>
+      <rect x="20" y="25" width="290" height="120" rx="16" fill="var(--violet-soft)" stroke="var(--violet)"/>
+      <text x="40" y="54" class="svg-t" fill="var(--violet)" font-size="14">e20_func.sh</text>
+      <text x="40" y="80" class="svg-m" fill="var(--ink)" font-size="12">mostrarMenu(){ … }</text>
+      <text x="40" y="100" class="svg-m" fill="var(--ink)" font-size="12">sumar(){ … }  restar(){ … }</text>
+      <text x="40" y="120" class="svg-m" fill="var(--ink)" font-size="12">multiplicar(){ … } dividir(){ … }</text>
+      <path d="M312 85H440" stroke="var(--acc)" stroke-width="3" class="flow" marker-end="url(#ar3)"/>
+      <text x="376" y="74" text-anchor="middle" class="svg-m" fill="var(--acc)" font-size="13" font-weight="700">. (source)</text>
+      <rect x="445" y="25" width="295" height="120" rx="16" fill="var(--acc-soft)" stroke="var(--acc)"/>
+      <text x="465" y="54" class="svg-t" fill="var(--acc)" font-size="14">e20_main.sh</text>
+      <text x="465" y="80" class="svg-m" fill="var(--ink)" font-size="12">. "$(dirname "$0")/…func.sh"</text>
+      <text x="465" y="100" class="svg-m" fill="var(--ink)" font-size="12">while … case $opcion in</text>
+      <text x="465" y="120" class="svg-m" fill="var(--ink)" font-size="12">  s) sumar "$1" "$2" "$3" ;;</text>
+    </svg>
+  </div>
+  <div class="tscroll rv"><table class="tbl" style="--c:var(--sky)"><thead><tr><th>Concepto</th><th>Ejecutar <code>./x.sh</code></th><th>Incluir <code>. x.sh</code></th></tr></thead><tbody>
+    <tr><td><code>proceso</code></td><td>Nuevo proceso hijo</td><td>La misma shell</td></tr>
+    <tr><td><code>variables</code></td><td>No se comparten (salvo export)</td><td>Se comparten, igual que las funciones</td></tr>
+    <tr><td><code>exit</code></td><td>Solo cierra el hijo</td><td>¡Cierra el script principal!</td></tr>
+    <tr><td><code>permiso x</code></td><td>Necesario</td><td>No hace falta</td></tr>
+  </tbody></table></div>
+  <div class="lab rv" id="labScope">
+    <h4>Adivina el ámbito (ejercicio e21)</h4>
+    <p class="muted" style="margin:0 0 10px;font-size:.9rem">Después de llamar a <code>pruebaVariables</code>, ¿qué variables tienen valor <b>fuera</b> de la función? Marca las que creas y comprueba.</p>
+    <div class="topics" id="scVars"></div>
+    <div class="row" style="margin-top:12px"><button class="btn pri sm" id="scCheck">Comprobar</button><span id="scRes"></span></div>
+  </div>
+</section>
+
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ═════════════════════════ PRÁCTICA ═════════════════════════ -->
+<section class="view" id="v-practica">
+<div class="container">
+  <div class="p-hero">
+    <span class="eyebrow"><i></i> Ejercicios 1 y 2 · entorno de trabajo</span>
+    <h1>Red, SSH y <span style="color:var(--acc)">configuración</span></h1>
+    <p class="muted" style="max-width:66ch;margin:0">Todos los comandos para preparar la MV, la red Host-Only, SSH y VS Code, en orden. Marca cada paso cuando lo termines: tu progreso se guarda en este navegador.</p>
+    <div class="datos" id="datos"></div>
+  </div>
+
+  <div class="diagram rv">
+    <svg viewBox="0 0 760 260" role="img" aria-label="Red Host-Only entre Windows y Xubuntu">
+      <rect x="20" y="40" width="230" height="180" rx="20" fill="var(--sky-soft)" stroke="var(--sky)" stroke-width="2"/>
+      <text x="40" y="72" class="svg-t" fill="var(--sky)" font-size="16">🪟 Windows (anfitrión)</text>
+      <text x="40" y="100" class="svg-m" fill="var(--ink)" font-size="12">Tarjeta: ASO_HO</text>
+      <text x="40" y="122" class="svg-m" fill="var(--ink)" font-size="14" font-weight="700">192.168.40.201</text>
+      <text x="40" y="150" class="svg-m" fill="var(--muted)" font-size="11">VS Code + Remote-SSH</text>
+      <text x="40" y="170" class="svg-m" fill="var(--muted)" font-size="11">PowerShell: ssh</text>
+      <rect x="290" y="95" width="180" height="70" rx="16" fill="var(--amber-soft)" stroke="var(--amber)" stroke-width="2" class="pulse"/>
+      <text x="380" y="122" text-anchor="middle" class="svg-t" fill="var(--amber)" font-size="13">DHCP Host-Only</text>
+      <text x="380" y="142" text-anchor="middle" class="svg-m" fill="var(--ink)" font-size="11">.200 · reparte .202–.205</text>
+      <path d="M250 130H290" stroke="var(--acc)" stroke-width="3" class="flow"/>
+      <path d="M470 130H510" stroke="var(--acc)" stroke-width="3" class="flow"/>
+      <text x="380" y="200" text-anchor="middle" class="svg-m" fill="var(--acc)" font-size="12" font-weight="700">SSH · puerto 22 · ping</text>
+      <rect x="510" y="40" width="230" height="180" rx="20" fill="var(--acc-soft)" stroke="var(--acc)" stroke-width="2"/>
+      <text x="530" y="72" class="svg-t" fill="var(--acc)" font-size="16">🐧 Xubuntu (MV)</text>
+      <text x="530" y="100" class="svg-m" fill="var(--ink)" font-size="12">SHELLMV5XU2440 · enp0s9</text>
+      <text x="530" y="122" class="svg-m" fill="var(--ink)" font-size="14" font-weight="700">192.168.40.202</text>
+      <text x="530" y="150" class="svg-m" fill="var(--muted)" font-size="11">openssh-server (enabled)</text>
+      <text x="530" y="170" class="svg-m" fill="var(--muted)" font-size="11">~/aso_sh_40_clemente_j</text>
+      <text x="380" y="30" text-anchor="middle" class="svg-m" fill="var(--muted)" font-size="11">red privada 192.168.40.0/24 · sin Internet</text>
+    </svg>
+  </div>
+
+  <div class="phase-h" style="margin-top:26px"><svg class="ring" viewBox="0 0 70 70"><circle class="bg" cx="35" cy="35" r="29"/><circle class="fg" id="pRing" cx="35" cy="35" r="29" stroke-dasharray="182.2" stroke-dashoffset="182.2"/></svg><div><h2>Checklist de configuración</h2><p class="muted" style="margin:2px 0 0"><b id="pDone">0</b> de <b id="pTotal">0</b> pasos completados</p></div><button class="btn sm" id="pReset" style="margin-left:auto">Reiniciar checklist</button></div>
+  <div id="phases"></div>
+
+  <h2 class="rv" style="margin:40px 0 6px;font-size:1.6rem" id="p-cmds">Chuleta de comandos</h2>
+  <p class="muted rv">Todos los comandos de conexión y configuración del tema, agrupados por dónde se ejecutan.</p>
+  <div class="tscroll rv"><table class="tbl" id="cheat"><thead><tr><th>Comando</th><th>Dónde</th><th>Para qué sirve</th></tr></thead><tbody></tbody></table></div>
+
+  <h2 class="rv" style="margin:40px 0 14px;font-size:1.6rem">Si algo falla…</h2>
+  <div class="postits rv">
+    <div class="postit pink">Ping Xubuntu → Windows sin respuesta<small>El firewall de Windows bloquea ICMP. En PowerShell como administrador:<br><code>New-NetFirewallRule -DisplayName "Ping ASO_HO" -Protocol ICMPv4 -IcmpType 8 -Direction Inbound -Action Allow -InterfaceAlias "ASO_HO"</code></small></div>
+    <div class="postit">La MV recibe 192.168.56.x<small>El DHCP de VirtualBox se quedó con la configuración vieja: reinícialo y desconecta y vuelve a conectar el cable del adaptador 3.</small></div>
+    <div class="postit blue">Ctrl+V escribe ^V<small>En el terminal de Xubuntu se pega con <b>Ctrl+Mayús+V</b>. Activa el portapapeles compartido «Anfitrión → Invitado».</small></div>
+    <div class="postit green">ssh: Connection refused<small><code>sudo systemctl enable --now ssh</code> y comprueba <code>systemctl status ssh</code>.</small></div>
+    <div class="postit orange">No existe «Conexión cableada 1»<small>Mira el nombre real con <code>nmcli connection show</code> (puede ser la 2 o la 3).</small></div>
+  </div>
+
+  <h2 class="rv" style="margin:44px 0 6px;font-size:1.6rem" id="p-ej">Ejercicios del tema (e01–e23)</h2>
+  <p class="muted rv">Enunciado resumido, solución completa y lo que tiene que salir. Pulsa «Ver solución» para ver el código y copiarlo.</p>
+  <div class="filter-row rv" id="exFilter"></div>
+  <div class="ex-grid" id="exGrid"></div>
+
+  <h2 class="rv" style="margin:44px 0 14px;font-size:1.6rem" id="p-qa">Respuestas a las preguntas del profe</h2>
+  <div id="qa" class="rv"></div>
+</div>
+</section>
+
+<!-- ═════════════════════════ TEST ═════════════════════════ -->
+<section class="view" id="v-test">
+<div class="container" id="testRoot"></div>
+</section>
+
+<div class="modal" id="modal" role="dialog" aria-modal="true"><div class="box" id="modalBox"></div></div>
+<div class="toast" id="toast"></div>
+<footer class="footer">ASO · Tema 2 · Shell Script en Bash — Apuntes de Alberto Montoro Gavilán (RA7) · Hecho para repasar 💚</footer>
+
+<svg width="0" height="0" style="position:absolute"><defs><linearGradient id="gradRes" x1="0" x2="1"><stop offset="0" stop-color="#34d399"/><stop offset=".6" stop-color="#60a5fa"/><stop offset="1" stop-color="#a78bfa"/></linearGradient></defs></svg>
+
+<script src="tema-2-preguntas.js"></script>
+<script src="tema-2-scripts.js"></script>
+<script src="tema-2-app.js"></script>
+<a id="asir-back" href="../../asignatura.html?s=aso" aria-label="Volver a ASO" style="--c:#0A84FF;bottom:14px"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg><span>ASO</span></a><link rel="stylesheet" href="../../assets/back.css">
+</body>
+</html>

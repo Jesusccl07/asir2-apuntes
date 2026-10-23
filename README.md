@@ -8,6 +8,14 @@ Web con todos los apuntes, tests y exámenes de 2º ASIR, organizados por asigna
 - `temas/<asignatura>/<tema>.html` · cada tema (tal cual estaba publicado)
 - `assets/data.js` · catálogo; para añadir un tema copia su `.html` a `temas/<asignatura>/` y añádelo ahí
 
+## ASO · Tema 2 (Shell Script)
+
+`temas/aso/tema-2.html` tiene tres vistas: `#teoria`, `#practica` y `#test`.
+
+- `tema-2-preguntas.js` · banco de preguntas del test. Para añadir preguntas de apuntes nuevos, añade filas al bloque que toque.
+- `tema-2-scripts.js` · código de los scripts e01–e23 (se genera a partir de la carpeta `aso_sh_40_clemente_j`).
+- `tema-2-app.js` · laboratorios interactivos, checklist de práctica y motor del test (rachas, XP, modos y ranking).
+
 ## Puntuaciones y estadísticas
 
 Cada usuario tiene su propio perfil: las notas, intentos y minutos de estudio se guardan en **su navegador**

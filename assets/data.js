@@ -9,7 +9,11 @@ window.ASIR = {
     { slug:'pima', code:'PIMAS', name:'Proyecto Intermodular', teacher:'Manuel Peña Villanueva', color:'#FF2D78', icon:'rocket', blurb:'Proyecto final de ciclo.', topics:[] },
     { slug:'aso',  code:'ASO',  name:'Administración de Sistemas Operativos', teacher:'Alberto Montoro Gavilán', color:'#0A84FF', icon:'term',
       blurb:'Sistemas operativos, shell script y administración.',
-      topics:[ { n:1, title:'Tema 1', items:[ { id:'tema-1', title:'Conceptos del Tema 1', type:'Apuntes', desc:'Conceptos del Tema 1 de Administración de Sistemas Operativos.', file:'temas/aso/tema-1.html' } ] } ] },
+      topics:[ { n:1, title:'Tema 1', items:[ { id:'tema-1', title:'Conceptos del Tema 1', type:'Apuntes', desc:'Conceptos del Tema 1 de Administración de Sistemas Operativos.', file:'temas/aso/tema-1.html' } ] },
+        { n:2, title:'Tema 2 · Shell Script', items:[
+        { id:'tema-2', title:'Teoría de Shell Script', type:'Apuntes', desc:'Bash de cero a funciones: esquemas, posits, tarjetas y laboratorios interactivos.', file:'temas/aso/tema-2.html#teoria' },
+        { id:'tema-2-practica', title:'Red, SSH y configuración', type:'Práctica', desc:'Checklist de la MV, la red Host-Only, SSH y VS Code, y los 23 ejercicios resueltos.', file:'temas/aso/tema-2.html#practica' },
+        { id:'tema-2-test', title:'Test Tema 2', type:'Test', desc:'Más de 200 preguntas en 3 niveles, con rachas, XP, modo examen y ranking.', file:'temas/aso/tema-2.html#test' } ] } ] },
     { slug:'sri',  code:'SRI',  name:'Servicios de Red e Internet', teacher:'Raúl', color:'#28B850', icon:'net', blurb:'Servicios de red, DNS, DHCP y más.', topics:[] },
     { slug:'iaw',  code:'IAW',  name:'Implantación de Aplicaciones Web', teacher:'Raúl', color:'#00B8D9', icon:'globe',
       blurb:'Servidores web, XAMPP, PHP y aplicaciones en la nube.',
