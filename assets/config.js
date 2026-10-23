@@ -1,4 +1,4 @@
-/* Ranking compartido entre todos los usuarios (opcional).
-   Sin configurar: cada persona ve SUS puntuaciones y estadísticas (se guardan en su navegador).
-   Para activar el ranking global: crea un proyecto Firebase con Firestore (modo prueba) y rellena esto. */
-window.ASIR_CONFIG = { firebase: null /* { projectId: 'mi-proyecto', apiKey: 'AIza...' } */ };
+/* Ranking compartido entre todos los usuarios.
+   Proyecto Firebase asir2-apuntes (Firestore). El apiKey de una app web de Firebase es público por diseño:
+   la seguridad la dan las reglas de Firestore, no esta clave. */
+window.ASIR_CONFIG = { firebase: { projectId: 'asir2-apuntes', apiKey: 'AIzaSyALHnCSBZuUTqU3uo8PTzpkttZdlgXUbZY' } };
